@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: financecontrol
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jackson:
+    time-zone: America/Sao_Paulo
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+          time_zone: America/Sao_Paulo
+        order_inserts: true
+        order_updates: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
+
+server:
+  tomcat:
+    threads:
+      max: 100
+      min-spare: 5
+  compression:
+    enabled: true
+  connection-timeout: 10s
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+
+app:
+  public-url: ${APP_PUBLIC_URL:http://localhost:8080}
+  superadmin:
+    email: ${SUPERADMIN_EMAIL}
+    password: ${SUPERADMIN_PASSWORD}
+    nome: ${SUPERADMIN_NAME}
