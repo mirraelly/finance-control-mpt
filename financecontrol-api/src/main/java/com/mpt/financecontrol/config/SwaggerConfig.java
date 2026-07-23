@@ -15,9 +15,9 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Api do sistema erp Ero")
+                        .title("Api do sistema FinanceControl")
                         .version("1.0")
-                        .description("Documentação da api do sistema Ero")
+                        .description("Documentação da api do sistema FinanceControl")
                 )
                 .addSecurityItem(
                         new SecurityRequirement().addList("bearerAuth")

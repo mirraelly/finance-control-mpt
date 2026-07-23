@@ -4,7 +4,7 @@ import com.mpt.financecontrol.auth.dtos.AuthLoginDto;
 import com.mpt.financecontrol.auth.dtos.AuthResponseDto;
 import com.mpt.financecontrol.auth.service.AuthService;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
-import com.mpt.financecontrol.usuario.dtos.UsuarioSaveDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @Operation(summary = "Registra um novo usuário (cria também o tenant quando é auto-cadastro)")
-    public ResponseEntity<UsuarioResponseDto> register(@Valid @RequestBody UsuarioSaveDto dto) {
+    public ResponseEntity<UsuarioResponseDto> register(@Valid @RequestBody UsuarioCreateDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
     }
 }

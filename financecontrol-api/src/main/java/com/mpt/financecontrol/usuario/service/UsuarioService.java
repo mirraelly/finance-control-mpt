@@ -8,18 +8,21 @@ import com.mpt.financecontrol.tenant.dtos.TenantSaveDto;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.tenant.service.TenantService;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
-import com.mpt.financecontrol.usuario.dtos.UsuarioSaveDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioUpdateDto;
 import com.mpt.financecontrol.usuario.entity.Role;
 import com.mpt.financecontrol.usuario.entity.Usuario;
 import com.mpt.financecontrol.usuario.mapper.UsuarioMapper;
 import com.mpt.financecontrol.usuario.repository.UsuarioRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -52,7 +55,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponseDto create(UsuarioSaveDto dto) {
+    public UsuarioResponseDto create(UsuarioCreateDto dto) {
         if (dto.nome() == null || dto.nome().isBlank())
             throw new BadRequestException("O nome do usuário é obrigatório, verifique!");
         if (dto.email() == null || dto.email().isBlank())
@@ -99,7 +102,12 @@ public class UsuarioService {
 
         Usuario usuario = findById(id);
 
+        boolean isSuperadmin = actingUser.getRole() == Role.SUPERADMIN;
+        boolean isSelf       = usuario.getId().equals(actingUser.getId());
+
         if (!usuario.getTenant().getId().equals(actingUser.getTenant().getId()))
+            throw new NotFoundException("Usuário não encontrado, verifique!");
+        if (!isSuperadmin && !isSelf)
             throw new NotFoundException("Usuário não encontrado, verifique!");
         if (dto.nome() == null || dto.nome().isBlank())
             throw new BadRequestException("O nome do usuário é obrigatório, verifique!");
@@ -108,17 +116,34 @@ public class UsuarioService {
         usuario.setTelefone(dto.telefone());
         if (dto.codigoPais() != null && !dto.codigoPais().isBlank())
             usuario.setCodigoPais(dto.codigoPais());
-        if (dto.ativo() != null)
-            usuario.setAtivo(dto.ativo());
-        if (actingUser.getRole() != Role.SUPERADMIN)
-            usuario.setRole(Role.USER);
-        else if (dto.role() != null)
-            usuario.setRole(dto.role());
+
+        // Somente SUPERADMIN altera campos administrativos (ativo/role).
+        // Um não-SUPERADMIN edita apenas o próprio perfil e não pode mudar a role
+        if (isSuperadmin) {
+            if (dto.ativo() != null)
+                usuario.setAtivo(dto.ativo());
+            if (dto.role() != null)
+                usuario.setRole(dto.role());
+        }
 
         usuario.setUpdatedBy(actingUser);
         usuarioRepository.saveAndFlush(usuario);
 
         return UsuarioMapper.toResponseDto(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UsuarioResponseDto> getAll(Pageable pageable, UUID tenantId, String nome, String email) {
+        return usuarioRepository.findAllWithFilters(pageable, tenantId, nome, email)
+                .map(UsuarioMapper::toResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UsuarioResponseDto> select(String nome) {
+        return usuarioRepository.findForSelect(nome)
+                .stream()
+                .map(UsuarioMapper::toResponseDto)
+                .toList();
     }
 
     private Usuario getUsuarioLogado() {

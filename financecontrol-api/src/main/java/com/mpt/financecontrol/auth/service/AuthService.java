@@ -5,7 +5,7 @@ import com.mpt.financecontrol.auth.dtos.AuthResponseDto;
 import com.mpt.financecontrol.config.JwtUtil;
 import com.mpt.financecontrol.exceptions.UnauthorizedException;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
-import com.mpt.financecontrol.usuario.dtos.UsuarioSaveDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import com.mpt.financecontrol.usuario.entity.Usuario;
 import com.mpt.financecontrol.usuario.repository.UsuarioRepository;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
@@ -56,7 +56,7 @@ public class AuthService {
     }
 
     @Transactional
-    public UsuarioResponseDto register(UsuarioSaveDto dto) {
+    public UsuarioResponseDto register(UsuarioCreateDto dto) {
         return usuarioService.create(dto);
     }
 }
