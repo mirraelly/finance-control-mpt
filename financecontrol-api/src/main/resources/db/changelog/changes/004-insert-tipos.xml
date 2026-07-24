@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="006-insert-tipos" author="eduardo">
+
+        <!-- TIPO TELEFONE -->
+        <insert tableName="tipo_telefone">
+            <column name="nome" value="Celular"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_telefone">
+            <column name="nome" value="WhatsApp"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_telefone">
+            <column name="nome" value="Residencial"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+
+        <!-- TIPO EMAIL -->
+        <insert tableName="tipo_email">
+            <column name="nome" value="Comercial"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_email">
+            <column name="nome" value="Particular"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+
+        <!-- TIPO ENDERECO -->
+        <insert tableName="tipo_endereco">
+            <column name="nome" value="Residencial"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_endereco">
+            <column name="nome" value="Comercial"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <!-- TIPO CADASTRO -->
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Funcionário"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Cliente"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Fornecedor"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Prestador de Serviço"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Motorista"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Representante"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Filial"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Correspondente"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="tipo_cadastro">
+            <column name="nome" value="Outros"/>
+            <column name="ativo" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

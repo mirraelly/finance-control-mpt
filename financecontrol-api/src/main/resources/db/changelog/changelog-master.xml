@@ -7,4 +7,7 @@
 
     <include file="db/changelog/changes/001-create-tenant-table.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/002-create-usuario-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/003-create-tipos-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/004-insert-tipos.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/005-create-cidade-estado-table.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
