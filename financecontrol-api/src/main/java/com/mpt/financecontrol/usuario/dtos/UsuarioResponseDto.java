@@ -2,7 +2,7 @@ package com.mpt.financecontrol.usuario.dtos;
 
 import com.mpt.financecontrol.usuario.entity.Role;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record UsuarioResponseDto(
@@ -14,6 +14,6 @@ public record UsuarioResponseDto(
         String codigoPais,
         Role role,
         Boolean ativo,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        Instant createdAt,
+        Instant updatedAt
 ) {}
