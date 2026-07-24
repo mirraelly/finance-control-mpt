@@ -8,7 +8,7 @@
     <changeSet id="007-create-cidade-estado-table" author="eduardo">
 
         <createTable tableName="estado">
-            <column name="id" type="BIGSERIAL">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true"/>
             </column>
             <column name="nome" type="VARCHAR(100)">
@@ -28,13 +28,13 @@
         </createTable>
 
         <createTable tableName="cidade">
-            <column name="id" type="BIGSERIAL">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true"/>
             </column>
             <column name="nome" type="VARCHAR(150)">
                 <constraints nullable="false"/>
             </column>
-            <column name="estado_id" type="BIGINT">
+            <column name="estado_id" type="UUID">
                 <constraints nullable="false"/>
             </column>
             <column name="codigo_ibge" type="INTEGER"/>
