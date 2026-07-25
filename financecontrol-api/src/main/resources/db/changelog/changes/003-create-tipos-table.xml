@@ -9,7 +9,7 @@
 
         <!-- TIPO TELEFONE -->
         <createTable tableName="tipo_telefone">
-            <column name="id" type="BIGSERIAL">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true"/>
             </column>
             <column name="nome" type="VARCHAR(100)">
@@ -24,7 +24,7 @@
 
         <!-- TIPO EMAIL -->
         <createTable tableName="tipo_email">
-            <column name="id" type="BIGSERIAL">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true"/>
             </column>
             <column name="nome" type="VARCHAR(100)">
@@ -39,7 +39,7 @@
 
         <!-- TIPO ENDERECO -->
         <createTable tableName="tipo_endereco">
-            <column name="id" type="BIGSERIAL">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true"/>
             </column>
             <column name="nome" type="VARCHAR(100)">
@@ -54,7 +54,7 @@
 
         <!-- TIPO CADASTRO -->
         <createTable tableName="tipo_cadastro">
-            <column name="id" type="BIGSERIAL">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
                 <constraints primaryKey="true"/>
             </column>
             <column name="nome" type="VARCHAR(100)">
