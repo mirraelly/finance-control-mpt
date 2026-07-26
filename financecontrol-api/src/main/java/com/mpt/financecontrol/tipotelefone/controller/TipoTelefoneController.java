@@ -1,8 +1,8 @@
 package com.mpt.financecontrol.tipotelefone.controller;
 
 import com.mpt.financecontrol.tipotelefone.dtos.TipoTelefoneCreateDto;
+import com.mpt.financecontrol.tipotelefone.dtos.TipoTelefoneResponseDto;
 import com.mpt.financecontrol.tipotelefone.dtos.TipoTelefoneUpdateDto;
-import com.mpt.financecontrol.tipotelefone.entity.TipoTelefone;
 import com.mpt.financecontrol.tipotelefone.service.TipoTelefoneService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,7 +38,7 @@ public class TipoTelefoneController {
     })
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public Page<TipoTelefone> getAll(
+    public Page<TipoTelefoneResponseDto> getAll(
             @Parameter(description = "Paginação e ordenação")
             @PageableDefault(size = 15, sort = "nome") Pageable pageable,
 
@@ -52,7 +52,7 @@ public class TipoTelefoneController {
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping("/select")
     @PreAuthorize("isAuthenticated()")
-    public List<TipoTelefone> select() {
+    public List<TipoTelefoneResponseDto> select() {
         return service.select();
     }
 
@@ -63,11 +63,11 @@ public class TipoTelefoneController {
     })
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public TipoTelefone findById(
+    public ResponseEntity<TipoTelefoneResponseDto> findById(
             @Parameter(description = "ID do tipo de telefone")
             @PathVariable UUID id
     ) {
-        return service.findById(id);
+        return ResponseEntity.ok(service.findByIdResponse(id));
     }
 
     @Operation(summary = "Criar tipo de telefone", description = "Cria um novo tipo de telefone")
@@ -77,21 +77,21 @@ public class TipoTelefoneController {
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('SUPERADMIN', 'ORGANIZER')")
-    public ResponseEntity<TipoTelefone> create(
+    public ResponseEntity<TipoTelefoneResponseDto> create(
             @RequestBody @Valid TipoTelefoneCreateDto dto
     ) {
         return new ResponseEntity<>(service.create(dto), HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Atualizar tipo de telefone", description = "Atualiza parcialmente um tipo de telefone")
+    @Operation(summary = "Atualizar tipo de telefone", description = "Atualiza (substitui) um tipo de telefone")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Não encontrado"),
             @ApiResponse(responseCode = "409", description = "Conflito")
     })
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPERADMIN', 'ORGANIZER')")
-    public ResponseEntity<TipoTelefone> update(
+    public ResponseEntity<TipoTelefoneResponseDto> update(
             @Parameter(description = "ID do tipo de telefone")
             @PathVariable UUID id,
 

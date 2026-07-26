@@ -4,11 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -72,5 +74,21 @@ public class GlobalExceptionHandler {
         erroResponseDto.setPath(request.getDescription(true));
 
         return new ResponseEntity<>(erroResponseDto, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> methodArgumentNotValidException(MethodArgumentNotValidException e, WebRequest request){
+
+        String mensagem = e.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+
+        ErroResponseDto erroResponseDto = new ErroResponseDto();
+        erroResponseDto.setErro(mensagem);
+        erroResponseDto.setCodigo(HttpStatus.BAD_REQUEST.value());
+        erroResponseDto.setTimestamp(new Date());
+        erroResponseDto.setPath(request.getDescription(true));
+
+        return new ResponseEntity<>(erroResponseDto, HttpStatus.BAD_REQUEST);
     }
 }
