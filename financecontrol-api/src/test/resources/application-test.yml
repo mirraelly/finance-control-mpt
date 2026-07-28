@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:financecontrol_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  
+
+  liquibase:
+    enabled: false 
+
+jwt:
+  secret: "chave-de-teste-somente-para-testes-com-mais-de-32-bytes" 
+  expiration: 86400000
+
+app:
+  public-url: http://localhost:8080
+  superadmin:
+    email: admin@teste.local
+    password: admin12345
+    nome: Admin Teste
+
+logging:
+  level:
+    root: WARN
