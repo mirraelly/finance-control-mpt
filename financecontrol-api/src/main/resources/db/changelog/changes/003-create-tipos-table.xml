@@ -25,16 +25,16 @@
         <!-- TIPO EMAIL -->
         <createTable tableName="tipo_email">
             <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="nome" type="VARCHAR(100)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true"/>
-            <column name="created_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="updated_at" type="TIMESTAMP"/>
+            <constraints primaryKey="true"/>
+        </column>
+        <column name="nome" type="VARCHAR(100)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="ativo" type="BOOLEAN" defaultValueBoolean="true"/>
+        <column name="created_at" type="TIMESTAMP">
+            <constraints nullable="false"/>
+        </column>
+        <column name="updated_at" type="TIMESTAMP"/>
         </createTable>
 
         <!-- TIPO ENDERECO -->
