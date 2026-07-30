@@ -10,4 +10,5 @@
     <include file="db/changelog/changes/003-create-tipos-table.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/004-insert-tipos.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/005-create-cidade-estado-table.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/006-enable-unaccent.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

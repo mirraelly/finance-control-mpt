@@ -14,13 +14,14 @@ import java.util.UUID;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
+
     Optional<Usuario> findByEmail(String email);
 
     @Query("""
         SELECT u FROM Usuario u
                 WHERE (:tenantId IS NULL OR u.tenant.id = :tenantId)
-                    AND   (:nome  IS NULL OR LOWER(u.nome)  LIKE LOWER(CONCAT('%', CAST(:nome  AS string), '%')))
-                    AND   (:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:email AS string), '%')))
+                    AND   (:nome  IS NULL OR FUNCTION('unaccent', LOWER(u.nome))  LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome  AS string), '%'))))
+                    AND   (:email IS NULL OR FUNCTION('unaccent', LOWER(u.email)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:email AS string), '%'))))
     """)
     Page<Usuario> findAllWithFilters(
             Pageable pageable,
@@ -32,7 +33,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     @Query("""
     SELECT u FROM Usuario u
         WHERE u.ativo = true
-            AND (:nome IS NULL OR LOWER(u.nome) LIKE LOWER(CONCAT('%', CAST(:nome AS string), '%')))
+            AND (:nome IS NULL OR FUNCTION('unaccent', LOWER(u.nome)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome AS string), '%'))))
     ORDER BY u.nome
     """)
     List<Usuario> findForSelect(

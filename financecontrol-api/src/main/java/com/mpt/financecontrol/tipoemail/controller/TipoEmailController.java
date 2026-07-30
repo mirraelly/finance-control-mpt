@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/tipos/emails")
-@Tag(name = "Tipo Email", description = "Gerenciamento de tipos de emails")
+@RequestMapping("/tipos/email")
+@Tag(name = "Tipo Email", description = "Gerenciamento de tipos de email")
 public class TipoEmailController {
 
     private final TipoEmailService service;
@@ -32,7 +32,7 @@ public class TipoEmailController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar tipos de emails", description = "Retorna lista paginada de tipos de emails com filtro por nome")
+    @Operation(summary = "Listar tipos de email", description = "Retorna lista paginada de tipos de email com filtro por nome")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     })
@@ -48,7 +48,7 @@ public class TipoEmailController {
         return service.getAll(pageable, nome);
     }
 
-    @Operation(summary = "Listar para select", description = "Retorna lista simples de tipos de emails (ativo = true)")
+    @Operation(summary = "Listar para select", description = "Retorna lista simples de tipos de email (ativo = true)")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping("/select")
     @PreAuthorize("isAuthenticated()")

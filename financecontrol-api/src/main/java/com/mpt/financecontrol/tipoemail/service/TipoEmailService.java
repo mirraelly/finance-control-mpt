@@ -53,7 +53,7 @@ public class TipoEmailService {
 
     @Transactional
     public TipoEmailResponseDto create(TipoEmailCreateDto dto) {
-        if (repository.existsByNomeIgnoreCase(dto.nome()))
+        if (repository.existsByNomeNormalizado(dto.nome()))
             throw new ConflictException("Já existe um tipo de email com esse nome");
 
         TipoEmail tipo = new TipoEmail();
@@ -64,12 +64,11 @@ public class TipoEmailService {
         return TipoEmailMapper.toResponseDto(repository.save(tipo));
     }
 
-    // PUT: substitui o recurso por completo (nome e ativo são obrigatórios no DTO).
     @Transactional
     public TipoEmailResponseDto update(UUID id, TipoEmailUpdateDto dto) {
         TipoEmail tipo = findById(id);
 
-        repository.findByNomeIgnoreCase(dto.nome())
+        repository.findByNomeNormalizado(dto.nome())
                 .filter(existente -> !existente.getId().equals(id))
                 .ifPresent(e -> {
                     throw new ConflictException("Já existe outro tipo de email com esse nome");

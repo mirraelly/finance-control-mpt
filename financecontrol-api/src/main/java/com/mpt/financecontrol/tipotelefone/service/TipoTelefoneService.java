@@ -53,7 +53,7 @@ public class TipoTelefoneService {
 
     @Transactional
     public TipoTelefoneResponseDto create(TipoTelefoneCreateDto dto) {
-        if (repository.existsByNomeIgnoreCase(dto.nome()))
+        if (repository.existsByNomeNormalizado(dto.nome()))
             throw new ConflictException("Já existe um tipo de telefone com esse nome");
 
         TipoTelefone tipo = new TipoTelefone();
@@ -69,7 +69,7 @@ public class TipoTelefoneService {
     public TipoTelefoneResponseDto update(UUID id, TipoTelefoneUpdateDto dto) {
         TipoTelefone tipo = findById(id);
 
-        repository.findByNomeIgnoreCase(dto.nome())
+        repository.findByNomeNormalizado(dto.nome())
                 .filter(existente -> !existente.getId().equals(id))
                 .ifPresent(e -> {
                     throw new ConflictException("Já existe outro tipo de telefone com esse nome");

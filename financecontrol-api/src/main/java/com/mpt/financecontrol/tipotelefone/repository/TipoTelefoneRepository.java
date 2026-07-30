@@ -15,13 +15,21 @@ import java.util.UUID;
 @Repository
 public interface TipoTelefoneRepository extends JpaRepository<TipoTelefone, UUID> {
 
-    boolean existsByNomeIgnoreCase(String nome);
-
-    Optional<TipoTelefone> findByNomeIgnoreCase(String nome);
+    @Query("""
+        SELECT COUNT(t) > 0 FROM TipoTelefone t
+            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
+    """)
+    boolean existsByNomeNormalizado(@Param("nome") String nome);
 
     @Query("""
         SELECT t FROM TipoTelefone t
-            WHERE (:nome IS NULL OR LOWER(t.nome) LIKE LOWER(CONCAT('%', CAST(:nome AS STRING), '%')))
+            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
+    """)
+    Optional<TipoTelefone> findByNomeNormalizado(@Param("nome") String nome);
+
+    @Query("""
+        SELECT t FROM TipoTelefone t
+            WHERE (:nome IS NULL OR FUNCTION('unaccent', LOWER(t.nome)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome AS string), '%'))))
     """)
     Page<TipoTelefone> findAllWithFilters(Pageable pageable, @Param("nome") String nome);
 

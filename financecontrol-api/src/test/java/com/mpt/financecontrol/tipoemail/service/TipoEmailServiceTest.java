@@ -1,12 +1,12 @@
-package com.mpt.financecontrol.tipotelefone.service;
+package com.mpt.financecontrol.tipoemail.service;
 
 import com.mpt.financecontrol.exceptions.ConflictException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
-import com.mpt.financecontrol.tipotelefone.dtos.TipoTelefoneCreateDto;
-import com.mpt.financecontrol.tipotelefone.dtos.TipoTelefoneResponseDto;
-import com.mpt.financecontrol.tipotelefone.dtos.TipoTelefoneUpdateDto;
-import com.mpt.financecontrol.tipotelefone.entity.TipoTelefone;
-import com.mpt.financecontrol.tipotelefone.repository.TipoTelefoneRepository;
+import com.mpt.financecontrol.tipoemail.dtos.TipoEmailCreateDto;
+import com.mpt.financecontrol.tipoemail.dtos.TipoEmailResponseDto;
+import com.mpt.financecontrol.tipoemail.dtos.TipoEmailUpdateDto;
+import com.mpt.financecontrol.tipoemail.entity.TipoEmail;
+import com.mpt.financecontrol.tipoemail.repository.TipoEmailRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,25 +33,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TipoTelefoneServiceTest {
+class TipoEmailServiceTest {
 
     @Mock
-    private TipoTelefoneRepository repository;
+    private TipoEmailRepository repository;
 
     @InjectMocks
-    private TipoTelefoneService service;
+    private TipoEmailService service;
 
     private UUID id;
-    private TipoTelefone tipo;
+    private TipoEmail tipo;
 
     @BeforeEach
     void setUp() {
         id = UUID.randomUUID();
-        tipo = novoTipo(id, "Celular", true);
+        tipo = novoTipo(id, "Comercial", true);
     }
 
-    private TipoTelefone novoTipo(UUID id, String nome, boolean ativo) {
-        TipoTelefone t = new TipoTelefone();
+    private TipoEmail novoTipo(UUID id, String nome, boolean ativo) {
+        TipoEmail t = new TipoEmail();
         t.setNome(nome);
         t.setAtivo(ativo);
         ReflectionTestUtils.setField(t, "id", id);
@@ -63,7 +63,7 @@ class TipoTelefoneServiceTest {
     @DisplayName("findById: quando existe, retorna a entidade")
     void findById_quandoExiste_retornaEntidade() {
         when(repository.findById(id)).thenReturn(Optional.of(tipo));
-        TipoTelefone resultado = service.findById(id);
+        TipoEmail resultado = service.findById(id);
         assertThat(resultado).isSameAs(tipo);
     }
 
@@ -73,7 +73,7 @@ class TipoTelefoneServiceTest {
         when(repository.findById(id)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.findById(id))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage("Tipo de telefone não encontrado");
+                .hasMessage("Tipo de email não encontrado");
     }
 
     @Test
@@ -81,10 +81,10 @@ class TipoTelefoneServiceTest {
     void findByIdResponse_quandoExiste_retornaDto() {
         when(repository.findById(id)).thenReturn(Optional.of(tipo));
 
-        TipoTelefoneResponseDto resultado = service.findByIdResponse(id);
+        TipoEmailResponseDto resultado = service.findByIdResponse(id);
 
         assertThat(resultado.id()).isEqualTo(id);
-        assertThat(resultado.nome()).isEqualTo("Celular");
+        assertThat(resultado.nome()).isEqualTo("Comercial");
         assertThat(resultado.ativo()).isTrue();
     }
 
@@ -92,33 +92,33 @@ class TipoTelefoneServiceTest {
     @Test
     @DisplayName("create: com nome novo, salva e retorna o DTO")
     void create_comNomeNovo_salvaERetornaDto() {
-        TipoTelefoneCreateDto dto = new TipoTelefoneCreateDto("Comercial", true);
-        when(repository.existsByNomeNormalizado("Comercial")).thenReturn(false);
-        when(repository.save(any(TipoTelefone.class))).thenAnswer(returnsFirstArg());
+        TipoEmailCreateDto dto = new TipoEmailCreateDto("Particular", true);
+        when(repository.existsByNomeNormalizado("Particular")).thenReturn(false);
+        when(repository.save(any(TipoEmail.class))).thenAnswer(returnsFirstArg());
 
-        TipoTelefoneResponseDto resultado = service.create(dto);
+        TipoEmailResponseDto resultado = service.create(dto);
 
-        assertThat(resultado.nome()).isEqualTo("Comercial");
+        assertThat(resultado.nome()).isEqualTo("Particular");
         assertThat(resultado.ativo()).isTrue();
-        verify(repository).save(any(TipoTelefone.class));
+        verify(repository).save(any(TipoEmail.class));
     }
 
     @Test
     @DisplayName("create: sem informar ativo, usa o padrão true")
     void create_semAtivo_usaPadraoTrue() {
-        TipoTelefoneCreateDto dto = new TipoTelefoneCreateDto("Fixo", null);
-        when(repository.existsByNomeNormalizado("Fixo")).thenReturn(false);
-        when(repository.save(any(TipoTelefone.class))).thenAnswer(returnsFirstArg());
+        TipoEmailCreateDto dto = new TipoEmailCreateDto("Financeiro", null);
+        when(repository.existsByNomeNormalizado("Financeiro")).thenReturn(false);
+        when(repository.save(any(TipoEmail.class))).thenAnswer(returnsFirstArg());
 
-        TipoTelefoneResponseDto resultado = service.create(dto);
+        TipoEmailResponseDto resultado = service.create(dto);
         assertThat(resultado.ativo()).isTrue();
     }
 
     @Test
     @DisplayName("create: com nome já existente, lança ConflictException e não salva")
     void create_comNomeExistente_lancaConflict() {
-        TipoTelefoneCreateDto dto = new TipoTelefoneCreateDto("Celular", true);
-        when(repository.existsByNomeNormalizado("Celular")).thenReturn(true);
+        TipoEmailCreateDto dto = new TipoEmailCreateDto("Comercial", true);
+        when(repository.existsByNomeNormalizado("Comercial")).thenReturn(true);
 
         assertThatThrownBy(() -> service.create(dto))
                 .isInstanceOf(ConflictException.class);
@@ -130,21 +130,21 @@ class TipoTelefoneServiceTest {
     @Test
     @DisplayName("update: com dados válidos, atualiza e retorna o DTO")
     void update_comDadosValidos_atualizaERetornaDto() {
-        TipoTelefoneUpdateDto dto = new TipoTelefoneUpdateDto("Comercial", false);
+        TipoEmailUpdateDto dto = new TipoEmailUpdateDto("Particular", false);
         when(repository.findById(id)).thenReturn(Optional.of(tipo));
-        when(repository.findByNomeNormalizado("Comercial")).thenReturn(Optional.empty());
-        when(repository.save(any(TipoTelefone.class))).thenAnswer(returnsFirstArg());
+        when(repository.findByNomeNormalizado("Particular")).thenReturn(Optional.empty());
+        when(repository.save(any(TipoEmail.class))).thenAnswer(returnsFirstArg());
 
-        TipoTelefoneResponseDto resultado = service.update(id, dto);
+        TipoEmailResponseDto resultado = service.update(id, dto);
 
-        assertThat(resultado.nome()).isEqualTo("Comercial");
+        assertThat(resultado.nome()).isEqualTo("Particular");
         assertThat(resultado.ativo()).isFalse();
     }
 
     @Test
     @DisplayName("update: quando não existe, lança NotFoundException e não salva")
     void update_quandoNaoExiste_lancaNotFound() {
-        TipoTelefoneUpdateDto dto = new TipoTelefoneUpdateDto("Comercial", true);
+        TipoEmailUpdateDto dto = new TipoEmailUpdateDto("Particular", true);
         when(repository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.update(id, dto))
@@ -156,10 +156,10 @@ class TipoTelefoneServiceTest {
     @Test
     @DisplayName("update: com nome que já pertence a OUTRO registro, lança ConflictException")
     void update_comNomeDeOutro_lancaConflict() {
-        TipoTelefoneUpdateDto dto = new TipoTelefoneUpdateDto("WhatsApp", true);
-        TipoTelefone outro = novoTipo(UUID.randomUUID(), "WhatsApp", true); // id diferente
+        TipoEmailUpdateDto dto = new TipoEmailUpdateDto("Particular", true);
+        TipoEmail outro = novoTipo(UUID.randomUUID(), "Particular", true); // id diferente
         when(repository.findById(id)).thenReturn(Optional.of(tipo));
-        when(repository.findByNomeNormalizado("WhatsApp")).thenReturn(Optional.of(outro));
+        when(repository.findByNomeNormalizado("Particular")).thenReturn(Optional.of(outro));
 
         assertThatThrownBy(() -> service.update(id, dto))
                 .isInstanceOf(ConflictException.class);
@@ -170,14 +170,14 @@ class TipoTelefoneServiceTest {
     @Test
     @DisplayName("update: mantendo o mesmo nome do próprio registro, não dá conflito")
     void update_comMesmoNome_permite() {
-        TipoTelefoneUpdateDto dto = new TipoTelefoneUpdateDto("Celular", false);
+        TipoEmailUpdateDto dto = new TipoEmailUpdateDto("Comercial", false);
         when(repository.findById(id)).thenReturn(Optional.of(tipo));
-        when(repository.findByNomeNormalizado("Celular")).thenReturn(Optional.of(tipo)); // é ele mesmo
-        when(repository.save(any(TipoTelefone.class))).thenAnswer(returnsFirstArg());
+        when(repository.findByNomeNormalizado("Comercial")).thenReturn(Optional.of(tipo)); // é ele mesmo
+        when(repository.save(any(TipoEmail.class))).thenAnswer(returnsFirstArg());
 
-        TipoTelefoneResponseDto resultado = service.update(id, dto);
+        TipoEmailResponseDto resultado = service.update(id, dto);
 
-        assertThat(resultado.nome()).isEqualTo("Celular");
+        assertThat(resultado.nome()).isEqualTo("Comercial");
         assertThat(resultado.ativo()).isFalse();
     }
 
@@ -186,13 +186,13 @@ class TipoTelefoneServiceTest {
     @DisplayName("getAll: retorna uma página de DTOs")
     void getAll_retornaPaginaDeDtos() {
         Pageable pageable = PageRequest.of(0, 15);
-        Page<TipoTelefone> pagina = new PageImpl<>(List.of(tipo));
+        Page<TipoEmail> pagina = new PageImpl<>(List.of(tipo));
         when(repository.findAllWithFilters(pageable, null)).thenReturn(pagina);
 
-        Page<TipoTelefoneResponseDto> resultado = service.getAll(pageable, null);
+        Page<TipoEmailResponseDto> resultado = service.getAll(pageable, null);
 
         assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getContent().get(0).nome()).isEqualTo("Celular");
+        assertThat(resultado.getContent().get(0).nome()).isEqualTo("Comercial");
     }
 
     @Test
@@ -200,9 +200,9 @@ class TipoTelefoneServiceTest {
     void select_retornaListaDeDtos() {
         when(repository.findForSelect()).thenReturn(List.of(tipo));
 
-        List<TipoTelefoneResponseDto> resultado = service.select();
+        List<TipoEmailResponseDto> resultado = service.select();
 
         assertThat(resultado).hasSize(1);
-        assertThat(resultado.get(0).nome()).isEqualTo("Celular");
+        assertThat(resultado.get(0).nome()).isEqualTo("Comercial");
     }
 }

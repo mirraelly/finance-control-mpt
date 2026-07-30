@@ -15,18 +15,26 @@ import java.util.UUID;
 @Repository
 public interface TipoEmailRepository extends JpaRepository<TipoEmail, UUID> {
 
-    boolean existsByNomeIgnoreCase(String nome);
-
-    Optional<TipoEmail> findByNomeIgnoreCase(String nome);
+    @Query("""
+        SELECT COUNT(t) > 0 FROM TipoEmail t
+            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
+    """)
+    boolean existsByNomeNormalizado(@Param("nome") String nome);
 
     @Query("""
         SELECT t FROM TipoEmail t
-            WHERE (:nome IS NULL OR LOWER(t.nome) LIKE LOWER(CONCAT('%', CAST(:nome AS STRING), '%')))
+            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
+    """)
+    Optional<TipoEmail> findByNomeNormalizado(@Param("nome") String nome);
+
+    @Query("""
+        SELECT t FROM TipoEmail t
+            WHERE (:nome IS NULL OR FUNCTION('unaccent', LOWER(t.nome)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome AS string), '%'))))
     """)
     Page<TipoEmail> findAllWithFilters(Pageable pageable, @Param("nome") String nome);
 
     @Query("SELECT t FROM TipoEmail t "
-            +      "    WHERE t.ativo = true "
-            +      "ORDER BY t.nome")
+    +      "    WHERE t.ativo = true "
+    +      "ORDER BY t.nome")
     List<TipoEmail> findForSelect();
 }

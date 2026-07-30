@@ -9,7 +9,12 @@ spring:
       ddl-auto: create-drop  
 
   liquibase:
-    enabled: false 
+    enabled: false
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:h2-functions.sql
 
 jwt:
   secret: "chave-de-teste-somente-para-testes-com-mais-de-32-bytes" 
