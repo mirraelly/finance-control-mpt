@@ -15,22 +15,29 @@ import java.util.UUID;
 @Repository
 public interface TipoTelefoneRepository extends JpaRepository<TipoTelefone, UUID> {
 
-    @Query("""
-        SELECT COUNT(t) > 0 FROM TipoTelefone t
-            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
-    """)
+    @Query(value = """
+        SELECT count(*) > 0 FROM tipo_telefone t
+            WHERE unaccent(lower(t.nome)) = unaccent(lower(CAST(:nome AS text)))
+    """, nativeQuery = true)
     boolean existsByNomeNormalizado(@Param("nome") String nome);
 
-    @Query("""
-        SELECT t FROM TipoTelefone t
-            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
-    """)
+    @Query(value = """
+        SELECT * FROM tipo_telefone t
+            WHERE unaccent(lower(t.nome)) = unaccent(lower(CAST(:nome AS text)))
+    """, nativeQuery = true)
     Optional<TipoTelefone> findByNomeNormalizado(@Param("nome") String nome);
 
-    @Query("""
-        SELECT t FROM TipoTelefone t
-            WHERE (:nome IS NULL OR FUNCTION('unaccent', LOWER(t.nome)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome AS string), '%'))))
-    """)
+    @Query(value = """
+        SELECT * FROM tipo_telefone t
+            WHERE (CAST(:nome AS text) IS NULL
+                OR unaccent(lower(t.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
+    """,
+    countQuery = """
+        SELECT count(*) FROM tipo_telefone t
+            WHERE (CAST(:nome AS text) IS NULL
+                OR unaccent(lower(t.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
+    """,
+    nativeQuery = true)
     Page<TipoTelefone> findAllWithFilters(Pageable pageable, @Param("nome") String nome);
 
     @Query("SELECT t FROM TipoTelefone t "

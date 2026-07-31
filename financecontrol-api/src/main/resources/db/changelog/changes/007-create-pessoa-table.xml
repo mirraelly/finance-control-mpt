@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="007-create-pessoa-table" author="eduardo">
+
+        <!-- PESSOA -->
+        <createTable tableName="pessoa">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nome" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tipo_pessoa" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_nascimento" type="DATE"/>
+            <column name="cpf" type="VARCHAR(11)"/>
+            <column name="rg" type="VARCHAR(20)"/>
+            <column name="cnh" type="VARCHAR(11)"/>
+            <column name="cnh_categoria" type="VARCHAR(5)"/>
+            <column name="cnh_validade" type="DATE"/>
+            <column name="cnpj" type="VARCHAR(14)"/>
+            <column name="inscricao_estadual" type="VARCHAR(50)"/>
+            <column name="inscricao_municipal" type="VARCHAR(50)"/>
+            <column name="nome_fantasia" type="VARCHAR(255)"/>
+            <column name="razao_social" type="VARCHAR(255)"/>
+            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+            <column name="created_by" type="UUID"/>
+            <column name="updated_by" type="UUID"/>
+        </createTable>
+
+        <!-- TELEFONE -->
+        <createTable tableName="telefone">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pessoa_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tipo_telefone_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="numero" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observacao" type="VARCHAR(255)"/>
+            <column name="principal" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- EMAIL -->
+        <createTable tableName="email">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pessoa_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tipo_email_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observacao" type="VARCHAR(255)"/>
+            <column name="principal" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- ENDERECO -->
+        <createTable tableName="endereco">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pessoa_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tipo_endereco_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cidade_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cep" type="VARCHAR(8)"/>
+            <column name="rua" type="VARCHAR(255)"/>
+            <column name="numero" type="VARCHAR(20)"/>
+            <column name="bairro" type="VARCHAR(100)"/>
+            <column name="complemento" type="VARCHAR(100)"/>
+            <column name="principal" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- FOREIGN KEYS - PESSOA -->
+        <addForeignKeyConstraint
+                baseTableName       ="pessoa"
+                baseColumnNames     ="tenant_id"
+                referencedTableName ="tenant"
+                referencedColumnNames="id"
+                constraintName      ="fk_pessoa_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="pessoa"
+                baseColumnNames     ="created_by"
+                referencedTableName ="usuario"
+                referencedColumnNames="id"
+                constraintName      ="fk_pessoa_created_by"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="pessoa"
+                baseColumnNames     ="updated_by"
+                referencedTableName ="usuario"
+                referencedColumnNames="id"
+                constraintName      ="fk_pessoa_updated_by"/>
+
+        <!-- FOREIGN KEYS - TELEFONE -->
+        <addForeignKeyConstraint
+                baseTableName       ="telefone"
+                baseColumnNames     ="tenant_id"
+                referencedTableName ="tenant"
+                referencedColumnNames="id"
+                constraintName      ="fk_telefone_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="telefone"
+                baseColumnNames     ="pessoa_id"
+                referencedTableName ="pessoa"
+                referencedColumnNames="id"
+                constraintName      ="fk_telefone_pessoa"
+                onDelete            ="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="telefone"
+                baseColumnNames     ="tipo_telefone_id"
+                referencedTableName ="tipo_telefone"
+                referencedColumnNames="id"
+                constraintName      ="fk_telefone_tipo_telefone"/>
+
+        <!-- FOREIGN KEYS - EMAIL -->
+        <addForeignKeyConstraint
+                baseTableName       ="email"
+                baseColumnNames     ="tenant_id"
+                referencedTableName ="tenant"
+                referencedColumnNames="id"
+                constraintName      ="fk_email_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="email"
+                baseColumnNames     ="pessoa_id"
+                referencedTableName ="pessoa"
+                referencedColumnNames="id"
+                constraintName      ="fk_email_pessoa"
+                onDelete            ="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="email"
+                baseColumnNames     ="tipo_email_id"
+                referencedTableName ="tipo_email"
+                referencedColumnNames="id"
+                constraintName      ="fk_email_tipo_email"/>
+
+        <!-- FOREIGN KEYS - ENDERECO -->
+        <addForeignKeyConstraint
+                baseTableName       ="endereco"
+                baseColumnNames     ="tenant_id"
+                referencedTableName ="tenant"
+                referencedColumnNames="id"
+                constraintName      ="fk_endereco_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="endereco"
+                baseColumnNames     ="pessoa_id"
+                referencedTableName ="pessoa"
+                referencedColumnNames="id"
+                constraintName      ="fk_endereco_pessoa"
+                onDelete            ="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="endereco"
+                baseColumnNames     ="tipo_endereco_id"
+                referencedTableName ="tipo_endereco"
+                referencedColumnNames="id"
+                constraintName      ="fk_endereco_tipo_endereco"/>
+
+        <addForeignKeyConstraint
+                baseTableName       ="endereco"
+                baseColumnNames     ="cidade_id"
+                referencedTableName ="cidade"
+                referencedColumnNames="id"
+                constraintName      ="fk_endereco_cidade"/>
+
+        <!-- UNIQUE - CPF/CNPJ POR TENANT -->
+        <addUniqueConstraint
+                tableName      ="pessoa"
+                columnNames    ="tenant_id, cpf"
+                constraintName ="uk_pessoa_tenant_cpf"/>
+
+        <addUniqueConstraint
+                tableName      ="pessoa"
+                columnNames    ="tenant_id, cnpj"
+                constraintName ="uk_pessoa_tenant_cnpj"/>
+
+        <!-- INDICES -->
+        <createIndex tableName="pessoa" indexName="idx_pessoa_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="telefone" indexName="idx_telefone_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="telefone" indexName="idx_telefone_pessoa">
+            <column name="pessoa_id"/>
+        </createIndex>
+
+        <createIndex tableName="email" indexName="idx_email_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="email" indexName="idx_email_pessoa">
+            <column name="pessoa_id"/>
+        </createIndex>
+
+        <createIndex tableName="endereco" indexName="idx_endereco_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="endereco" indexName="idx_endereco_pessoa">
+            <column name="pessoa_id"/>
+        </createIndex>
+
+        <createIndex tableName="endereco" indexName="idx_endereco_cidade">
+            <column name="cidade_id"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="007-add-pessoa-tipo-check" author="eduardo">
+        <sql>
+            ALTER TABLE pessoa
+                ADD CONSTRAINT ck_pessoa_tipo
+                    CHECK (tipo_pessoa IN ('PESSOA_FISICA', 'PESSOA_JURIDICA'));
+        </sql>
+
+        <rollback>
+            <sql>ALTER TABLE pessoa DROP CONSTRAINT ck_pessoa_tipo;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

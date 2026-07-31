@@ -15,22 +15,29 @@ import java.util.UUID;
 @Repository
 public interface TipoEmailRepository extends JpaRepository<TipoEmail, UUID> {
 
-    @Query("""
-        SELECT COUNT(t) > 0 FROM TipoEmail t
-            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
-    """)
+    @Query(value = """
+        SELECT count(*) > 0 FROM tipo_email t
+            WHERE unaccent(lower(t.nome)) = unaccent(lower(CAST(:nome AS text)))
+    """, nativeQuery = true)
     boolean existsByNomeNormalizado(@Param("nome") String nome);
 
-    @Query("""
-        SELECT t FROM TipoEmail t
-            WHERE FUNCTION('unaccent', LOWER(t.nome)) = FUNCTION('unaccent', LOWER(CAST(:nome AS string)))
-    """)
+    @Query(value = """
+        SELECT * FROM tipo_email t
+            WHERE unaccent(lower(t.nome)) = unaccent(lower(CAST(:nome AS text)))
+    """, nativeQuery = true)
     Optional<TipoEmail> findByNomeNormalizado(@Param("nome") String nome);
 
-    @Query("""
-        SELECT t FROM TipoEmail t
-            WHERE (:nome IS NULL OR FUNCTION('unaccent', LOWER(t.nome)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome AS string), '%'))))
-    """)
+    @Query(value = """
+        SELECT * FROM tipo_email t
+            WHERE (CAST(:nome AS text) IS NULL
+                OR unaccent(lower(t.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
+    """,
+    countQuery = """
+        SELECT count(*) FROM tipo_email t
+            WHERE (CAST(:nome AS text) IS NULL
+                OR unaccent(lower(t.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
+    """,
+    nativeQuery = true)
     Page<TipoEmail> findAllWithFilters(Pageable pageable, @Param("nome") String nome);
 
     @Query("SELECT t FROM TipoEmail t "
