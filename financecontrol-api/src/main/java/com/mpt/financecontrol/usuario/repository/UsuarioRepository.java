@@ -17,12 +17,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
     Optional<Usuario> findByEmail(String email);
 
-    @Query("""
-        SELECT u FROM Usuario u
-                WHERE (:tenantId IS NULL OR u.tenant.id = :tenantId)
-                    AND   (:nome  IS NULL OR FUNCTION('unaccent', LOWER(u.nome))  LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome  AS string), '%'))))
-                    AND   (:email IS NULL OR FUNCTION('unaccent', LOWER(u.email)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:email AS string), '%'))))
-    """)
+    @Query(value = """
+        SELECT * FROM usuario u
+                WHERE (CAST(:tenantId AS uuid) IS NULL OR u.tenant_id = CAST(:tenantId AS uuid))
+                    AND   (CAST(:nome  AS text) IS NULL OR unaccent(lower(u.nome))  LIKE unaccent(lower('%' || CAST(:nome  AS text) || '%')))
+                    AND   (CAST(:email AS text) IS NULL OR unaccent(lower(u.email)) LIKE unaccent(lower('%' || CAST(:email AS text) || '%')))
+    """,
+    countQuery = """
+        SELECT count(*) FROM usuario u
+                WHERE (CAST(:tenantId AS uuid) IS NULL OR u.tenant_id = CAST(:tenantId AS uuid))
+                    AND   (CAST(:nome  AS text) IS NULL OR unaccent(lower(u.nome))  LIKE unaccent(lower('%' || CAST(:nome  AS text) || '%')))
+                    AND   (CAST(:email AS text) IS NULL OR unaccent(lower(u.email)) LIKE unaccent(lower('%' || CAST(:email AS text) || '%')))
+    """,
+    nativeQuery = true)
     Page<Usuario> findAllWithFilters(
             Pageable pageable,
             @Param("tenantId") UUID   tenantId,
@@ -30,12 +37,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
             @Param("email")     String email
     );
 
-    @Query("""
-    SELECT u FROM Usuario u
+    @Query(value = """
+    SELECT * FROM usuario u
         WHERE u.ativo = true
-            AND (:nome IS NULL OR FUNCTION('unaccent', LOWER(u.nome)) LIKE FUNCTION('unaccent', LOWER(CONCAT('%', CAST(:nome AS string), '%'))))
+            AND (CAST(:nome AS text) IS NULL OR unaccent(lower(u.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
     ORDER BY u.nome
-    """)
+    """, nativeQuery = true)
     List<Usuario> findForSelect(
             @Param("nome") String nome
     );
