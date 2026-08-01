@@ -7,6 +7,7 @@ import {
   Home01Icon,
   Wallet01Icon,
   Settings01Icon,
+  TradeUpIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -15,4 +16,5 @@ export {
   Home01Icon,
   Wallet01Icon,
   Settings01Icon,
+  TradeUpIcon,
 };

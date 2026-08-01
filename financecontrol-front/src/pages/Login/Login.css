@@ -1,0 +1,184 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  background: #0f204d;
+}
+
+.container-login {
+  width: min(1120px, 100%);
+  min-height: 720px;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 40px;
+}
+
+.login-aside {
+  position: relative;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+}
+
+.div-logo {
+  background: #10b981;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+}
+
+.brand-name,
+.brand-tag {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.brand-tag {
+  color: #10b981;
+}
+
+.aside-content h2 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.05;
+  max-width: 440px;
+}
+
+.aside-content p {
+  margin: 24px 0 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 420px;
+}
+
+.login-card {
+  padding: 48px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-subtitle {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.login-card h1 {
+  margin: 0 0 36px;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: #0f172a;
+}
+
+.login-form {
+  display: grid;
+  gap: 20px;
+}
+
+.login-label {
+  display: grid;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.login-label input {
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.login-label input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.login-error {
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  background: #10b981;
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.login-form button:hover:not(:disabled) {
+  background: #0f766e;
+}
+
+.login-form button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 992px) {
+  .container-login {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .login-aside,
+  .login-card {
+    padding: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    padding: 20px;
+  }
+
+  .login-aside {
+    border-radius: 28px;
+  }
+
+  .login-card {
+    border-radius: 28px;
+  }
+}
