@@ -11,6 +11,14 @@
   --danger: #dc2626;
   --warning: #d97706;
 
+  --color-midnight-blue: #060d1a;
+  --color-rose-quartz-light: #f3ecee;
+  --color-slate-400: #90a1b9;
+
+  --text-slate-50: #fcf9fa;
+
+  --bg-login: #060c17;
+
   --text-primary: #111827;
   --text-secondary: #6b7280;
 
@@ -34,4 +42,6 @@
   --text-secondary: #cbd5e1;
 
   --border: rgba(255, 255, 255, 0.1);
+
+  --bg-login: #060c17;
 }

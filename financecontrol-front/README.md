@@ -30,13 +30,23 @@ git clone <url-do-repositorio>
 cd financecontrol-front
 ```
 
-### 3. Instale as dependências
+### 3. Use a versão correta do Node
+
+> É necessário utilizar o Node.js 22 para rodar este projeto.
+
+Se você usa `nvm`, execute:
+
+```bash
+nvm use 22
+```
+
+### 4. Instale as dependências
 
 ```bash
 npm install
 ```
 
-### 4. Execute o projeto
+### 5. Execute o projeto
 
 ```bash
 npm run dev

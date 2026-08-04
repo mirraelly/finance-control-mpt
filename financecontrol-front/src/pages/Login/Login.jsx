@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HugeiconsIcon, TradeUpIcon } from "../../assets/icons";
+import { HugeiconsIcon, TradeUpIcon, CheckIcon } from "../../assets/icons";
 import authService from "../../services/authService";
 import "./Login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await authService.login({ email, senha });
+      const response = await authService.login({ email, senha, rememberMe });
       localStorage.setItem("financecontrol_token", response.token);
       navigate("/home");
     } catch (err) {
@@ -34,16 +35,23 @@ function Login() {
         <section className="login-aside">
           <div className="brand">
             <div className="div-logo">
-              <HugeiconsIcon icon={TradeUpIcon} size={32} color="#122a4c" />
+              <HugeiconsIcon
+                icon={TradeUpIcon}
+                stroke="2"
+                size={24}
+                color="var(--color-midnight-blue)"
+              />
             </div>
-            <div>
+            <div className="div-brand-name">
               <span className="brand-name">Finance Control</span>
               <span className="brand-tag">MPT</span>
             </div>
           </div>
 
           <div className="aside-content">
-            <h2>Controle total das suas finanças em um só lugar.</h2>
+            <h2 className="aside-content-text">
+              Controle total das suas <span>finanças em um só lugar.</span>
+            </h2>
             <p>
               Dashboards inteligentes, metas e rastreamento de investimentos.
             </p>
@@ -51,38 +59,69 @@ function Login() {
         </section>
 
         <section className="login-card">
-          <span className="login-subtitle">Bem-vindo de volta</span>
-          <h1>Entre na sua conta para continuar.</h1>
+          <div>
+            <div className="login-subtitle">
+              Bem-vindo de volta
+              <span className="hello-emoji">👋</span>
+            </div>
+            <span className="login-subtitle2">
+              Entre na sua conta para continuar.
+            </span>
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            <label className="login-label">
-              <span>E-MAIL</span>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="maria@email.com"
-                required
-              />
-            </label>
+            <form className="login-form" onSubmit={handleSubmit}>
+              <label className="login-label">
+                <span>E-MAIL</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="maria@email.com"
+                  autoComplete="email"
+                  required
+                />
+              </label>
 
-            <label className="login-label">
-              <span>SENHA</span>
-              <input
-                type="password"
-                value={senha}
-                onChange={(event) => setSenha(event.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </label>
+              <label className="login-label">
+                <span>SENHA</span>
+                <input
+                  type="password"
+                  value={senha}
+                  onChange={(event) => setSenha(event.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  required
+                />
+              </label>
 
-            {error && <div className="login-error">{error}</div>}
+              <label className="remember-me-label">
+                <input
+                  type="checkbox"
+                  className="custom-checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
 
-            <button type="submit" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
-            </button>
-          </form>
+                <span className="checkbox-ui">
+                  {rememberMe && (
+                    <HugeiconsIcon
+                      icon={CheckIcon}
+                      size={14}
+                      color="var(--color-midnight-blue)"
+                      stroke="2"
+                    />
+                  )}
+                </span>
+
+                <span>Lembrar de mim</span>
+              </label>
+
+              {error && <div className="login-error">{error}</div>}
+
+              <button type="submit" disabled={loading}>
+                {loading ? "Entrando..." : "Entrar"}
+              </button>
+            </form>
+          </div>
         </section>
       </div>
     </main>
