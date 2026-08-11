@@ -1,0 +1,47 @@
+:root {
+  --font-primary: "Inter", sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --rounded-2xl: 16px;
+  --radius-lg: 20px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --font-size-16: 1rem;
+  --font-size-14: 0.875rem;
+  --font-size-24: 1.5rem;
+  --font-size-30: 1.875rem;
+
+  --font-weight-bold: 700;
+
+  --border-color: #202938;
+
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  --bg-transparent: background-color: #0000;
+
+  --color-gradient-emerald-cyan: linear-gradient(
+    135deg,
+    oklch(68% 0.16 160),
+    oklch(60% 0.13 185)
+  );
+
+  --gradient-deep-ocean:
+    radial-gradient(
+      120% 90% at 85% 10%,
+      oklch(28% 0.06 195/0.75),
+      transparent 60%
+    ),
+    radial-gradient(
+      90% 70% at 0% 100%,
+      oklch(35% 0.09 250/0.5),
+      transparent 60%
+    ),
+    linear-gradient(160deg, oklch(19% 0.04 255), oklch(14% 0.03 258));
+}
