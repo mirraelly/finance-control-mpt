@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 
 public record TipoEnderecoUpdateDto(
 
-        @Schema(description = "Nome do tipo", example = "Endereço")
+        @Schema(description = "Nome do tipo", example = "Residencial")
         @NotBlank(message = "Nome é obrigatório")
         @Size(max = 100, message = "Nome deve ter no máximo 100 caracteres")
         String nome,
