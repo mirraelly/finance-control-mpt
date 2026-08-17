@@ -1,0 +1,265 @@
+@import '../../styles/themes.css';
+
+
+.cadastro-page {
+    min-height: 100vh;
+    background-color: var(--bg-login);
+}
+
+.container-cadastro {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.cadastro-aside {
+    position: relative;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #ffffff;
+    background: var(--gradient-deep-ocean);
+}
+
+
+.div-logo {
+    background-color: #10b981;
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-gradient-emerald-cyan);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+}
+
+
+.div-brand-name {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex-wrap: nowrap;
+    font-family: var(--font-primary);
+    font-size: var(--font-size-14);
+    line-height: 1.25rem;
+    font-weight: var(--font-weight-bold);
+}
+
+.brand-name,
+.brand-tag {
+    display: block;
+    font-weight: var(--font-weight-bold);
+}
+
+.brand-name {
+    color: var(--color-rose-quartz-light);
+}
+
+.brand-tag {
+    color: var(--primary)
+}
+
+
+.aside-content h2 {
+    margin: 0;
+    font-size: var(--font-size-24);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.05;
+    max-width: 440px;
+}
+
+
+h2.aside-content-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aside-content>h2>span {
+    background: var(--color-gradient-emerald-cyan);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.aside-content p {
+    margin: 1rem 0 0;
+    font-size: var(--font-size-14);
+    color: var(--color-slate-400);
+}
+
+.cadastro-card {
+    padding: 3rem 1.25rem;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cadastro-card div {
+    width: 80%;
+}
+
+
+
+
+
+.cadastro-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 10px;
+
+}
+
+
+.cadastro-title{
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    font-size: var(--font-size-24);
+    margin-bottom: 8px;
+    
+}
+.cadastro-card p{
+    display: flex;
+    align-items: center;
+    color: var(--color-slate-400);
+    font-size: var(--font-size-14);
+}
+
+
+
+
+
+
+.cadastro-form {
+    display: grid;
+    margin-top: 4rem;
+    gap: 20px;
+}
+
+.cadastro-label {
+    display: grid;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.cadastro-label span,
+.text-label {
+    color: var(--color-slate-400);
+}
+
+
+.cadastro-label input {
+    width: 100%;
+    padding: 18px 20px;
+    border-radius: var(--rounded-2xl);
+    border: 1px solid var(--border-color);
+    background: var(--bg-transparent);
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+.cadastro-label input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.confirmar-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    color: #d1d5db;
+}
+
+.custom-checkbox {
+    display: none;
+}
+
+.checkbox-ui {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #00d084;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    transition: 0.2s;
+}
+
+.custom-checkbox:checked+.checkbox-ui {
+    background: #00d084;
+}
+
+.confirmar-label .link-destaque{
+    color: var(--primary);
+}
+
+
+.cadastro-form button {
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: var(--rounded-2xl);
+    background: #10b981;
+    color: white;
+    font-size: var(--font-size-16);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+
+.cadastro-form button:hover:not(:disabled) {
+    background: #0f766e;
+}
+
+.cadastro-form button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+
+.cadastro-footer{
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px ;
+}
+.cadastro-footer p{
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
+    color: var(--color-slate-400);
+    font-size: 12px;
+}
+
+.cadastro-footer .link-destaque{
+    color: var(--primary);
+    font-size: 14px;
+}
