@@ -1,13 +1,12 @@
-import "./RecuperarSenha.css";
+import AuthLayout from "../../components/layout/Auth/AuthLayout";
+import ForgotPasswordForm from "../../components/layout/Auth/ForgotPasswordForm";
+import "../Login/Login.css";
 
 function RecuperarSenha() {
   return (
-    <main className="recuperar-page">
-      <div className="recuperar-card">
-        <h2>Recuperar senha</h2>
-        <p>Em breve.</p>
-      </div>
-    </main>
+    <AuthLayout>
+      <ForgotPasswordForm />
+    </AuthLayout>
   );
 }
 
