@@ -1,6 +1,14 @@
 .login-page {
+  position: relative;
   min-height: 100vh;
   background: var(--bg-login);
+}
+
+.auth-theme-toggle {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 2;
 }
 
 .container-login {
@@ -273,6 +281,11 @@ h2.aside-content-text {
 @media (max-width: 640px) {
   .login-page {
     padding: 20px;
+  }
+
+  .auth-theme-toggle {
+    top: 2rem;
+    right: 2rem;
   }
 
   .login-aside {

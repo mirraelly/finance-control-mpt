@@ -1,8 +1,13 @@
 import { HugeiconsIcon, TradeUpIcon } from "../../../assets/icons";
+import ThemeToggle from "../../common/ThemeToggle/ThemeToggle";
 
 function AuthLayout({ children }) {
   return (
     <main className="login-page">
+      <div className="auth-theme-toggle">
+        <ThemeToggle />
+      </div>
+
       <div className="container-login">
         <section className="login-aside">
           <div className="brand">
