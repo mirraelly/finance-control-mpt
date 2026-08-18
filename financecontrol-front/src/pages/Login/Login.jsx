@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { HugeiconsIcon, TradeUpIcon, CheckIcon } from "../../assets/icons";
 import authService from "../../services/authService";
 import "./Login.css";
@@ -93,27 +93,33 @@ function Login() {
                 />
               </label>
 
-              <label className="remember-me-label">
-                <input
-                  type="checkbox"
-                  className="custom-checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
+              <div className="remember-row">
+                <label className="remember-me-label">
+                  <input
+                    type="checkbox"
+                    className="custom-checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
 
-                <span className="checkbox-ui">
-                  {rememberMe && (
-                    <HugeiconsIcon
-                      icon={CheckIcon}
-                      size={14}
-                      color="var(--color-midnight-blue)"
-                      stroke="2"
-                    />
-                  )}
-                </span>
+                  <span className="checkbox-ui">
+                    {rememberMe && (
+                      <HugeiconsIcon
+                        icon={CheckIcon}
+                        size={14}
+                        color="var(--color-midnight-blue)"
+                        stroke="2"
+                      />
+                    )}
+                  </span>
 
-                <span>Lembrar de mim</span>
-              </label>
+                  <span>Lembrar de mim</span>
+                </label>
+
+                <Link to="/recuperar-senha" className="forgot-link">
+                  Esqueceu a senha?
+                </Link>
+              </div>
 
               {error && <div className="login-error">{error}</div>}
 
