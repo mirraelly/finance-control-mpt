@@ -1,31 +1,80 @@
 :root {
+  /* Typography */
   --font-primary: "Inter", sans-serif;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --rounded-2xl: 16px;
-  --radius-lg: 20px;
+  --font-size-14: 0.875rem;
+  --font-size-16: 1rem;
+  --font-size-24: 1.5rem;
+  --font-size-30: 1.875rem;
 
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+  --space-7: 36px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
 
-  --font-size-16: 1rem;
-  --font-size-14: 0.875rem;
-  --font-size-24: 1.5rem;
-  --font-size-30: 1.875rem;
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --rounded-2xl: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
 
-  --font-weight-bold: 700;
-
-  --border-color: #202938;
-
+  /* Shadows */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-auth-card: 0 24px 60px rgba(0, 0, 0, 0.12);
+  --shadow-brand-icon: 0 0 20px rgba(16, 185, 129, 0.35);
+  --shadow-focus-emerald: 0 0 0 4px rgba(16, 185, 129, 0.12);
 
-  --bg-transparent: background-color: #0000;
+  /* Primitive colors */
+  --color-white: #ffffff;
+  --color-transparent: transparent;
 
+  --color-slate-50: #fcf9fa;
+  --color-slate-100: #f8fafc;
+  --color-slate-200: #e5e7eb;
+  --color-slate-300: #d1d5db;
+  --color-slate-400: #90a1b9;
+  --color-slate-500: #6b7280;
+  --color-slate-900: #111827;
+  --color-slate-950: #0f172a;
+
+  --color-navy-900: #0a192f;
+  --color-midnight-blue: #060d1a;
+  --color-midnight-dark: #060c17;
+  --color-rose-quartz-light: #f3ecee;
+
+  --color-emerald-400: #4ade80;
+  --color-emerald-500: #10b981;
+  --color-emerald-accent: #00d084;
+  --color-emerald-600: #16a34a;
+  --color-emerald-700: #047857;
+  --color-teal-700: #0f766e;
+  --color-cyan-400: #22d3ee;
+  --color-blue-500: #3b82f6;
+  --color-red-400: #f87171;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-orange-500: #d97706;
+  --color-amber-400: #fbbf24;
+
+  --color-auth-border: #202938;
+  --color-success-bg: #d1fae5;
+  --color-success-border: #a7f3d0;
+  --color-danger-bg: #fee2e2;
+  --color-danger-border: #fecaca;
+
+  /* Gradients */
   --color-gradient-emerald-cyan: linear-gradient(
     135deg,
     oklch(68% 0.16 160),

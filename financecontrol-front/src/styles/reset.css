@@ -1,4 +1,4 @@
-/* Remove margens e paddings */
+/* Box model */
 *,
 *::before,
 *::after {
@@ -7,19 +7,16 @@
   box-sizing: border-box;
 }
 
-/* Melhora a renderização */
 html {
   font-size: 16px;
   scroll-behavior: smooth;
 }
 
-/* Corpo */
 body {
   min-height: 100vh;
   text-rendering: optimizeLegibility;
 }
 
-/* Imagens */
 img,
 picture,
 svg {
@@ -27,7 +24,6 @@ svg {
   max-width: 100%;
 }
 
-/* Formulários */
 input,
 button,
 textarea,
@@ -38,18 +34,15 @@ select {
   background: none;
 }
 
-/* Botões */
 button {
   cursor: pointer;
 }
 
-/* Links */
 a {
   text-decoration: none;
   color: inherit;
 }
 
-/* Listas */
 ul,
 ol {
   list-style: none;
