@@ -2,11 +2,14 @@ package com.mpt.financecontrol.pessoa.entity;
 
 import com.mpt.financecontrol.baseentity.BaseEntity;
 import com.mpt.financecontrol.pessoa.TipoPessoa;
+import com.mpt.financecontrol.telefone.entity.Telefone;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.usuario.entity.Usuario;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pessoa")
@@ -66,6 +69,9 @@ public class Pessoa extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private Usuario updatedBy;
+
+    @OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY)
+    private List<Telefone> telefones = new ArrayList<>();
 
     @PrePersist
     protected void applyDefaults() {
@@ -206,5 +212,9 @@ public class Pessoa extends BaseEntity {
 
     public void setUpdatedBy(Usuario updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    public List<Telefone> getTelefones() {
+        return telefones;
     }
 }
