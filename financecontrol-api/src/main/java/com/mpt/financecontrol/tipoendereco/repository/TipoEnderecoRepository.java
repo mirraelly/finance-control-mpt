@@ -32,16 +32,16 @@ public interface TipoEnderecoRepository extends JpaRepository<TipoEndereco, UUID
             WHERE (CAST(:nome AS text) IS NULL
                 OR unaccent(lower(t.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
     """,
-            countQuery = """
+    countQuery = """
         SELECT count(*) FROM tipo_endereco t
             WHERE (CAST(:nome AS text) IS NULL
                 OR unaccent(lower(t.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
     """,
-            nativeQuery = true)
+    nativeQuery = true)
     Page<TipoEndereco> findAllWithFilters(Pageable pageable, @Param("nome") String nome);
 
     @Query("SELECT t FROM TipoEndereco t "
-            +      "    WHERE t.ativo = true "
-            +      "ORDER BY t.nome")
+    +      "    WHERE t.ativo = true "
+    +      "ORDER BY t.nome")
     List<TipoEndereco> findForSelect();
 }

@@ -1,0 +1,49 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+
+function ForgotPasswordForm() {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setSubmitted(true);
+  };
+
+  return (
+    <>
+      <div className="login-subtitle">Recuperar senha</div>
+      <span className="login-subtitle2">
+        Informe seu e-mail para receber as instruções de recuperação.
+      </span>
+
+      <form className="login-form" onSubmit={handleSubmit}>
+        <label className="login-label">
+          <span>E-MAIL</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="maria@email.com"
+            autoComplete="email"
+            required
+          />
+        </label>
+
+        {submitted && (
+          <div className="login-success">
+            Se esse e-mail estiver cadastrado, enviaremos as instruções.
+          </div>
+        )}
+
+        <button type="submit">Enviar instruções</button>
+
+        <Link to="/" className="forgot-link auth-back-link">
+          Voltar para o login
+        </Link>
+      </form>
+    </>
+  );
+}
+
+export default ForgotPasswordForm;

@@ -10,6 +10,8 @@ import {
   Settings01Icon,
   TradeUpIcon,
   CheckIcon,
+  Sun03Icon,
+  Moon02Icon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -21,4 +23,6 @@ export {
   Settings01Icon,
   TradeUpIcon,
   CheckIcon,
+  Sun03Icon,
+  Moon02Icon,
 };
