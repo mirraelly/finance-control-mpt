@@ -11,6 +11,7 @@ function Cadastro() {
     const [sobrenome, setSobrenome] = useState("")
     const [email, setEmail] = useState("")
     const [cpf, setCpf] = useState("")
+    const [telefone, setTelefone] = useState("")
     const [senha, setSenha] = useState("")
     const [confirmarSenha, setConfirmarSenha] = useState("")
     const [aceitouTermos, setAceitouTermos] = useState(false)
@@ -105,7 +106,7 @@ function Cadastro() {
                                 </div>
                             )}
                             <label className="cadastro-label">
-                                <span>NOME</span>
+                                <span>NOME <span className="obrigatorio">*</span></span>
                                 <input
                                     type="text"
                                     value={nome}
@@ -116,7 +117,7 @@ function Cadastro() {
                             </label>
 
                             <label className="cadastro-label">
-                                <span>SOBRENOME</span>
+                                <span>SOBRENOME <span className="obrigatorio">*</span></span>
                                 <input
                                     type="text"
                                     value={sobrenome}
@@ -127,7 +128,7 @@ function Cadastro() {
                             </label>
 
                             <label className="cadastro-label">
-                                <span>EMAIL</span>
+                                <span>EMAIL <span className="obrigatorio">*</span></span>
                                 <input
                                     type="email"
                                     value={email}
@@ -139,7 +140,7 @@ function Cadastro() {
                             </label>
 
                             <label className="cadastro-label">
-                                <span>CPF</span>
+                                <span>CPF <span className="obrigatorio">*</span></span>
                                 <input
                                     type="text"
                                     value={cpf}
@@ -152,7 +153,17 @@ function Cadastro() {
                             </label>
 
                             <label className="cadastro-label">
-                                <span>SENHA</span>
+                                <span>TELEFONE</span>
+                                <input
+                                    type="tel"
+                                    value={telefone}
+                                    placeholder="+55 (00) 00000-0000"
+                                    onChange={(event) => setTelefone(event.target.value)}
+                                />
+                            </label>
+
+                            <label className="cadastro-label">
+                                <span>SENHA <span className="obrigatorio">*</span></span>
                                 <input
                                     type="password"
                                     value={senha}
@@ -164,7 +175,7 @@ function Cadastro() {
                             </label>
 
                             <label className="cadastro-label">
-                                <span>CONFIRME A SENHA</span>
+                                <span>CONFIRME A SENHA <span className="obrigatorio">*</span></span>
                                 <input
                                     type="password"
                                     value={confirmarSenha}
