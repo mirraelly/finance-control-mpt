@@ -1,7 +1,7 @@
-@import '../../styles/themes.css';
 
 
 .cadastro-page {
+    position: relative;
     min-height: 100vh;
     background-color: var(--bg-login);
 }
@@ -9,8 +9,17 @@
 .container-cadastro {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1.1fr 1fr;
 }
+
+.auth-theme-toggle {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 2;
+}
+
+
 
 .cadastro-aside {
     position: relative;
@@ -18,20 +27,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: #ffffff;
+    color: var(--color-white);
     background: var(--gradient-deep-ocean);
-}
-
-
-.div-logo {
-    background-color: #10b981;
-    height: 2.25rem;
-    width: 2.25rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-gradient-emerald-cyan);
 }
 
 .brand {
@@ -44,10 +41,19 @@
     width: 42px;
     height: 42px;
     border-radius: 14px;
-    background: #10b981;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+    background: var(--color-emerald-500);
+    box-shadow: var(--shadow-brand-icon);
 }
 
+.div-logo {
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-gradient-emerald-cyan);
+}
 
 .div-brand-name {
     display: flex;
@@ -71,9 +77,8 @@
 }
 
 .brand-tag {
-    color: var(--primary)
+    color: var(--primary);
 }
-
 
 .aside-content h2 {
     margin: 0;
@@ -83,14 +88,13 @@
     max-width: 440px;
 }
 
-
 h2.aside-content-text {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.aside-content>h2>span {
+.aside-content > h2 > span {
     background: var(--color-gradient-emerald-cyan);
     -webkit-background-clip: text;
     background-clip: text;
@@ -104,9 +108,11 @@ h2.aside-content-text {
     color: var(--color-slate-400);
 }
 
+
+
 .cadastro-card {
     padding: 3rem 1.25rem;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+    box-shadow: var(-shadow-auth-card);
     flex: 1 1 0%;
     display: flex;
     flex-direction: column;
@@ -114,13 +120,9 @@ h2.aside-content-text {
     justify-content: center;
 }
 
-.cadastro-card div {
+.cadastro-card > div {
     width: 80%;
 }
-
-
-
-
 
 .cadastro-subtitle {
     display: flex;
@@ -130,27 +132,22 @@ h2.aside-content-text {
     font-weight: 600;
     color: var(--primary);
     margin-bottom: 10px;
-
 }
 
-
-.cadastro-title{
+.cadastro-title {
     display: flex;
     align-items: center;
     color: #ffffff;
     font-size: var(--font-size-24);
     margin-bottom: 8px;
-    
 }
-.cadastro-card p{
+
+.cadastro-descricao {
     display: flex;
     align-items: center;
     color: var(--color-slate-400);
     font-size: var(--font-size-14);
 }
-
-
-
 
 
 
@@ -172,29 +169,56 @@ h2.aside-content-text {
     color: var(--color-slate-400);
 }
 
-
 .cadastro-label input {
     width: 100%;
     padding: 18px 20px;
     border-radius: var(--rounded-2xl);
     border: 1px solid var(--border-color);
     background: var(--bg-transparent);
-    color: #0f172a;
+    color: var(--color-slate-950);
     font-size: 1rem;
 }
 
 .cadastro-label input:focus {
     outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+    border-color: var(--color-emerald-500);
+    box-shadow:  var(--shadow-focus-emerald);
 }
+
+
+.cadastro-error {
+  color: var(--color-red-700);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.cadastro-success {
+  color: var(--color-emerald-700);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.obrigatorio {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+
 
 .confirmar-label {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     cursor: pointer;
-    color: #d1d5db;
+    color: var(--color-slate-300);
+}
+
+.confirmar-label .link-destaque {
+    color: var(--primary);
 }
 
 .custom-checkbox {
@@ -204,21 +228,19 @@ h2.aside-content-text {
 .checkbox-ui {
     width: 18px;
     height: 18px;
-    border: 2px solid #00d084;
+    border: 2px solid var(--color-emerald-accent);
     border-radius: 50%;
     display: grid;
     place-items: center;
-    color: #fff;
+    color:  var(--color-white);
     transition: 0.2s;
 }
 
-.custom-checkbox:checked+.checkbox-ui {
-    background: #00d084;
+.custom-checkbox:checked + .checkbox-ui {
+    background: var(--color-emerald-accent);
 }
 
-.confirmar-label .link-destaque{
-    color: var(--primary);
-}
+
 
 
 .cadastro-form button {
@@ -226,17 +248,16 @@ h2.aside-content-text {
     padding: 18px;
     border: none;
     border-radius: var(--rounded-2xl);
-    background: #10b981;
-    color: white;
+    background: var(--color-emerald-500);
+    color: var(--color-white);
     font-size: var(--font-size-16);
     font-weight: var(--font-weight-bold);
     cursor: pointer;
     transition: background 0.2s ease;
 }
 
-
 .cadastro-form button:hover:not(:disabled) {
-    background: #0f766e;
+    background: var(--color-teal-700);
 }
 
 .cadastro-form button:disabled {
@@ -245,13 +266,16 @@ h2.aside-content-text {
 }
 
 
-.cadastro-footer{
+
+
+.cadastro-footer {
     display: grid;
     align-items: center;
     justify-content: center;
-    margin-top: 8px ;
+    margin-top: 8px;
 }
-.cadastro-footer p{
+
+.cadastro-footer p {
     display: flex;
     justify-content: center;
     margin-top: 2px;
@@ -259,12 +283,39 @@ h2.aside-content-text {
     font-size: 12px;
 }
 
-.cadastro-footer .link-destaque{
+.cadastro-footer .link-destaque {
     color: var(--primary);
     font-size: 14px;
 }
 
-.obrigatorio{
-    color: #ef4444;
-    margin-left: 2px;
+
+@media (max-width: 992px) {
+    .container-cadastro {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .cadastro-aside,
+    .cadastro-card {
+        padding: 36px;
+    }
+}
+
+@media (max-width: 640px) {
+    .cadastro-page {
+        padding: 20px;
+    }
+
+    .auth-theme-toggle {
+        top: 2rem;
+        right: 2rem;
+    }
+
+    .cadastro-aside {
+        border-radius: 28px;
+    }
+
+    .cadastro-card {
+        border-radius: 28px;
+    }
 }
