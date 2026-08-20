@@ -263,3 +263,8 @@ h2.aside-content-text {
     color: var(--primary);
     font-size: 14px;
 }
+
+.obrigatorio{
+    color: #ef4444;
+    margin-left: 2px;
+}
