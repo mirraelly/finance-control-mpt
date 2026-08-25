@@ -1,0 +1,95 @@
+.select-field {
+  --select-background: var(--bg-secondary);
+  --select-color: var(--text-primary);
+  --select-placeholder: var(--text-secondary);
+  --select-border: var(--border);
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--select-background);
+  color: var(--select-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.select-field--bordered {
+  border-color: var(--select-border);
+}
+
+.select-field--shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.select-field--full-width {
+  width: 100%;
+}
+
+.select-field--dark {
+  --select-background: var(--color-midnight-dark);
+  --select-color: var(--color-slate-100);
+  --select-placeholder: var(--color-slate-400);
+  --select-border: var(--color-auth-border);
+}
+
+.select-field--light {
+  --select-background: var(--color-slate-100);
+  --select-color: var(--color-slate-900);
+  --select-placeholder: var(--color-slate-500);
+}
+
+.select-field:focus-within {
+  border-color: var(--color-emerald-500);
+  box-shadow: var(--shadow-focus-emerald);
+}
+
+.select-field select {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: var(--space-3) 0;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  color: var(--select-color);
+  font-size: var(--font-size-14);
+  cursor: pointer;
+}
+
+.select-field select:invalid {
+  color: var(--select-placeholder);
+}
+
+.select-field select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.select-field__label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.select-field__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--select-placeholder);
+}
+
+.select-field__chevron {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  color: var(--select-placeholder);
+  transform: rotate(45deg) translateY(-2px);
+  pointer-events: none;
+}
