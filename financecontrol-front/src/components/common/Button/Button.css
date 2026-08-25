@@ -17,8 +17,12 @@
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-    opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .button--sm {
@@ -89,8 +93,8 @@
 }
 
 .button:disabled {
-  background: #78cbb2;
-  border-color: #78cbb2;
+  background: var(--color-mint-400);
+  border-color: var(--color-mint-400);
   opacity: 1;
   cursor: not-allowed;
 }
