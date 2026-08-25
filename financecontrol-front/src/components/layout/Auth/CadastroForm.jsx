@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../../../services/authService";
 import { HugeiconsIcon, CheckIcon } from "../../../assets/icons";
+import Modal from "../../common/Modal/Modal";
+import TermosServico from "../../common/Legal/TermosServico";
+import PoliticaPrivacidade from "../../common/Legal/PoliticaPrivacidade";
 
 function CadastroForm() {
     const [nome, setNome] = useState("")
@@ -12,6 +15,8 @@ function CadastroForm() {
     const [senha, setSenha] = useState("")
     const [confirmarSenha, setConfirmarSenha] = useState("")
     const [aceitouTermos, setAceitouTermos] = useState(false)
+    const [termosAberto, setTermosAberto] = useState(false)
+    const [privacidadeAberta, setPrivacidadeAberta] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const [sucesso, setSucesso] = useState("")
@@ -154,27 +159,37 @@ function CadastroForm() {
                     />
                 </label>
 
-                <label className="confirmar-label">
-                    <input
-                        type="checkbox"
-                        className="custom-checkbox"
-                        checked={aceitouTermos}
-                        onChange={(ev) => setAceitouTermos(ev.target.checked)}
-                    />
-                    <span className="checkbox-ui">
-                        {aceitouTermos && (
-                            <HugeiconsIcon
-                                icon={CheckIcon}
-                                size={14}
-                                color="var(--color-midnight-blue)"
-                                stroke="2"
-                            />
-                        )}
-                    </span>
+                <div className="confirmar-label">
+                    <label>
+                        <input
+                            type="checkbox"
+                            className="custom-checkbox"
+                            checked={aceitouTermos}
+                            onChange={(ev) => setAceitouTermos(ev.target.checked)}
+                        />
+                        <span className="checkbox-ui">
+                            {aceitouTermos && (
+                                <HugeiconsIcon
+                                    icon={CheckIcon}
+                                    size={14}
+                                    color="var(--color-midnight-blue)"
+                                    stroke="2"
+                                />
+                            )}
+                        </span>
+                    </label>
+
                     <span>
-                        Concordo com os <Link to="/termos" className="link-destaque">termos de serviço</Link> e a <Link to="/privacidade" className="link-destaque">política de privacidade</Link>
+                        Concordo com os{" "}
+                        <span className="link-destaque" onClick={() => setTermosAberto(true)}>
+                            termos de serviço
+                        </span>
+                        {" "}e a{" "}
+                        <span className="link-destaque" onClick={() => setPrivacidadeAberta(true)}>
+                            política de privacidade
+                        </span>
                     </span>
-                </label>
+                </div>
 
                 {error && <div className="cadastro-error">{error}</div>}
                 {sucesso && <div className="cadastro-sucess">{sucesso}</div>}
@@ -188,6 +203,15 @@ function CadastroForm() {
                 <p>Protegido por criptografia de 256 bits. Leia nossa política de dados.</p>
                 <p>Já tem uma conta? <Link to="/" className="link-destaque">Entrar</Link></p>
             </footer>
+
+
+            <Modal isOpen={termosAberto} onClose={() => setTermosAberto(false)} title="Termos de Serviço">
+                <TermosServico />
+            </Modal>
+
+            <Modal isOpen={privacidadeAberta} onClose={() => setPrivacidadeAberta(false)} title="Política de Privacidade">
+                <PoliticaPrivacidade />
+            </Modal>
         </div>
     )
 }
