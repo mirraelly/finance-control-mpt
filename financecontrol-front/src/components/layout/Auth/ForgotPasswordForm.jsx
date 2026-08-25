@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import Button from "../../common/Button/Button";
 
 function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -36,7 +37,9 @@ function ForgotPasswordForm() {
           </div>
         )}
 
-        <button type="submit">Enviar instruções</button>
+        <Button type="submit" fullWidth size="lg" disabled={!email.trim()}>
+          Enviar instruções
+        </Button>
 
         <Link to="/" className="forgot-link auth-back-link">
           Voltar para o login
