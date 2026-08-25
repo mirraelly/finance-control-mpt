@@ -1,5 +1,4 @@
 :root {
-  /* Typography */
   --font-primary: "Inter", sans-serif;
 
   --font-size-14: 0.875rem;
@@ -32,7 +31,6 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
 
-  /* Shadows */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-auth-card: 0 24px 60px rgba(0, 0, 0, 0.12);
   --shadow-brand-icon: 0 0 20px rgba(16, 185, 129, 0.35);
@@ -40,7 +38,6 @@
   --shadow-card-lg:
     0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
 
-  /* Primitive colors */
   --color-white: #ffffff;
   --color-transparent: transparent;
 
