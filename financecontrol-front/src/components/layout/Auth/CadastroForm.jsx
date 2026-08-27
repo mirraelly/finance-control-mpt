@@ -5,6 +5,9 @@ import { HugeiconsIcon, CheckIcon } from "../../../assets/icons";
 import Modal from "../../common/Modal/Modal";
 import TermosServico from "../../common/Legal/TermosServico";
 import PoliticaPrivacidade from "../../common/Legal/PoliticaPrivacidade";
+import Input from '../../common/Input/Input'
+import Button from '../../common/Button/Button'
+
 
 function CadastroForm() {
     const [nome, setNome] = useState("")
@@ -80,84 +83,77 @@ function CadastroForm() {
             </p>
 
             <form className="cadastro-form" onSubmit={handleSubmit}>
-                <label className="cadastro-label">
-                    <span>NOME <span className="obrigatorio">*</span></span>
-                    <input
-                        type="text"
-                        value={nome}
-                        placeholder=" Maria"
-                        onChange={(event) => setNome(event.target.value)}
-                        required
-                    />
-                </label>
+                <Input
+                    label={<>NOME <span className="obrigatorio">*</span></>}
+                    id="nome"
+                    type="text"
+                    value={nome}
+                    placeholder=" Maria"
+                    onChange={(event) => setNome(event.target.value)}
+                    required
+                />
 
-                <label className="cadastro-label">
-                    <span>SOBRENOME <span className="obrigatorio">*</span></span>
-                    <input
-                        type="text"
-                        value={sobrenome}
-                        placeholder=" Silva"
-                        onChange={(event) => setSobrenome(event.target.value)}
-                        required
-                    />
-                </label>
+                <Input
+                    label={<>SOBRENOME <span className="obrigatorio">*</span></>}
+                    id="sobrenome"
+                    type="text"
+                    value={sobrenome}
+                    placeholder=" Silva"
+                    onChange={(event) => setSobrenome(event.target.value)}
+                    required
+                />
 
-                <label className="cadastro-label">
-                    <span>EMAIL <span className="obrigatorio">*</span></span>
-                    <input
-                        type="email"
-                        value={email}
-                        placeholder=" Mariasilva@email.com"
-                        onChange={(event) => setEmail(event.target.value)}
-                        required
-                    />
-                    <span>Enviaremos um link de confirmação para este endereço.</span>
-                </label>
+                <Input
+                    label={<>EMAIL <span className="obrigatorio">*</span></>}
+                    id="email"
+                    type="email"
+                    value={email}
+                    placeholder=" Mariasilva@email.com"
+                    onChange={(event) => setEmail(event.target.value)}
+                    required
+                />
+                <span>Enviaremos um link de confirmação para este endereço.</span>
 
-                <label className="cadastro-label">
-                    <span>CPF <span className="obrigatorio">*</span></span>
-                    <input
-                        type="text"
-                        value={cpf}
-                        placeholder="000.000.000-00"
-                        onChange={(event) => setCpf(event.target.value)}
-                        required
-                    />
-                    <span>Usado apenas para verificar sua identidade. Nunca compartilhado.</span>
-                </label>
+                <Input
+                    label={<>CPF <span className="obrigatorio">*</span></>}
+                    id="cpf"
+                    type="text"
+                    value={cpf}
+                    placeholder="000.000.000-00"
+                    onChange={(event) => setCpf(event.target.value)}
+                    required
+                />
+                <span>Usado apenas para verificar sua identidade. Nunca compartilhado.</span>
 
-                <label className="cadastro-label">
-                    <span>TELEFONE</span>
-                    <input
-                        type="tel"
-                        value={telefone}
-                        placeholder="+55 (00) 00000-0000"
-                        onChange={(event) => setTelefone(event.target.value)}
-                    />
-                </label>
+                <Input
+                    label="TELEFONE"
+                    id="telefone"
+                    type="tel"
+                    value={telefone}
+                    placeholder="+55 (00) 00000-0000"
+                    onChange={(event) => setTelefone(event.target.value)}
+                />
 
-                <label className="cadastro-label">
-                    <span>SENHA <span className="obrigatorio">*</span></span>
-                    <input
-                        type="password"
-                        value={senha}
-                        placeholder="Digite aqui sua senha"
-                        onChange={(event) => setSenha(event.target.value)}
-                        required
-                    />
-                    <span>Use 8+ caracteres com um número e um símbolo.</span>
-                </label>
+                <Input
+                    label={<>SENHA <span className="obrigatorio">*</span></>}
+                    id="senha"
+                    type="password"
+                    value={senha}
+                    placeholder="Digite aqui sua senha"
+                    onChange={(event) => setSenha(event.target.value)}
+                    required
+                />
+                <span>Use 8+ caracteres com um número e um símbolo.</span>
 
-                <label className="cadastro-label">
-                    <span>CONFIRME A SENHA <span className="obrigatorio">*</span></span>
-                    <input
-                        type="password"
-                        value={confirmarSenha}
-                        placeholder="Confirme aqui a sua senha"
-                        onChange={(event) => setConfirmarSenha(event.target.value)}
-                        required
-                    />
-                </label>
+                <Input
+                    label={<>CONFIRME A SENHA <span className="obrigatorio">*</span></>}
+                    id="confirmarSenha"
+                    type="password"
+                    value={confirmarSenha}
+                    placeholder="Confirme aqui a sua senha"
+                    onChange={(event) => setConfirmarSenha(event.target.value)}
+                    required
+                />
 
                 <div className="confirmar-label">
                     <label>
@@ -194,9 +190,9 @@ function CadastroForm() {
                 {error && <div className="cadastro-error">{error}</div>}
                 {sucesso && <div className="cadastro-sucess">{sucesso}</div>}
 
-                <button type="submit" disabled={loading}>
+                <Button type="submit" variant="primary" fullWidth disabled={loading}>
                     {loading ? 'Cadastrando..' : 'Cadastrar'}
-                </button>
+                </Button>
             </form>
 
             <footer className="cadastro-footer">
