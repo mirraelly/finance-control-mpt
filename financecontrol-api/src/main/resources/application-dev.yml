@@ -59,3 +59,6 @@ app:
     email: ${SUPERADMIN_EMAIL}
     password: ${SUPERADMIN_PASSWORD}
     nome: ${SUPERADMIN_NAME}
+
+viacep:
+  url: https://viacep.com.br/ws

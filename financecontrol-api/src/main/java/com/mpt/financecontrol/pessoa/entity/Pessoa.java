@@ -1,6 +1,7 @@
 package com.mpt.financecontrol.pessoa.entity;
 
 import com.mpt.financecontrol.baseentity.BaseEntity;
+import com.mpt.financecontrol.endereco.entity.Endereco;
 import com.mpt.financecontrol.pessoa.TipoPessoa;
 import com.mpt.financecontrol.telefone.entity.Telefone;
 import com.mpt.financecontrol.tenant.entity.Tenant;
@@ -72,6 +73,9 @@ public class Pessoa extends BaseEntity {
 
     @OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY)
     private List<Telefone> telefones = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pessoa", fetch = FetchType.LAZY)
+    private List<Endereco> enderecos = new ArrayList<>();
 
     @PrePersist
     protected void applyDefaults() {
@@ -216,5 +220,9 @@ public class Pessoa extends BaseEntity {
 
     public List<Telefone> getTelefones() {
         return telefones;
+    }
+
+    public List<Endereco> getEnderecos() {
+        return enderecos;
     }
 }
