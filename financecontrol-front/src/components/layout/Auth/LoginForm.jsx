@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HugeiconsIcon, CheckIcon } from "../../../assets/icons";
 import authService from "../../../services/authService";
+import Button from "../../common/Button/Button";
+import Input from "../../common/Input/Input";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -39,29 +41,31 @@ function LoginForm() {
       </span>
 
       <form className="login-form" onSubmit={handleSubmit}>
-        <label className="login-label">
-          <span>E-MAIL</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="maria@email.com"
-            autoComplete="email"
-            required
-          />
-        </label>
+        <Input
+          id="login-email"
+          label="E-MAIL"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="maria@email.com"
+          autoComplete="email"
+          theme="dark"
+          fullWidth
+          required
+        />
 
-        <label className="login-label">
-          <span>SENHA</span>
-          <input
-            type="password"
-            value={senha}
-            onChange={(event) => setSenha(event.target.value)}
-            placeholder="••••••••"
-            autoComplete="current-password"
-            required
-          />
-        </label>
+        <Input
+          id="login-password"
+          label="SENHA"
+          type="password"
+          value={senha}
+          onChange={(event) => setSenha(event.target.value)}
+          placeholder="••••••••"
+          autoComplete="current-password"
+          theme="dark"
+          fullWidth
+          required
+        />
 
         <div className="remember-row">
           <label className="remember-me-label">
@@ -93,9 +97,9 @@ function LoginForm() {
 
         {error && <div className="login-error">{error}</div>}
 
-        <button type="submit" disabled={loading}>
+        <Button type="submit" fullWidth size="lg" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}
-        </button>
+        </Button>
       </form>
     </>
   );
