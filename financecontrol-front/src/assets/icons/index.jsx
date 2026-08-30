@@ -12,6 +12,7 @@ import {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  MultiplicationSignIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -25,4 +26,5 @@ export {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  MultiplicationSignIcon,
 };
