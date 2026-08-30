@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.pessoa.mapper;
 
+import com.mpt.financecontrol.endereco.mapper.EnderecoMapper;
 import com.mpt.financecontrol.pessoa.dtos.PessoaResponseDto;
 import com.mpt.financecontrol.pessoa.entity.Pessoa;
 import com.mpt.financecontrol.telefone.mapper.TelefoneMapper;
@@ -26,6 +27,7 @@ public class PessoaMapper {
                 pessoa.getRazaoSocial(),
                 pessoa.getAtivo(),
                 TelefoneMapper.toResponseDtoList(pessoa.getTelefones()),
+                EnderecoMapper.toResponseDtoList(pessoa.getEnderecos()),
                 pessoa.getCreatedAt(),
                 pessoa.getUpdatedAt()
         );

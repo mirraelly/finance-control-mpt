@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.pessoa.dtos;
 
+import com.mpt.financecontrol.endereco.dtos.EnderecoItemDto;
 import com.mpt.financecontrol.pessoa.TipoPessoa;
 import com.mpt.financecontrol.telefone.dtos.TelefoneItemDto;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,5 +38,8 @@ public record PessoaUpdateDto(
         Boolean ativo,
 
         @Schema(description = "Telefones da pessoa")
-        List<@Valid TelefoneItemDto> telefones
+        List<@Valid TelefoneItemDto> telefones,
+
+        @Schema(description = "Endereços da pessoa")
+        List<@Valid EnderecoItemDto> enderecos
 ) {}

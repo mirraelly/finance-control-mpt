@@ -25,3 +25,6 @@ app:
 logging:
   level:
     root: WARN
+
+viacep:
+  url: https://viacep.com.br/ws

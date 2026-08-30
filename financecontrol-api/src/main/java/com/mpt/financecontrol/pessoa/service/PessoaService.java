@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.pessoa.service;
 
+import com.mpt.financecontrol.endereco.service.EnderecoService;
 import com.mpt.financecontrol.exceptions.ConflictException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
 import com.mpt.financecontrol.exceptions.UnauthorizedException;
@@ -29,15 +30,18 @@ public class PessoaService {
     private final PessoaRepository  pessoaRepository;
     private final UsuarioRepository usuarioRepository;
     private final TelefoneService   telefoneService;
+    private final EnderecoService   enderecoService;
 
     public PessoaService(
             PessoaRepository    pessoaRepository,
             UsuarioRepository   usuarioRepository,
-            TelefoneService     telefoneService
+            TelefoneService     telefoneService,
+            EnderecoService     enderecoService
     ) {
         this.pessoaRepository   = pessoaRepository;
         this.usuarioRepository  = usuarioRepository;
         this.telefoneService    = telefoneService;
+        this.enderecoService    = enderecoService;
     }
 
     @Transactional(readOnly = true)
@@ -104,6 +108,7 @@ public class PessoaService {
 
         pessoaRepository.save(pessoa);
         telefoneService.sincronizarTelefones(pessoa, tenant, dto.telefones());
+        enderecoService.sincronizarEnderecos(pessoa, tenant, dto.enderecos());
 
         return PessoaMapper.toResponseDto(pessoa);
     }
@@ -136,6 +141,7 @@ public class PessoaService {
 
         pessoaRepository.saveAndFlush(pessoa);
         telefoneService.sincronizarTelefones(pessoa, tenant, dto.telefones());
+        enderecoService.sincronizarEnderecos(pessoa, tenant, dto.enderecos());
 
         return PessoaMapper.toResponseDto(pessoa);
     }
