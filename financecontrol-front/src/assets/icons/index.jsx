@@ -13,6 +13,12 @@ import {
   Sun03Icon,
   Moon02Icon,
   MultiplicationSignIcon,
+  Upload01Icon,
+  ArrowDownBigIcon,
+  ArrowLeft01Icon,
+  ArrowUpBigIcon,
+  ArrowDown01Icon,
+  Calendar03Icon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -26,5 +32,11 @@ export {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  ArrowLeft01Icon,
   MultiplicationSignIcon,
+  Upload01Icon,
+  ArrowDownBigIcon,
+  ArrowUpBigIcon,
+  ArrowDown01Icon,
+  Calendar03Icon,
 };

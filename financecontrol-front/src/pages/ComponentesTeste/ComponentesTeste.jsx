@@ -13,6 +13,7 @@ import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Select from "../../components/common/Select";
 import ThemeToggle from "../../components/common/ThemeToggle/ThemeToggle";
+import NewTransactionModal from "../../components/transaction/NewTransactionModal";
 import "./ComponentesTeste.css";
 
 const categoryOptions = [
@@ -38,6 +39,11 @@ function ComponentesTeste() {
   const [name, setName] = useState("Maria Silva");
   const [category, setCategory] = useState("");
   const [showFullPageLoading, setShowFullPageLoading] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+
+  const handleCreateTransaction = (transaction) => {
+    console.log("Nova transação:", transaction);
+  };
 
   return (
     <main className="component-lab">
@@ -63,7 +69,9 @@ function ComponentesTeste() {
         >
           <div className="component-lab__stack">
             <div className="component-lab__row">
-              <Button>Principal</Button>
+              <Button onClick={() => setShowTransactionModal(true)}>
+                Principal
+              </Button>
               <Button variant="secondary">Secundário</Button>
               <Button variant="outline">Outline</Button>
               <Button variant="ghost">Ghost</Button>
@@ -191,6 +199,13 @@ function ComponentesTeste() {
           </button>
         </div>
       )}
+
+      <NewTransactionModal
+        isOpen={showTransactionModal}
+        onClose={() => setShowTransactionModal(false)}
+        onSubmit={handleCreateTransaction}
+        theme="auto"
+      />
     </main>
   );
 }
