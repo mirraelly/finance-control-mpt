@@ -19,6 +19,13 @@
 
   --border: var(--color-slate-200);
   --border-color: var(--color-auth-border);
+
+  /* Modal */
+  --modal-background: var(--color-surface-light);
+  --modal-title: var(--color-slate-900);
+  --modal-text: var(--color-slate-600);
+  --modal-close: var(--color-slate-500);
+  --modal-overlay: rgba(15, 23, 42, 0.45);
 }
 
 [data-theme="dark"] {
@@ -42,4 +49,11 @@
 
   --border: rgba(255, 255, 255, 0.1);
   --border-color: var(--color-auth-border);
+
+  /* Modal */
+  --modal-background: var(--gradient-deep-ocean);
+  --modal-title: var(--color-rose-quartz-light);
+  --modal-text: var(--color-slate-400);
+  --modal-close: var(--color-slate-400);
+  --modal-overlay: rgba(0, 0, 0, 0.6);
 }
