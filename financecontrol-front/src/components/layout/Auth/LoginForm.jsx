@@ -100,6 +100,13 @@ function LoginForm() {
         <Button type="submit" fullWidth size="lg" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}
         </Button>
+
+        <div className="register-link">
+          <span>Não tem conta?</span>
+          <Link to="/cadastro" className="forgot-link">
+            Cadastre-se
+          </Link>
+        </div>
       </form>
     </>
   );

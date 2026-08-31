@@ -13,7 +13,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/Cadastro" element={<Cadastro />} />
+        <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         <Route path="/componentes-teste" element={<ComponentesTeste />} />
         <Route path="*" element={<NotFound />} />
