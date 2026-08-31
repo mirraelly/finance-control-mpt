@@ -154,7 +154,7 @@ function NewTransactionModal({
               theme={theme}
               height="40px"
               fullWidth
-              placeholder=""
+              placeholder="Escolha"
             ></Select>
 
             <Input
@@ -196,7 +196,7 @@ function NewTransactionModal({
               theme={theme}
               fullWidth
               required
-              placeholder=""
+              placeholder="Selecione uma categoria"
               dropdownPosition="top"
             />
 
