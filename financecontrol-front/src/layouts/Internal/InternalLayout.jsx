@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+
 import { HugeiconsIcon, Menu01Icon } from "../../assets/icons";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
+
 import "./InternalLayout.css";
 
 function InternalLayout() {
@@ -41,7 +43,7 @@ function InternalLayout() {
         />
       )}
 
-      <main className="app-layout__main">
+      <div className="app-layout__content">
         <button
           type="button"
           className="app-layout__mobile-menu"
@@ -51,8 +53,12 @@ function InternalLayout() {
           <HugeiconsIcon icon={Menu01Icon} size={24} strokeWidth={2} />
         </button>
 
-        <Outlet />
-      </main>
+        <header className="app-layout__header">Header</header>
+
+        <main className="app-layout__main">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

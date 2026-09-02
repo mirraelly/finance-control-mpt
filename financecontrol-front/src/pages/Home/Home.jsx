@@ -1,15 +1,9 @@
-import { HugeiconsIcon, SaveMoneyDollarIcon } from "../../assets/icons";
+import "./Home.css";
 
 function Home() {
   return (
     <main>
-      <HugeiconsIcon
-        icon={SaveMoneyDollarIcon}
-        size={72}
-        color="var(--primary)"
-      />
-
-      <h1>Finance Control MPT</h1>
+      <h1 className="title">Teste</h1>
     </main>
   );
 }
