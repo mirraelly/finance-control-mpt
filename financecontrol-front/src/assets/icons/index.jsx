@@ -22,6 +22,7 @@ import {
   ArrowUpBigIcon,
   ArrowDown01Icon,
   Calendar03Icon,
+  Menu01Icon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -45,4 +46,5 @@ export {
   ArrowUpBigIcon,
   ArrowDown01Icon,
   Calendar03Icon,
+  Menu01Icon,
 };

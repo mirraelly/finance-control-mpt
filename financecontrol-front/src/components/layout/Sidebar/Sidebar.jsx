@@ -7,6 +7,7 @@ import {
   Target01Icon,
   Settings01Icon,
 } from "../../../assets/icons";
+
 import "./Sidebar.css";
 
 const menuItems = [
@@ -37,15 +38,28 @@ const menuItems = [
   },
 ];
 
-function Sidebar({ collapsed = false, onToggle }) {
+function Sidebar({
+  collapsed = false,
+  mobileOpen = false,
+  onToggle,
+  onCloseMobile,
+}) {
+  const isCompact = collapsed && !mobileOpen;
+
   return (
-    <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""}`}>
+    <aside
+      className={`
+        sidebar
+        ${isCompact ? "sidebar--collapsed" : ""}
+        ${mobileOpen ? "sidebar--mobile-open" : ""}
+      `}
+    >
       <div className="sidebar__brand">
         <button
           type="button"
           className="sidebar__brand-button"
           onClick={onToggle}
-          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          aria-label={isCompact ? "Expandir menu" : "Recolher menu"}
         >
           <HugeiconsIcon
             icon={TradeUpIcon}
@@ -55,7 +69,7 @@ function Sidebar({ collapsed = false, onToggle }) {
           />
         </button>
 
-        {!collapsed && (
+        {!isCompact && (
           <div className="sidebar__brand-name">
             <span className="brand-name">Finance Control</span>
             <span className="brand-tag">MPT</span>
@@ -69,14 +83,15 @@ function Sidebar({ collapsed = false, onToggle }) {
             <a
               key={item.path}
               href={item.path}
+              onClick={onCloseMobile}
               className="sidebar__nav-item"
-              title={collapsed ? item.label : undefined}
+              title={isCompact ? item.label : undefined}
             >
               <span className="sidebar__nav-icon">
                 <HugeiconsIcon icon={item.icon} size={20} strokeWidth={2} />
               </span>
 
-              {!collapsed && (
+              {!isCompact && (
                 <span className="sidebar__nav-label">{item.label}</span>
               )}
             </a>
@@ -85,25 +100,10 @@ function Sidebar({ collapsed = false, onToggle }) {
       </nav>
 
       <div className="sidebar__bottom">
-        {/* <div className="sidebar__user">
-          <div
-            className="sidebar__user-avatar"
-            title={collapsed ? "Ana Silva" : undefined}
-          >
-            A
-          </div>
-
-          {!collapsed && (
-            <div className="sidebar__user-info">
-              <strong>Ana Silva</strong>
-              <span>Plano Pro</span>
-            </div>
-          )}
-        </div> */}
-
         <div className="sidebar__footer">
           <span className="sidebar__version">v1.0.0</span>
-          {!collapsed && (
+
+          {!isCompact && (
             <span className="sidebar__copyright">©2026 NossoGrupo</span>
           )}
         </div>
