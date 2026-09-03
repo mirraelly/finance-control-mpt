@@ -1,0 +1,149 @@
+/* Container Principal (Dark Mode) */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #0b131b;
+  border: 1px solid #16222f;
+  border-radius: 20px;
+}
+
+/* Lado Esquerdo */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.title-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.header-trend-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: #0d2822;
+  border-radius: 50%;
+}
+
+.title-date-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.header-date {
+  font-size: 0.85rem;
+  color: #8292a1;
+}
+
+/* Lado Direito */
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Barra de Busca (Ajustado) */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: #121e2b;
+  border: 1px solid #1c2d3d;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  width: 260px;
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.875rem;
+  color: #ffffff;
+  width: 100%;
+}
+
+.search-box input::placeholder {
+  color: #8292a1;
+}
+
+.search-icon {
+  color: #8292a1;
+}
+
+/* Botões e Ações */
+.controls-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-transaction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #00ca82;
+  color: #051a14;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 202, 130, 0.25);
+}
+
+.plus-icon {
+  font-weight: bold;
+}
+
+.btn-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #121e2b;
+  border: 1px solid #1c2d3d;
+  padding: 0.6rem;
+  border-radius: 50%;
+  color: #ffffff;
+  width: 42px;
+  height: 42px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background-color: #00ca82;
+  border-radius: 50%;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  background-color: #1a423a;
+  color: #00ca82;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid #205c50;
+}
