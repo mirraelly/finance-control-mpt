@@ -12,6 +12,8 @@ import {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  Search01Icon,
+  Notification01Icon
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -25,4 +27,6 @@ export {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  Search01Icon,
+  Notification01Icon
 };
