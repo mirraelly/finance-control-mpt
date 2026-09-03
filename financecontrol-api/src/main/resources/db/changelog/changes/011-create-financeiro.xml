@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="011-create-financeiro" author="eduardo">
+
+        <createTable tableName="conta_financeira">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nome" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <createTable tableName="forma_pagamento">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nome" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conta_financeira_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_financeira"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_financeira_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="forma_pagamento"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_forma_pagamento_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="forma_pagamento"
+                baseColumnNames      ="conta_financeira_id"
+                referencedTableName  ="conta_financeira"
+                referencedColumnNames="id"
+                constraintName       ="fk_forma_pagamento_conta_financeira"/>
+
+        <addUniqueConstraint
+                tableName      ="conta_financeira"
+                columnNames    ="tenant_id, nome"
+                constraintName ="uk_conta_financeira_tenant_nome"/>
+
+        <addUniqueConstraint
+                tableName      ="forma_pagamento"
+                columnNames    ="tenant_id, nome"
+                constraintName ="uk_forma_pagamento_tenant_nome"/>
+
+        <createIndex tableName="conta_financeira" indexName="idx_conta_financeira_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="forma_pagamento" indexName="idx_forma_pagamento_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="forma_pagamento" indexName="idx_forma_pagamento_conta_financeira">
+            <column name="conta_financeira_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

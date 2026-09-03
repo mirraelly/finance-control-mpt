@@ -15,4 +15,8 @@
     <include file="db/changelog/changes/008-add-pessoa-unique-constraints.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/009-insert-estados.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/010-alter-endereco-cidade-nullable.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/011-create-financeiro.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/012-create-categoria.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/013-create-conta-pagar.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/014-create-conta-receber.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
