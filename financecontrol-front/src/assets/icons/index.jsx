@@ -12,6 +12,17 @@ import {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  Chart01Icon,
+  Target01Icon,
+  Home07Icon,
+  MultiplicationSignIcon,
+  Upload01Icon,
+  ArrowDownBigIcon,
+  ArrowLeft01Icon,
+  ArrowUpBigIcon,
+  ArrowDown01Icon,
+  Calendar03Icon,
+  Menu01Icon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -25,4 +36,15 @@ export {
   CheckIcon,
   Sun03Icon,
   Moon02Icon,
+  Chart01Icon,
+  Target01Icon,
+  Home07Icon,
+  ArrowLeft01Icon,
+  MultiplicationSignIcon,
+  Upload01Icon,
+  ArrowDownBigIcon,
+  ArrowUpBigIcon,
+  ArrowDown01Icon,
+  Calendar03Icon,
+  Menu01Icon,
 };

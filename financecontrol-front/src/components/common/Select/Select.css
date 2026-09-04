@@ -3,10 +3,9 @@
   --select-color: var(--text-primary);
   --select-placeholder: var(--text-secondary);
   --select-border: var(--border);
-
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
   min-width: 0;
   min-height: 40px;
   padding: 0 var(--space-3);
@@ -14,7 +13,9 @@
   border-radius: var(--radius-pill);
   background: var(--select-background);
   color: var(--select-color);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .select-field--bordered {
@@ -42,54 +43,156 @@
   --select-placeholder: var(--color-slate-500);
 }
 
-.select-field:focus-within {
+.select-field:focus-within,
+.select-field--open {
   border-color: var(--color-emerald-500);
   box-shadow: var(--shadow-focus-emerald);
 }
 
-.select-field select {
+.select-field__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   min-width: 0;
-  height: 100%;
+  min-height: 40px;
   padding: var(--space-3) 0;
   border: 0;
   outline: 0;
-  appearance: none;
   background: transparent;
   color: var(--select-color);
-  font-size: var(--font-size-14);
+  font-family: var(--font-form);
+  font-size: var(--font-size-12);
+  font-weight: 400;
+  text-align: left;
   cursor: pointer;
 }
 
-.select-field select:invalid {
+.select-field__trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.select-field__trigger:disabled {
+  cursor: not-allowed;
+}
+
+.select-field__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--select-color);
+}
+
+.select-field__value.is-placeholder {
   color: var(--select-placeholder);
 }
 
-.select-field select:disabled {
+.select-field__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: var(--space-2);
+  color: var(--select-placeholder);
+}
+
+.select-field__chevron {
+  flex-shrink: 0;
+  margin-left: var(--space-2);
+  color: var(--select-placeholder);
+  transition: transform 0.2s ease;
+}
+
+.select-field__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.select-field__dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: grid;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--select-border);
+  border-radius: var(--radius-md);
+  background: var(--select-background);
+  box-shadow: var(--shadow-card-lg);
+  animation: select-dropdown-in 0.15s ease-out;
+}
+
+.select-field--dropdown-bottom .select-field__dropdown {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
+.select-field--dropdown-top .select-field__dropdown {
+  bottom: calc(100% + 6px);
+  top: auto;
+}
+
+@keyframes select-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.select-field__option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--select-color);
+  font-family: var(--font-form);
+  font-size: var(--font-size-12);
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.select-field__option:hover {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--text-primary);
+}
+
+.select-field__option.is-selected {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.select-field__option:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .select-field__label {
   display: grid;
   gap: var(--space-2);
   color: var(--text-secondary);
-  font-size: var(--font-size-14);
+  font-family: var(--font-form);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
 }
 
-.select-field__icon {
-  display: inline-flex;
-  flex-shrink: 0;
-  color: var(--select-placeholder);
-}
-
-.select-field__chevron {
-  width: 8px;
-  height: 8px;
-  flex-shrink: 0;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  color: var(--select-placeholder);
-  transform: rotate(45deg) translateY(-2px);
-  pointer-events: none;
+.select-field--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

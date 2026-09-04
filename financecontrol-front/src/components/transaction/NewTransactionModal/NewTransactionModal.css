@@ -1,0 +1,190 @@
+.new-transaction-modal {
+  max-width: 420px;
+}
+
+.new-transaction-modal label {
+  font-family: var(--font-form);
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-form-muted);
+}
+
+.new-transaction-modal input,
+.new-transaction-modal select {
+  font-family: var(--font-form);
+  font-size: var(--font-size-11);
+  color: var(--color-form-muted);
+}
+
+.new-transaction-modal__body {
+  padding-top: 0.5rem;
+}
+
+.transaction-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.transaction-form__fields {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.transaction-type {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-slate-400) 12%, transparent);
+}
+
+.transaction-type__option {
+  min-height: 35px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--modal-muted);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.transaction-type__option.is-active {
+  color: var(--color-white);
+}
+
+.transaction-type__option--expense.is-active {
+  background: var(--color-red-600);
+}
+
+.transaction-type__option--income.is-active {
+  background: var(--color-emerald-500);
+}
+
+.transaction-type__option:focus-visible,
+.transaction-upload__box:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.transaction-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.transaction-upload {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--modal-muted);
+  font-size: var(--font-size-12);
+  cursor: pointer;
+}
+
+.transaction-upload__label {
+  font-size: var(--font-size-11);
+  letter-spacing: 0.04em;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+}
+
+.transaction-upload__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--space-4);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-family: var(--font-form);
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.transaction-upload__box:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  color: var(--text-primary);
+}
+
+.transaction-upload__box span {
+  font-size: 1.25rem;
+}
+.transaction-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.transaction-form__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.transaction-form__actions > * {
+  width: 100%;
+}
+
+.transaction-value {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: end;
+  width: 100%;
+}
+
+.transaction-value__currency,
+.transaction-value__amount {
+  min-width: 0;
+  width: 100%;
+}
+
+.transaction-value__label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.transaction-value__group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.transaction-value__group > :first-child {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.transaction-value__group > :last-child {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .transaction-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-value {
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+}

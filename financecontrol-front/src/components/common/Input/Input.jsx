@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useRef } from "react";
 import "./Input.css";
 
 const Input = forwardRef(function Input(
@@ -8,6 +8,7 @@ const Input = forwardRef(function Input(
     type = "text",
     icon,
     iconPosition = "left",
+    onIconClick,
     prefix,
     border = true,
     shadow = true,
@@ -23,6 +24,18 @@ const Input = forwardRef(function Input(
   },
   ref,
 ) {
+  const inputRef = useRef(null);
+
+  const setInputRef = (element) => {
+    inputRef.current = element;
+
+    if (typeof ref === "function") {
+      ref(element);
+    } else if (ref) {
+      ref.current = element;
+    }
+  };
+
   const classNames = [
     "input-field",
     `input-field--${theme}`,
@@ -42,17 +55,43 @@ const Input = forwardRef(function Input(
     ...(borderColor && { "--input-border": borderColor }),
   };
 
+  const handleIconClick = () => {
+    if (onIconClick) {
+      onIconClick(inputRef.current);
+      return;
+    }
+
+    if (type === "date") {
+      inputRef.current?.showPicker?.();
+    }
+  };
+
   const input = (
     <span className={classNames} style={style}>
       {icon && iconPosition === "left" && (
-        <span className="input-field__icon" aria-hidden="true">
+        <span
+          className={`input-field__icon ${
+            onIconClick ? "input-field__icon--clickable" : ""
+          }`}
+          aria-hidden="true"
+          onClick={onIconClick ? handleIconClick : undefined}
+        >
           {icon}
         </span>
       )}
+
       {prefix && <span className="input-field__prefix">{prefix}</span>}
-      <input ref={ref} id={id} type={type} {...props} />
+
+      <input ref={setInputRef} id={id} type={type} {...props} />
+
       {icon && iconPosition === "right" && (
-        <span className="input-field__icon" aria-hidden="true">
+        <span
+          className={`input-field__icon ${
+            onIconClick || type === "date" ? "input-field__icon--clickable" : ""
+          }`}
+          aria-hidden="true"
+          onClick={onIconClick || type === "date" ? handleIconClick : undefined}
+        >
           {icon}
         </span>
       )}
