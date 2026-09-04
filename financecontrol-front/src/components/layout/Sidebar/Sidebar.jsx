@@ -7,6 +7,7 @@ import {
   Target01Icon,
   Settings01Icon,
 } from "../../../assets/icons";
+import { NavLink } from "react-router-dom";
 
 import "./Sidebar.css";
 
@@ -80,11 +81,13 @@ function Sidebar({
       <nav className="sidebar__nav" aria-label="Menu principal">
         <div className="sidebar__nav-list">
           {menuItems.map((item) => (
-            <a
+            <NavLink
               key={item.path}
-              href={item.path}
+              to={item.path}
               onClick={onCloseMobile}
-              className="sidebar__nav-item"
+              className={({ isActive }) =>
+                `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
+              }
               title={isCompact ? item.label : undefined}
             >
               <span className="sidebar__nav-icon">
@@ -94,7 +97,7 @@ function Sidebar({
               {!isCompact && (
                 <span className="sidebar__nav-label">{item.label}</span>
               )}
-            </a>
+            </NavLink>
           ))}
         </div>
       </nav>
