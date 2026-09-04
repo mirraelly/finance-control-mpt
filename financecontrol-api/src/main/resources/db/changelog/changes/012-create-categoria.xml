@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="012-create-categoria" author="eduardo">
+
+        <createTable tableName="categoria">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nome" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descricao" type="VARCHAR(255)"/>
+            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName        ="categoria"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_categoria_tenant"/>
+
+        <addUniqueConstraint
+                tableName      ="categoria"
+                columnNames    ="tenant_id, nome"
+                constraintName ="uk_categoria_tenant_nome"/>
+
+        <createIndex tableName="categoria" indexName="idx_categoria_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
