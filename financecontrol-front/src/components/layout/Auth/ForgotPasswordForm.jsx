@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import Button from "../../common/Button/Button";
+import Input from "../../common/Input/Input";
 
 function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -18,17 +20,18 @@ function ForgotPasswordForm() {
       </span>
 
       <form className="login-form" onSubmit={handleSubmit}>
-        <label className="login-label">
-          <span>E-MAIL</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="maria@email.com"
-            autoComplete="email"
-            required
-          />
-        </label>
+        <Input
+          id="forgot-password-email"
+          label="E-MAIL"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="maria@email.com"
+          autoComplete="email"
+          theme="dark"
+          fullWidth
+          required
+        />
 
         {submitted && (
           <div className="login-success">
@@ -36,7 +39,9 @@ function ForgotPasswordForm() {
           </div>
         )}
 
-        <button type="submit">Enviar instruções</button>
+        <Button type="submit" fullWidth size="lg" disabled={!email.trim()}>
+          Enviar instruções
+        </Button>
 
         <Link to="/" className="forgot-link auth-back-link">
           Voltar para o login

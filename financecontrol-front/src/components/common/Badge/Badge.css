@@ -1,0 +1,71 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.badge--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.badge--md {
+  padding: 0.375rem 0.875rem;
+  font-size: var(--font-size-14);
+}
+
+.badge--lg {
+  padding: 0.5rem 1.125rem;
+  font-size: var(--font-size-16);
+}
+
+.badge--success,
+.badge--receita {
+  background-color: var(--color-teal-50);
+  color: var(--color-teal-600);
+}
+
+.badge--info,
+.badge--moradia {
+  background-color: var(--color-indigo-50);
+  color: var(--color-blue-500);
+}
+
+.badge--warning,
+.badge--alimentacao {
+  background-color: var(--color-amber-50);
+  color: var(--color-orange-500);
+}
+
+.badge--purple,
+.badge--entretenimento {
+  background-color: var(--color-purple-50);
+  color: var(--color-purple-600);
+}
+
+.badge--default,
+.badge--neutral {
+  background-color: var(--color-slate-100-alt);
+  color: var(--color-slate-600);
+}
+
+.badge--danger,
+.badge--saude {
+  background-color: var(--color-red-50);
+  color: var(--color-red-600);
+}
+
+.badge__icon {
+  display: inline-grid;
+  place-items: center;
+  font-size: 1em;
+}

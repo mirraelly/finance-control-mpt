@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="014-create-conta-receber" author="eduardo">
+
+        <createTable tableName="conta_receber">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pessoa_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="categoria_id" type="UUID"/>
+            <column name="descricao" type="VARCHAR(255)"/>
+            <column name="data_emissao" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valor_total" type="NUMERIC(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(25)" defaultValue="ABERTO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observacao" type="VARCHAR(255)"/>
+            <column name="ativo" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <createTable tableName="conta_receber_parcela">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conta_receber_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="numero_parcela" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_vencimento" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valor" type="NUMERIC(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="forma_pagamento_id" type="UUID"/>
+            <column name="status" type="VARCHAR(25)" defaultValue="ABERTO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observacao" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <createTable tableName="recebimento">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conta_receber_parcela_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="forma_pagamento_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_recebimento" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valor" type="NUMERIC(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observacao" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_receber"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_receber_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_receber"
+                baseColumnNames      ="pessoa_id"
+                referencedTableName  ="pessoa"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_receber_pessoa"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_receber"
+                baseColumnNames      ="categoria_id"
+                referencedTableName  ="categoria"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_receber_categoria"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_receber_parcela"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_receber_parcela_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_receber_parcela"
+                baseColumnNames      ="conta_receber_id"
+                referencedTableName  ="conta_receber"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_receber_parcela_conta_receber"
+                onDelete             ="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="conta_receber_parcela"
+                baseColumnNames      ="forma_pagamento_id"
+                referencedTableName  ="forma_pagamento"
+                referencedColumnNames="id"
+                constraintName       ="fk_conta_receber_parcela_forma_pagamento"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="recebimento"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_recebimento_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="recebimento"
+                baseColumnNames      ="conta_receber_parcela_id"
+                referencedTableName  ="conta_receber_parcela"
+                referencedColumnNames="id"
+                constraintName       ="fk_recebimento_conta_receber_parcela"
+                onDelete             ="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="recebimento"
+                baseColumnNames      ="forma_pagamento_id"
+                referencedTableName  ="forma_pagamento"
+                referencedColumnNames="id"
+                constraintName       ="fk_recebimento_forma_pagamento"/>
+
+        <addUniqueConstraint
+                tableName      ="conta_receber_parcela"
+                columnNames    ="conta_receber_id, numero_parcela"
+                constraintName ="uk_conta_receber_parcela_numero"/>
+
+        <createIndex tableName="conta_receber" indexName="idx_conta_receber_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="conta_receber" indexName="idx_conta_receber_pessoa">
+            <column name="pessoa_id"/>
+        </createIndex>
+
+        <createIndex tableName="conta_receber" indexName="idx_conta_receber_categoria">
+            <column name="categoria_id"/>
+        </createIndex>
+
+        <createIndex tableName="conta_receber_parcela" indexName="idx_conta_receber_parcela_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="conta_receber_parcela" indexName="idx_conta_receber_parcela_conta_receber">
+            <column name="conta_receber_id"/>
+        </createIndex>
+
+        <createIndex tableName="conta_receber_parcela" indexName="idx_conta_receber_parcela_vencimento">
+            <column name="data_vencimento"/>
+        </createIndex>
+
+        <createIndex tableName="recebimento" indexName="idx_recebimento_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="recebimento" indexName="idx_recebimento_conta_receber_parcela">
+            <column name="conta_receber_parcela_id"/>
+        </createIndex>
+
+        <createIndex tableName="recebimento" indexName="idx_recebimento_data">
+            <column name="data_recebimento"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="014-add-conta-receber-status-check" author="eduardo">
+        <sql>
+            ALTER TABLE conta_receber
+                ADD CONSTRAINT ck_conta_receber_status
+                    CHECK (status IN ('ABERTO', 'PARCIALMENTE_PAGO', 'PAGO', 'CANCELADO'));
+        </sql>
+        <sql>
+            ALTER TABLE conta_receber_parcela
+                ADD CONSTRAINT ck_conta_receber_parcela_status
+                    CHECK (status IN ('ABERTO', 'PARCIALMENTE_PAGO', 'PAGO', 'CANCELADO'));
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE conta_receber DROP CONSTRAINT ck_conta_receber_status;</sql>
+            <sql>ALTER TABLE conta_receber_parcela DROP CONSTRAINT ck_conta_receber_parcela_status;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
