@@ -1,0 +1,241 @@
+:root{
+  --bg: #f2f2ef;
+  --card-bg: #f2f2ef;
+  --text: #1c1c1a;
+  --muted: #8a8a86;
+  --green: #3f6b4f;
+  --border: #d8d8d3;
+  --border-focus: #b9b9b2;
+  --input-bg: #ffffff;
+  --dark: #14151a;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.card{
+  width: 100%;
+  max-width: 520px;
+}
+
+.eyebrow{
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin: 0 0 16px;
+}
+
+h1{
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: var(--text);
+}
+
+.subtitle{
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 32px;
+  max-width: 460px;
+}
+
+form{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.row{
+  display: flex;
+  gap: 16px;
+}
+
+.field{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label{
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.input-wrap{
+  position: relative;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"]{
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+input::placeholder{
+  color: #b7b7b1;
+}
+
+input:focus{
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+}
+
+.has-toggle input{
+  padding-right: 44px;
+}
+
+.toggle-visibility{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-visibility svg{
+  width: 18px;
+  height: 18px;
+}
+
+.hint{
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.strength{
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.strength span{
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: #e3e3de;
+  transition: background-color .2s ease;
+}
+
+.strength.level-1 span:nth-child(1),
+.strength.level-2 span:nth-child(1),
+.strength.level-2 span:nth-child(2),
+.strength.level-3 span:nth-child(1),
+.strength.level-3 span:nth-child(2),
+.strength.level-3 span:nth-child(3),
+.strength.level-4 span{
+  background: var(--green);
+}
+
+.terms{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.terms input[type="checkbox"]{
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--dark);
+  flex-shrink: 0;
+}
+
+.terms a{
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.terms a:hover{ text-decoration: underline; }
+
+button.submit{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+
+button.submit:hover{ opacity: 0.9; }
+
+button.submit svg{
+  width: 16px;
+  height: 16px;
+}
+
+.footnote{
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 18px 0 0;
+}
+
+.footnote a{
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.signin{
+  text-align: center;
+  font-size: 14px;
+  color: var(--text);
+  margin: 22px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.signin a{
+  color: var(--green);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.signin a:hover{ text-decoration: underline; }
+
+@media (max-width: 480px){
+  .row{ flex-direction: column; }
+  h1{ font-size: 32px; }
+}
