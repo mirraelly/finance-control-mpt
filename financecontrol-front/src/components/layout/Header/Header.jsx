@@ -1,7 +1,8 @@
 import React from 'react';
 import { HugeiconsIcon, TradeUpIcon, Search01Icon, Notification01Icon } from "../../../assets/icons";
-import './Header.css'
+import './Header.css';
 import Button from '../../common/Button';
+import Input from '../../common/Input';
 
 function Header({ title = "Início" }) {
     const currentDate = new Date().toLocaleDateString('pt-BR', {
@@ -13,13 +14,22 @@ function Header({ title = "Início" }) {
 
     const formattedDate = currentDate.charAt(0).toUpperCase() + currentDate.slice(1);
 
+    
+    const handleNewTransaction = () => {
+        
+        console.log("Abrir modal de nova transação");
+    };
+
+    const handleNotifications = () => {
+        
+        console.log("Abrir painel de notificações");
+    };
+
     return (
         <header className='header-container'>
-            {/* Lado Esquerdo (Ícone, Titulo, Data)*/}
             <div className='header-left'>
                 <div className='title-icon-wrapper'>
                     <div className='header-trend-icon'>
-                        {/* Ícone de gráfico ou Zap, em verde */}
                         <HugeiconsIcon icon={TradeUpIcon} size={20} color='#00b074' />
                     </div>
                     <div className='title-date-group'>
@@ -29,32 +39,33 @@ function Header({ title = "Início" }) {
                 </div>
             </div>
 
-            {/*Lado Direito (Busca e Controles, Empilhados) */}
             <div className='header-right-group'>
-                {/*Barra de Busca(acima)*/}
-                <div className='search-box'>
-                    <HugeiconsIcon icon={Search01Icon} size={18} className="search-icon" />
-                    <input type="text" placeholder='Buscar transações...' />
-                </div>
+                <Input
+                    className="header-search"
+                    theme="dark"
+                    shadow={false}
+                    icon={<HugeiconsIcon icon={Search01Icon} size={18} />}
+                    placeholder="Buscar transações..."
+                />
 
                 <div className='controls-box'>
-                    <Button className='btn-transaction'>
+                    
+                    <Button size='md' variant='primary' onClick={handleNewTransaction}>
                         <span className='plus-icon'>+</span> Transação
                     </Button>
 
-                    <Button className='btn-icon'>
-                        <HugeiconsIcon icon={Notification01Icon} size={20}/>
+                    <Button className='btn-icon' size='md' onClick={handleNotifications}>
+                        <HugeiconsIcon icon={Notification01Icon} size={20} />
                         <span className='notification-badge'></span>
                     </Button>
 
                     <div className='avatar'>
-                        <span>JV</span>{/*Iniciais dinamicas futuramente*/}
+                        <span>MS</span>
                     </div>
-                   
                 </div>
             </div>
         </header>
-    )
+    );
 }
 
 export default Header;
