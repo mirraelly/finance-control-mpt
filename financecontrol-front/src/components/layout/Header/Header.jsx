@@ -15,15 +15,12 @@ function Header({ title = "Início" }) {
     const formattedDate = currentDate.charAt(0).toUpperCase() + currentDate.slice(1);
 
     
-    const handleNewTransaction = () => {
-        
-        console.log("Abrir modal de nova transação");
-    };
-
-    const handleNotifications = () => {
-        
-        console.log("Abrir painel de notificações");
-    };
+    const handleNewTransaction = ()=> {
+        console.log("Abrir modal de nova transação")
+    }
+    const handleNotifications = ()=> {
+        console.log("Abrir painel de notificações")
+    }
 
     return (
         <header className='header-container'>
