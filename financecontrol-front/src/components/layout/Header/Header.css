@@ -1,0 +1,127 @@
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--color-midnight-dark);
+  border-bottom: 1px solid var(--color-auth-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.title-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.title-date-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-date {
+  font-size: var(--font-size-14);
+  color: var(--color-slate-400);
+}
+
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.header-search {
+  width: 260px;
+}
+
+.controls-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.plus-icon {
+  font-weight: var(--font-weight-bold);
+}
+
+.btn-icon.button {
+  position: relative;
+  width: var(--space-8);
+  height: var(--space-8);
+  min-height: var(--space-8);
+  padding: 0;
+  border-radius: 50%;
+  flex-shrink: 0;
+  --button-background: rgba(16, 185, 129, 0.15);
+  --button-border: rgba(16, 185, 129, 0.3);
+  --button-color: var(--color-emerald-500);
+}
+
+.notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  background-color: var(--color-emerald-500);
+  border-radius: 50%;
+  border: 2px solid var(--color-navy-900);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: var(--space-8);
+  height: var(--space-8);
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald-500);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-14);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+  .header-container {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .header-search {
+    width: 180px;
+  }
+
+  .header-title {
+    font-size: var(--font-size-16);
+  }
+}
+
+@media (max-width: 640px) {
+  .header-container {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .header-date,
+  .header-search {
+    display: none;
+  }
+
+  .header-right-group {
+    gap: var(--space-3);
+  }
+}
