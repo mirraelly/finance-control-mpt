@@ -5,6 +5,7 @@ import { HugeiconsIcon, Menu01Icon } from "../../assets/icons";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
 
 import "./InternalLayout.css";
+import Header from "../../components/layout/Header/Header";
 
 function InternalLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -52,8 +53,7 @@ function InternalLayout() {
         >
           <HugeiconsIcon icon={Menu01Icon} size={24} strokeWidth={2} />
         </button>
-
-        <header className="app-layout__header">Header</header>
+        <Header title="Início" />
 
         <main className="app-layout__main">
           <Outlet />

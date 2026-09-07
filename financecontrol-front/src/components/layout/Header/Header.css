@@ -20,18 +20,6 @@
   gap: var(--space-3);
 }
 
-.header-trend-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--space-8);
-  height: var(--space-8);
-  background-color: rgba(16, 185, 129, 0.15);
-  border-radius: 50%;
-  color: var(--color-emerald-500);
-  flex-shrink: 0;
-}
-
 .title-date-group {
   display: flex;
   flex-direction: column;
@@ -70,7 +58,6 @@
   font-weight: var(--font-weight-bold);
 }
 
-
 .btn-icon.button {
   position: relative;
   width: var(--space-8);
@@ -84,7 +71,6 @@
   --button-color: var(--color-emerald-500);
 }
 
-
 .notification-badge {
   position: absolute;
   top: 2px;
@@ -95,7 +81,6 @@
   border-radius: 50%;
   border: 2px solid var(--color-navy-900);
 }
-
 
 .avatar {
   display: flex;
@@ -111,7 +96,6 @@
   border: 1px solid rgba(16, 185, 129, 0.3);
   flex-shrink: 0;
 }
-
 
 @media (max-width: 992px) {
   .header-container {

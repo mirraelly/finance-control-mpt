@@ -20,17 +20,6 @@
   margin-left: var(--sidebar-collapsed-width);
 }
 
-.app-layout__header {
-  height: var(--header-height);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-5);
-  background-color: var(--bg-main);
-  border-bottom: 1px solid var(--border);
-  color: var(--color-white);
-}
-
 .app-layout__main {
   flex: 1;
   min-width: 0;

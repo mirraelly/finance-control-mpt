@@ -6,7 +6,6 @@ import { SaveMoneyDollarIcon } from "@hugeicons/core-free-icons";
 function Home() {
   return (
     <div>
-      <Header title="Início" />
       <main>
         <HugeiconsIcon
           icon={SaveMoneyDollarIcon}
