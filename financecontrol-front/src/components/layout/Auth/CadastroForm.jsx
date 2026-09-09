@@ -180,7 +180,7 @@ function CadastroForm() {
             label="DDI"
             id="ddi"
             type="text"
-            inputmode="numeric"
+            inputMode="numeric"
             pattern="[0-9]{1,4}"
             maxLength={4}
             value={ddi}
