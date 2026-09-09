@@ -33,8 +33,10 @@ function CadastroForm() {
   const navigate = useNavigate();
   const requisitosSenha = [
     { texto: "Mínimo de 8 caracteres", atendido: senha.length >= 8 },
+    { texto: "Incluir uma letra maiúscula", atendido: /[A-Z]/.test(senha) },
+    { texto: "Incluir uma letra minúscula", atendido: /[a-z]/.test(senha) },
     { texto: "Incluir um número", atendido: /\d/.test(senha) },
-    { texto: "Incluir um símbolo", atendido: /[^A-Za-z0-9]/.test(senha) },
+    { texto: "Incluir um símbolo", atendido: /[^A-Za-z0-9\s]/.test(senha) },
   ];
 
   const handleSubmit = async (event) => {
@@ -54,7 +56,7 @@ function CadastroForm() {
     }
     if (requisitosSenha.some(({ atendido }) => !atendido)) {
       setError(
-        "A senha deve ter pelo menos 8 caracteres, um número e um símbolo.",
+        "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.",
       );
       return;
     }
@@ -310,7 +312,7 @@ function CadastroForm() {
         </div>
 
         {error && <div className="cadastro-error">{error}</div>}
-        {sucesso && <div className="cadastro-sucess">{sucesso}</div>}
+        {sucesso && <div className="cadastro-success">{sucesso}</div>}
 
         <Button type="submit" variant="primary" fullWidth disabled={loading}>
           {loading ? "Cadastrando.." : "Cadastrar"}
