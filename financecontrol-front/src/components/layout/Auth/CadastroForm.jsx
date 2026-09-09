@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../../../services/authService";
+import { formatarTelefone } from "../../../utils/formatters.js";
 import {
   HugeiconsIcon,
   CheckIcon,
@@ -18,7 +19,7 @@ function CadastroForm() {
   const [nome, setNome] = useState("");
   const [sobrenome, setSobrenome] = useState("");
   const [email, setEmail] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [ddi, setDdi] = useState("");
   const [telefone, setTelefone] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
@@ -39,6 +40,13 @@ function CadastroForm() {
     event.preventDefault();
     setError("");
 
+    const nomeCompleto = `${nome} ${sobrenome}`.trim();
+
+    if (nomeCompleto.length > 255) {
+      setError("Nome e sobrenome juntos devem ter no máximo 255 caracteres.");
+      return;
+    }
+
     if (senha !== confirmarSenha) {
       setError("As senhas não correspondem.");
       return;
@@ -57,10 +65,11 @@ function CadastroForm() {
     setLoading(true);
 
     const dadosCadastro = {
-      nome: `${nome} ${sobrenome}`.trim(),
+      nome: nomeCompleto,
       email,
-      cpf,
       senha,
+      codigoPais: ddi,
+      telefone,
     };
 
     if (telefone.trim()) {
@@ -105,7 +114,14 @@ function CadastroForm() {
             type="text"
             value={nome}
             placeholder="Maria"
-            onChange={(event) => setNome(event.target.value)}
+            onChange={(event) => {
+              const novoNome = event.target.value;
+              const nomeCompleto = `${novoNome} ${sobrenome}`.trim();
+
+              if (nomeCompleto.length <= 255) {
+                setNome(novoNome);
+              }
+            }}
             required
           />
 
@@ -118,8 +134,15 @@ function CadastroForm() {
             id="sobrenome"
             type="text"
             value={sobrenome}
-            placeholder=" Silva"
-            onChange={(event) => setSobrenome(event.target.value)}
+            placeholder="Silva"
+            onChange={(event) => {
+              const novoSobrenome = event.target.value;
+              const nomeCompleto = `${nome} ${novoSobrenome}`.trim();
+
+              if (nomeCompleto.length <= 255) {
+                setSobrenome(novoSobrenome);
+              }
+            }}
             required
           />
         </div>
@@ -135,6 +158,7 @@ function CadastroForm() {
             type="email"
             value={email}
             placeholder=" Mariasilva@email.com"
+            maxLength={255}
             onChange={(event) => setEmail(event.target.value)}
             required
           />
@@ -148,40 +172,33 @@ function CadastroForm() {
           </div>
         </div>
 
-        <div>
+        <div className="cadastro-phone-row">
           <Input
-            label={
-              <>
-                CPF<span className="obrigatorio">*</span>
-              </>
-            }
-            id="cpf"
+            label="DDI"
+            id="ddi"
             type="text"
-            value={cpf}
-            placeholder="000.000.000-00"
-            onChange={(event) => setCpf(event.target.value)}
-            required
+            inputmode="numeric"
+            pattern="[0-9]{1,4}"
+            maxLength={4}
+            value={ddi}
+            placeholder="xx"
+            onChange={(event) => {
+              const value = event.target.value.replace(/\D/g, "").slice(0, 4);
+              setDdi(value);
+            }}
           />
-          <div className="cadastro-aviso">
-            <HugeiconsIcon
-              icon={InformationCircleIcon}
-              size={16}
-              strokeWidth={2.5}
-            />
-            <span>
-              Usado apenas para verificar sua identidade. Nunca compartilhado.
-            </span>
-          </div>
-        </div>
 
-        <div>
           <Input
             label="TELEFONE"
             id="telefone"
             type="tel"
+            inputMode="numeric"
             value={telefone}
-            placeholder="+55 (00) 00000-0000"
-            onChange={(event) => setTelefone(event.target.value)}
+            placeholder="(00)00000-0000"
+            maxLength={15}
+            onChange={(event) => {
+              setTelefone(formatarTelefone(event.target.value));
+            }}
           />
         </div>
         <div>
@@ -196,6 +213,8 @@ function CadastroForm() {
               type="password"
               value={senha}
               placeholder="Digite aqui sua senha"
+              minLength={8}
+              maxLength={100}
               onChange={(event) => setSenha(event.target.value)}
               required
             />
@@ -207,7 +226,7 @@ function CadastroForm() {
                 size={16}
                 strokeWidth={2.5}
               />
-              <span>Use 8+ caracteres com um número e um símbolo.</span>
+              <span>A senha deve ter entre 8 e 100 caracteres.</span>
             </div>
             <ul>
               {requisitosSenha.map(({ texto, atendido }) => (
@@ -239,6 +258,8 @@ function CadastroForm() {
             type="password"
             value={confirmarSenha}
             placeholder="Confirme aqui a sua senha"
+            minLength={8}
+            maxLength={100}
             onChange={(event) => setConfirmarSenha(event.target.value)}
             required
           />
