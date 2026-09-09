@@ -4,6 +4,7 @@ import com.mpt.financecontrol.usuario.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UsuarioCreateDto(
@@ -21,6 +22,10 @@ public record UsuarioCreateDto(
         @Schema(description = "Senha do usuário (texto puro, será criptografada)")
         @NotBlank(message = "Senha é obrigatória")
         @Size(min = 8, max = 100, message = "Senha deve ter entre 8 e 100 caracteres")
+        @Pattern(
+                regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9])\\S+$",
+                message = "Senha deve conter letra maiúscula, minúscula, número e caractere especial, sem espaços"
+        )
         String senha,
 
         @Schema(description = "Telefone do usuário", example = "51999999999")
