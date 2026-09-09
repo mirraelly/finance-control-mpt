@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.pessoa.service;
 
+import com.mpt.financecontrol.email.service.EmailService;
 import com.mpt.financecontrol.endereco.service.EnderecoService;
 import com.mpt.financecontrol.exceptions.ConflictException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
@@ -31,17 +32,20 @@ public class PessoaService {
     private final UsuarioRepository usuarioRepository;
     private final TelefoneService   telefoneService;
     private final EnderecoService   enderecoService;
+    private final EmailService      emailService;
 
     public PessoaService(
             PessoaRepository    pessoaRepository,
             UsuarioRepository   usuarioRepository,
             TelefoneService     telefoneService,
-            EnderecoService     enderecoService
+            EnderecoService     enderecoService,
+            EmailService        emailService
     ) {
         this.pessoaRepository   = pessoaRepository;
         this.usuarioRepository  = usuarioRepository;
         this.telefoneService    = telefoneService;
         this.enderecoService    = enderecoService;
+        this.emailService       = emailService;
     }
 
     @Transactional(readOnly = true)
@@ -109,6 +113,7 @@ public class PessoaService {
         pessoaRepository.save(pessoa);
         telefoneService.sincronizarTelefones(pessoa, tenant, dto.telefones());
         enderecoService.sincronizarEnderecos(pessoa, tenant, dto.enderecos());
+        emailService.sincronizarEmails(pessoa, tenant, dto.emails());
 
         return PessoaMapper.toResponseDto(pessoa);
     }
@@ -142,6 +147,7 @@ public class PessoaService {
         pessoaRepository.saveAndFlush(pessoa);
         telefoneService.sincronizarTelefones(pessoa, tenant, dto.telefones());
         enderecoService.sincronizarEnderecos(pessoa, tenant, dto.enderecos());
+        emailService.sincronizarEmails(pessoa, tenant, dto.emails());
 
         return PessoaMapper.toResponseDto(pessoa);
     }
