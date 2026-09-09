@@ -21,6 +21,7 @@ function CadastroForm() {
   const [email, setEmail] = useState("");
   const [ddi, setDdi] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [senhaFocada, setSenhaFocada] = useState(false);
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [aceitouTermos, setAceitouTermos] = useState(false);
@@ -81,7 +82,7 @@ function CadastroForm() {
       setSucesso("Cadastro realizado com sucesso! Redirecionando...");
 
       setTimeout(() => {
-        navigate("/login");
+        navigate("/");
       }, 2000);
     } catch (err) {
       const message = err?.response?.data?.message || err?.message;
@@ -216,35 +217,40 @@ function CadastroForm() {
               minLength={8}
               maxLength={100}
               onChange={(event) => setSenha(event.target.value)}
+              onFocus={() => setSenhaFocada(true)}
+              onBlur={() => setSenhaFocada(false)}
               required
             />
           </div>
-          <div className="cadastro-senha-requisitos" aria-live="polite">
-            <div className="cadastro-aviso">
-              <HugeiconsIcon
-                icon={InformationCircleIcon}
-                size={16}
-                strokeWidth={2.5}
-              />
-              <span>A senha deve ter entre 8 e 100 caracteres.</span>
+          {senhaFocada && (
+            <div className="cadastro-senha-requisitos" aria-live="polite">
+              <div className="cadastro-aviso">
+                <HugeiconsIcon
+                  icon={InformationCircleIcon}
+                  size={16}
+                  strokeWidth={2.5}
+                />
+                <span>A senha deve ter entre 8 e 100 caracteres.</span>
+              </div>
+
+              <ul>
+                {requisitosSenha.map(({ texto, atendido }) => (
+                  <li
+                    key={texto}
+                    className={atendido ? "atendido" : "nao-atendido"}
+                  >
+                    <HugeiconsIcon
+                      icon={atendido ? Tick01Icon : MultiplicationSignIcon}
+                      size={12}
+                      strokeWidth={2.5}
+                      aria-hidden="true"
+                    />
+                    {texto}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul>
-              {requisitosSenha.map(({ texto, atendido }) => (
-                <li
-                  key={texto}
-                  className={atendido ? "atendido" : "nao-atendido"}
-                >
-                  <HugeiconsIcon
-                    icon={atendido ? Tick01Icon : MultiplicationSignIcon}
-                    size={12}
-                    strokeWidth={2.5}
-                    aria-hidden="true"
-                  />
-                  {texto}
-                </li>
-              ))}
-            </ul>
-          </div>
+          )}
         </div>
 
         <div>
