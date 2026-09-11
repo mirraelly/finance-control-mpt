@@ -26,6 +26,8 @@ import {
   Calendar03Icon,
   Menu01Icon,
   PlusIcon,
+  Alert02Icon,
+  CancelCircleIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -53,4 +55,6 @@ export {
   Calendar03Icon,
   Menu01Icon,
   PlusIcon,
+  Alert02Icon,
+  CancelCircleIcon,
 };

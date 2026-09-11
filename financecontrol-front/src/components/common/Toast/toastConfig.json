@@ -1,0 +1,38 @@
+{
+  "success": {
+    "title": "Mensagem de sucesso",
+    "message": "Conteúdo da mensagem",
+    "icon": "CheckIcon",
+    "className": "toast-success"
+  },
+  "info": {
+    "title": "Mensagem informativa",
+    "message": "Conteúdo da mensagem",
+    "icon": "InformationCircleIcon",
+    "className": "toast-info"
+  },
+  "warning": {
+    "title": "Mensagem de aviso",
+    "message": "Conteúdo da mensagem",
+    "icon": "Alert02Icon",
+    "className": "toast-warning"
+  },
+  "error": {
+    "title": "Mensagem de erro",
+    "message": "Conteúdo da mensagem",
+    "icon": "CancelCircleIcon",
+    "className": "toast-error"
+  },
+  "secondary": {
+    "title": "Mensagem secundária",
+    "message": "Conteúdo da mensagem",
+    "icon": null,
+    "className": "toast-secondary"
+  },
+  "contrast": {
+    "title": "Mensagem de contraste",
+    "message": "Conteúdo da mensagem",
+    "icon": null,
+    "className": "toast-contrast"
+  }
+}

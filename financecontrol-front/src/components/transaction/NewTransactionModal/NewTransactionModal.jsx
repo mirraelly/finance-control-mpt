@@ -5,11 +5,14 @@ import {
   ArrowDownBigIcon,
   ArrowUpBigIcon,
 } from "../../../assets/icons";
+
 import Modal from "../../common/Modal/Modal";
 import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
 import Select from "../../common/Select/Select";
 import DatePicker from "../../common/DatePicker/Datepicker";
+import Toast from "../../common/Toast/Toast";
+
 import "./NewTransactionModal.css";
 
 // Dados mockados
@@ -49,25 +52,53 @@ function NewTransactionModal({
   theme = "dark",
   initialValues = EMPTY_INITIAL_VALUES,
 }) {
-  const [values, setValues] = useState({ ...DEFAULT_VALUES, ...initialValues });
+  const [values, setValues] = useState({
+    ...DEFAULT_VALUES,
+    ...initialValues,
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const handleClose = () => {
-    setValues({ ...DEFAULT_VALUES, ...initialValues });
+    setValues({
+      ...DEFAULT_VALUES,
+      ...initialValues,
+    });
+
     setIsSubmitting(false);
+
     onClose?.();
   };
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
-    setValues((current) => ({ ...current, [name]: files ? files[0] : value }));
+
+    setValues((current) => ({
+      ...current,
+      [name]: files ? files[0] : value,
+    }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setIsSubmitting(true);
+
+    // Simula o tempo de uma requisição
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
     try {
-      await onSubmit?.({ ...values, valor: Number(values.valor) });
+      await onSubmit?.({
+        ...values,
+        valor: Number(values.valor),
+      });
+
+      setToast({
+        type: "success",
+        message: "Transação cadastrada com sucesso!",
+      });
+
       handleClose();
     } finally {
       setIsSubmitting(false);
@@ -75,166 +106,183 @@ function NewTransactionModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Nova Transação"
-      theme={theme}
-      size="md"
-      className="new-transaction-modal"
-      bodyClassName="new-transaction-modal__body"
-      footer={
-        <div className="transaction-form__actions">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-
-          <Button
-            type="submit"
-            form="new-transaction-form"
-            variant={values.tipo === "despesa" ? "secondary" : "primary"}
-            disabled={isSubmitting}
-            fullWidth
-          >
-            {isSubmitting ? "Salvando..." : "Confirmar"}
-          </Button>
-        </div>
-      }
-    >
-      <form
-        className="transaction-form"
-        onSubmit={handleSubmit}
-        id="new-transaction-form"
-      >
-        <div
-          className="transaction-type"
-          role="group"
-          aria-label="Tipo de transação"
-        >
-          {[
-            ["despesa", "Despesa", "expense", ArrowDownBigIcon],
-            ["receita", "Receita", "income", ArrowUpBigIcon],
-          ].map(([type, label, modifier, icon]) => (
-            <button
-              key={type}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Nova Transação"
+        theme={theme}
+        size="md"
+        className="new-transaction-modal"
+        bodyClassName="new-transaction-modal__body"
+        footer={
+          <div className="transaction-form__actions">
+            <Button
               type="button"
-              className={`transaction-type__option transaction-type__option--${modifier} ${
-                values.tipo === type ? "is-active" : ""
-              }`}
-              onClick={() =>
-                setValues((current) => ({ ...current, tipo: type }))
-              }
-              aria-pressed={values.tipo === type}
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
             >
-              <HugeiconsIcon
-                icon={icon}
-                size={16}
-                stroke="2"
-                aria-hidden="true"
-              />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
+              Cancelar
+            </Button>
 
-        <div className="transaction-form">
-          <div class="transaction-value">
-            <Select
-              id="transaction-currency"
-              name="moeda"
-              label="MOEDA"
-              options={DEFAULT_CURRENCIES}
-              value={values.moeda}
-              onChange={handleChange}
-              theme={theme}
-              height="40px"
+            <Button
+              type="submit"
+              form="new-transaction-form"
+              variant={values.tipo === "despesa" ? "secondary" : "primary"}
+              disabled={isSubmitting}
               fullWidth
-              placeholder="Escolha"
-            ></Select>
+            >
+              {isSubmitting ? "Salvando..." : "Confirmar"}
+            </Button>
+          </div>
+        }
+      >
+        <form
+          className="transaction-form"
+          onSubmit={handleSubmit}
+          id="new-transaction-form"
+        >
+          <div
+            className="transaction-type"
+            role="group"
+            aria-label="Tipo de transação"
+          >
+            {[
+              ["despesa", "Despesa", "expense", ArrowDownBigIcon],
+              ["receita", "Receita", "income", ArrowUpBigIcon],
+            ].map(([type, label, modifier, icon]) => (
+              <button
+                key={type}
+                type="button"
+                className={`transaction-type__option transaction-type__option--${modifier} ${
+                  values.tipo === type ? "is-active" : ""
+                }`}
+                onClick={() =>
+                  setValues((current) => ({
+                    ...current,
+                    tipo: type,
+                  }))
+                }
+                aria-pressed={values.tipo === type}
+              >
+                <HugeiconsIcon
+                  icon={icon}
+                  size={16}
+                  stroke="2"
+                  aria-hidden="true"
+                />
+
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="transaction-form">
+            <div className="transaction-value">
+              <Select
+                id="transaction-currency"
+                name="moeda"
+                label="MOEDA"
+                options={DEFAULT_CURRENCIES}
+                value={values.moeda}
+                onChange={handleChange}
+                theme={theme}
+                height="40px"
+                fullWidth
+                placeholder="Escolha"
+              />
+
+              <Input
+                id="transaction-value"
+                name="valor"
+                label="VALOR"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={values.valor}
+                onChange={handleChange}
+                placeholder="0,00"
+                theme={theme}
+                fullWidth
+                required
+              />
+            </div>
 
             <Input
-              id="transaction-value"
-              name="valor"
-              label="VALOR"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={values.valor}
+              id="transaction-description"
+              name="descricao"
+              label="DESCRIÇÃO"
+              value={values.descricao}
               onChange={handleChange}
-              placeholder="0,00"
+              placeholder="Ex: Mercado Extra, Salário..."
               theme={theme}
               fullWidth
               required
             />
-          </div>
 
-          <Input
-            id="transaction-description"
-            name="descricao"
-            label="DESCRIÇÃO"
-            value={values.descricao}
-            onChange={handleChange}
-            placeholder="Ex: Mercado Extra, Salário..."
-            theme={theme}
-            fullWidth
-            required
-          />
-
-          <div className="transaction-form__row">
-            <Select
-              id="transaction-category"
-              name="categoria"
-              label="CATEGORIA"
-              options={categories}
-              value={values.categoria}
-              onChange={handleChange}
-              theme={theme}
-              fullWidth
-              required
-              placeholder="Selecione uma categoria"
-              dropdownPosition="top"
-            />
-
-            <DatePicker
-              id="transaction-date"
-              name="data"
-              label="DATA"
-              value={values.data}
-              onChange={handleChange}
-              theme={theme}
-              fullWidth
-              required
-              dropdownPosition="top"
-            />
-          </div>
-
-          <label className="transaction-upload" htmlFor="transaction-receipt">
-            <span className="transaction-upload__label">COMPROVANTE</span>
-            <span className="transaction-upload__box">
-              <HugeiconsIcon
-                aria-hidden="true"
-                icon={Upload01Icon}
-                size={18}
-                stroke="2"
+            <div className="transaction-form__row">
+              <Select
+                id="transaction-category"
+                name="categoria"
+                label="CATEGORIA"
+                options={categories}
+                value={values.categoria}
+                onChange={handleChange}
+                theme={theme}
+                fullWidth
+                required
+                placeholder="Selecione uma categoria"
+                dropdownPosition="top"
               />
-              {values.comprovante?.name || "Clique para anexar um arquivo"}
-            </span>
-            <input
-              id="transaction-receipt"
-              name="comprovante"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleChange}
-            />
-          </label>
-        </div>
-      </form>
-    </Modal>
+
+              <DatePicker
+                id="transaction-date"
+                name="data"
+                label="DATA"
+                value={values.data}
+                onChange={handleChange}
+                theme={theme}
+                fullWidth
+                required
+                dropdownPosition="top"
+              />
+            </div>
+
+            <label className="transaction-upload" htmlFor="transaction-receipt">
+              <span className="transaction-upload__label">COMPROVANTE</span>
+
+              <span className="transaction-upload__box">
+                <HugeiconsIcon
+                  aria-hidden="true"
+                  icon={Upload01Icon}
+                  size={18}
+                  stroke="2"
+                />
+
+                {values.comprovante?.name || "Clique para anexar um arquivo"}
+              </span>
+
+              <input
+                id="transaction-receipt"
+                name="comprovante"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+        </form>
+      </Modal>
+
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </>
   );
 }
 
