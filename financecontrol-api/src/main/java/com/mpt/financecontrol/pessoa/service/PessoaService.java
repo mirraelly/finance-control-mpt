@@ -4,7 +4,6 @@ import com.mpt.financecontrol.email.service.EmailService;
 import com.mpt.financecontrol.endereco.service.EnderecoService;
 import com.mpt.financecontrol.exceptions.ConflictException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
-import com.mpt.financecontrol.exceptions.UnauthorizedException;
 import com.mpt.financecontrol.pessoa.dtos.PessoaCreateDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaResponseDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaUpdateDto;
@@ -14,11 +13,9 @@ import com.mpt.financecontrol.pessoa.repository.PessoaRepository;
 import com.mpt.financecontrol.telefone.service.TelefoneService;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.usuario.entity.Usuario;
-import com.mpt.financecontrol.usuario.repository.UsuarioRepository;
+import com.mpt.financecontrol.usuario.service.UsuarioService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,29 +25,29 @@ import java.util.UUID;
 @Service
 public class PessoaService {
 
-    private final PessoaRepository  pessoaRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final TelefoneService   telefoneService;
-    private final EnderecoService   enderecoService;
-    private final EmailService      emailService;
+    private final PessoaRepository pessoaRepository;
+    private final UsuarioService   usuarioService;
+    private final TelefoneService  telefoneService;
+    private final EnderecoService  enderecoService;
+    private final EmailService     emailService;
 
     public PessoaService(
-            PessoaRepository    pessoaRepository,
-            UsuarioRepository   usuarioRepository,
-            TelefoneService     telefoneService,
-            EnderecoService     enderecoService,
-            EmailService        emailService
+            PessoaRepository pessoaRepository,
+            UsuarioService   usuarioService,
+            TelefoneService  telefoneService,
+            EnderecoService  enderecoService,
+            EmailService     emailService
     ) {
-        this.pessoaRepository   = pessoaRepository;
-        this.usuarioRepository  = usuarioRepository;
-        this.telefoneService    = telefoneService;
-        this.enderecoService    = enderecoService;
-        this.emailService       = emailService;
+        this.pessoaRepository = pessoaRepository;
+        this.usuarioService   = usuarioService;
+        this.telefoneService  = telefoneService;
+        this.enderecoService  = enderecoService;
+        this.emailService     = emailService;
     }
 
     @Transactional(readOnly = true)
     public Pessoa findById(UUID id) {
-        Tenant tenant = getTenantLogado();
+        Tenant tenant = usuarioService.getTenantLogado();
 
         Pessoa pessoa = pessoaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Pessoa não encontrada"));
@@ -68,14 +65,14 @@ public class PessoaService {
 
     @Transactional(readOnly = true)
     public Page<PessoaResponseDto> getAll(Pageable pageable, String nome) {
-        Tenant tenant = getTenantLogado();
+        Tenant tenant = usuarioService.getTenantLogado();
         return pessoaRepository.findAllWithFilters(pageable, tenant.getId(), nome)
                 .map(PessoaMapper::toResponseDto);
     }
 
     @Transactional(readOnly = true)
     public List<PessoaResponseDto> select() {
-        Tenant tenant = getTenantLogado();
+        Tenant tenant = usuarioService.getTenantLogado();
         return pessoaRepository.findForSelect(tenant.getId())
                 .stream()
                 .map(PessoaMapper::toResponseDto)
@@ -84,7 +81,7 @@ public class PessoaService {
 
     @Transactional
     public PessoaResponseDto create(PessoaCreateDto dto) {
-        Usuario usuario = getUsuarioLogado();
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         Tenant tenant   = usuario.getTenant();
 
         validarDuplicidade(tenant.getId(), null, dto.cpf(), dto.cnpj(), dto.rg(), dto.cnh(),
@@ -120,7 +117,7 @@ public class PessoaService {
 
     @Transactional
     public PessoaResponseDto update(UUID id, PessoaUpdateDto dto) {
-        Usuario usuario = getUsuarioLogado();
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
         Pessoa pessoa   = findById(id);
         Tenant tenant   = pessoa.getTenant();
 
@@ -190,18 +187,5 @@ public class PessoaService {
                 ? pessoaRepository.existsByTenantIdAndRazaoSocial(tenantId, razaoSocial)
                 : pessoaRepository.existsByTenantIdAndRazaoSocialAndIdNot(tenantId, razaoSocial, idAtual)))
             throw new ConflictException("Já existe uma pessoa cadastrada com esta razão social");
-    }
-
-    private Usuario getUsuarioLogado() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof UUID id))
-            throw new UnauthorizedException("Usuário não autenticado, verifique!");
-
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new UnauthorizedException("Usuário não autenticado, verifique!"));
-    }
-
-    private Tenant getTenantLogado() {
-        return getUsuarioLogado().getTenant();
     }
 }

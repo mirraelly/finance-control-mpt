@@ -153,4 +153,16 @@ public class UsuarioService {
 
         return usuarioRepository.findById(id).orElse(null);
     }
+
+    public Usuario getUsuarioAutenticado() {
+        Usuario usuario = getUsuarioLogado();
+        if (usuario == null)
+            throw new UnauthorizedException("Usuário não autenticado, verifique!");
+
+        return usuario;
+    }
+
+    public Tenant getTenantLogado() {
+        return getUsuarioAutenticado().getTenant();
+    }
 }
