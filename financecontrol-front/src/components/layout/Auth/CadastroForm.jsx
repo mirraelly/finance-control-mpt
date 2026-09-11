@@ -72,12 +72,8 @@ function CadastroForm() {
       email,
       senha,
       codigoPais: ddi,
-      telefone,
+      telefone: telefone.trim(),
     };
-
-    if (telefone.trim()) {
-      dadosCadastro.telefone = telefone.trim();
-    }
 
     try {
       await authService.register(dadosCadastro);
