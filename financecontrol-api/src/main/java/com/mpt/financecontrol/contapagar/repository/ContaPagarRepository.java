@@ -40,8 +40,11 @@ public interface ContaPagarRepository extends JpaRepository<ContaPagar, UUID> {
             @Param("ativo") Boolean ativo
     );
 
-    @Query("SELECT c FROM ContaPagar c "
-    +      "    WHERE c.tenant.id = :tenantId AND c.ativo = true "
-    +      "ORDER BY c.dataEmissao DESC")
+    @Query(value = """
+        SELECT * FROM conta_pagar c
+            WHERE c.tenant_id = :tenantId
+                AND c.ativo = true
+            ORDER BY c.data_emissao DESC
+    """, nativeQuery = true)
     List<ContaPagar> findForSelect(@Param("tenantId") UUID tenantId);
 }
