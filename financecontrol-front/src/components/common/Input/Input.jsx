@@ -102,7 +102,7 @@ const Input = forwardRef(function Input(
 
   return (
     <label className="input-field__label" htmlFor={id}>
-      {label}
+      <span className="input-field__label-text">{label}</span>
       {input}
     </label>
   );
