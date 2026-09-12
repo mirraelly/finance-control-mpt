@@ -128,8 +128,8 @@ h2.aside-content-text {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
   color: var(--primary);
   margin-bottom: 10px;
 }
@@ -137,7 +137,7 @@ h2.aside-content-text {
 .cadastro-title {
   display: flex;
   align-items: center;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: var(--font-size-24);
   margin-bottom: 8px;
 }
@@ -145,7 +145,7 @@ h2.aside-content-text {
 .cadastro-descricao {
   display: flex;
   align-items: center;
-  color: var(--color-slate-400);
+  color: var(--text-secondary);
   font-size: var(--font-size-14);
   text-align: justify;
   line-height: 22px;
@@ -176,6 +176,7 @@ h2.aside-content-text {
   border-radius: 8px;
   color: var(--primary);
   font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
 }
 
 .cadastro-aviso svg {
@@ -238,13 +239,14 @@ h2.aside-content-text {
   align-items: center;
   gap: 0.6rem;
   cursor: pointer;
-  color: var(--color-slate-300);
-  font-size: var(--font-size-12);
+  color: var(--text-primary);
+  font-size: var(--font-size-14);
   line-height: 20px;
 }
 
 .confirmar-label .link-destaque {
   color: var(--primary);
+  font-weight: var(--font-weight-bold);
 }
 
 .custom-checkbox {
@@ -278,6 +280,11 @@ h2.aside-content-text {
 .cadastro-footer .link-destaque {
   color: var(--primary);
   font-weight: var(--font-weight-bold);
+}
+
+.confirmar-label .link-destaque:hover,
+.cadastro-footer .link-destaque:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 992px) {
