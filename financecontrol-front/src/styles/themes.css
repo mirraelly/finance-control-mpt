@@ -27,10 +27,14 @@
   --modal-close: var(--color-slate-500);
   --modal-overlay: rgba(15, 23, 42, 0.45);
 
+  --sidebar-item-color: #cbd5e1;
+
   --header-background: var(--color-surface-light-blue);
   --header-border: var(--color-border-light);
   --header-title: var(--color-slate-900);
   --header-date: var(--color-slate-500);
+
+  --main-background: var(--color-surface-light-blue);
 }
 
 [data-theme="dark"] {
@@ -65,4 +69,6 @@
   --header-border: var(--color-auth-border);
   --header-title: var(--color-white);
   --header-date: var(--color-slate-400);
+
+  --main-background: var(--bg-main);
 }

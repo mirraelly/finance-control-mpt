@@ -62,12 +62,7 @@ function Sidebar({
           onClick={onToggle}
           aria-label={isCompact ? "Expandir menu" : "Recolher menu"}
         >
-          <HugeiconsIcon
-            icon={TradeUpIcon}
-            stroke="2"
-            size={24}
-            color="var(--color-midnight-blue)"
-          />
+          <HugeiconsIcon icon={TradeUpIcon} stroke="2" size={24} />
         </button>
 
         {!isCompact && (
