@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.pessoa.dtos;
 
+import com.mpt.financecontrol.email.dtos.EmailResponseDto;
 import com.mpt.financecontrol.endereco.dtos.EnderecoResponseDto;
 import com.mpt.financecontrol.pessoa.TipoPessoa;
 import com.mpt.financecontrol.telefone.dtos.TelefoneResponseDto;
@@ -27,6 +28,7 @@ public record PessoaResponseDto(
         Boolean                     ativo,
         List<TelefoneResponseDto>   telefones,
         List<EnderecoResponseDto>   enderecos,
+        List<EmailResponseDto>      emails,
         Instant                     createdAt,
         Instant                     updatedAt
 ) {}

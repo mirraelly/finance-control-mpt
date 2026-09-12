@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.pessoa.dtos;
 
+import com.mpt.financecontrol.email.dtos.EmailItemDto;
 import com.mpt.financecontrol.endereco.dtos.EnderecoItemDto;
 import com.mpt.financecontrol.pessoa.TipoPessoa;
 import com.mpt.financecontrol.telefone.dtos.TelefoneItemDto;
@@ -40,5 +41,8 @@ public record PessoaCreateDto(
         List<@Valid TelefoneItemDto> telefones,
 
         @Schema(description = "Endereços da pessoa")
-        List<@Valid EnderecoItemDto> enderecos
+        List<@Valid EnderecoItemDto> enderecos,
+
+        @Schema(description = "Emails da pessoa")
+        List<@Valid EmailItemDto> emails
 ) {}

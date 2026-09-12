@@ -11,8 +11,8 @@ const authService = {
         return response.data;
     },
 
-    register: async (useData) => {
-        const response = await api.post('/auth/register', useData)
+    register: async (userData) => {
+        const response = await api.post('/auth/register', userData)
         return response.data;
     },
 };

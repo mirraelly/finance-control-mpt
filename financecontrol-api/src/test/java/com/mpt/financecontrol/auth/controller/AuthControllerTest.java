@@ -92,7 +92,7 @@ class AuthControllerTest {
     @DisplayName("POST /auth/register -> 201 quando o corpo é válido")
     void register_comDadosValidos_retorna201() throws Exception {
         UsuarioCreateDto body =
-                new UsuarioCreateDto("Eduardo", "eduardo@example.com", "senha12345", null, null, null);
+                new UsuarioCreateDto("Eduardo", "eduardo@example.com", "Senha@123", null, null, null);
         UsuarioResponseDto resposta = new UsuarioResponseDto(
                 UUID.randomUUID(), UUID.randomUUID(), "Eduardo", "eduardo@example.com",
                 null, "55", Role.USER, true, null, null);
