@@ -280,6 +280,7 @@ h2.aside-content-text {
 .cadastro-footer .link-destaque {
   color: var(--primary);
   font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-16);
 }
 
 .confirmar-label .link-destaque:hover,
