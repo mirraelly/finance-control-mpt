@@ -47,7 +47,6 @@ function Header({ title = "Início" }) {
       <div className="header-right-group">
         <Input
           className="header-search"
-          theme="dark"
           shadow={false}
           icon={<HugeiconsIcon icon={Search01Icon} size={18} />}
           placeholder="Buscar transações..."
