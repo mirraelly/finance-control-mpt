@@ -133,6 +133,6 @@ export default function Cadastro() {
         <p className="signin">Já tem uma conta? <a href="#">Entrar</a></p>
       </div>
     
-    <script src="script.js"></script>
+   
   );
 }
