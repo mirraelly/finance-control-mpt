@@ -1,7 +1,7 @@
-import Cadastro from "./components/layout/Auth/Cadastro";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  return <Cadastro />;
+  return <AppRoutes />;
 }
 
 export default App;

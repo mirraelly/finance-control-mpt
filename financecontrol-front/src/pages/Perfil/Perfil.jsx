@@ -151,6 +151,22 @@ function Perfil() {
                                 </span>
                             </div>
                         </div>
+
+                        <div className="perfil-info-item">
+                            <div className="perfil-info-detalhes">
+                                <span className="perfil-info-label">Perfil de acesso</span>
+                                <span className="perfil-info-valor">{usuario.role}</span>
+                            </div>
+                        </div>
+
+                        <div className="perfil-info-item">
+                            <div className="perfil-info-detalhes">
+                                <span className="perfil-info-label">Status da conta</span>
+                                <span className="perfil-info-valor">
+                                    {usuario.ativo ? "Ativa" : "Inativa"}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </Card>
 
@@ -169,6 +185,8 @@ function Perfil() {
                 isOpen={modalAberto}
                 onClose={() => setModalAberto(false)}
                 title="Editar perfil"
+                theme="dark"
+                className="perfil-modal"
             >
                 <p className="perfil-modal-subtitulo">
                     Atualize seu nome e telefone de contato.
