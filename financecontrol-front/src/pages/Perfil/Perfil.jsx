@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import  usuarioService from '../../services/usuarioService';
 import Card from "../../components/common/Card/Card";
 import Button from "../../components/common/Button/Button";
 import Input from "../../components/common/Input/Input";
@@ -27,11 +28,40 @@ function Perfil() {
         updatedAt: "2024-03-10",
     });
 
+    const [carregando, setCarregando] = useState(true)
     const [modalAberto, setModalAberto] = useState(false);
 
     const [nomeEditado, setNomeEditado] = useState(usuario.nome);
     const [telefoneEditado, setTelefoneEditado] = useState(usuario.telefone);
     const [codigoPaisEditado, setCodigoPaisEditado] = useState(usuario.codigoPais);
+
+    useEffect(() => {
+        async function carregarDadosDoPerfil() {
+            try {
+                setCarregando(true)
+
+                const userId = localStorage.getItem('userId')
+
+                if (userId) {
+                    const dadosReais = await usuarioService.buscarUsuarioPorId(userId)
+                    setUsuario(dadosReais)
+                }
+            } catch (erro) {
+                console.log("Erro ao carregar dados do perfil:", erro)
+            } finally {
+                setCarregando(false)
+            }
+        }
+
+        carregarDadosDoPerfil();
+    }, []);
+
+
+    const handleLogout = () => {
+        localStorage.removeItem("token")
+        localStorage.removeItem("userId")
+        window.location.href = "/"
+    };
 
     const abrirModalEdicao = () => {
         setNomeEditado(usuario.nome);
@@ -59,12 +89,27 @@ function Perfil() {
         setModalAberto(false);
     };
 
-    const iniciais = usuario.nome
+    const iniciais = (usuario.nome || "")
         .split(" ")
+        .filter(Boolean)
         .map((parte) => parte[0])
         .slice(0, 2)
         .join("")
         .toUpperCase();
+
+
+    if (carregando) {
+        return (
+            <main className="perfil-page">
+                <div className="perfil-container">
+                    <p style={{ color: "#fff", textAlign: "center", marginTop: "2rem" }}>
+                        Carregando dados do perfil...
+                    </p>
+                </div>
+            </main>
+        );
+    }
+
 
     return (
         <main className="perfil-page">
@@ -167,6 +212,13 @@ function Perfil() {
                                 </span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="perfil-logout-container" style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem" }}>
+                        
+                        <Button variant="secondary" onClick={handleLogout}>
+                            🚪 Sair da conta
+                        </Button>
                     </div>
                 </Card>
 
