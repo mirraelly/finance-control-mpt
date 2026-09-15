@@ -32,7 +32,10 @@ function ThemeToggle() {
       document.documentElement.classList.remove("theme-transition");
     }, 400);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      document.documentElement.classList.remove("theme-transition");
+    };
   }, [theme]);
 
   return (
