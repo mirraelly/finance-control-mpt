@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -15,22 +16,22 @@ import java.util.UUID;
 public interface ContaReceberRepository extends JpaRepository<ContaReceber, UUID> {
 
     @Query(value = """
-           SELECT * FROM conta_receber c
-           WHERE c.tenant_id = :tenantId
-           AND (CAST(:pessoaId AS uuid) IS NULL OR c.pessoa_id = CAST(:pessoaId AS uuid))
-           AND (CAST(:categoriaId AS uuid) IS NULL OR c.categoria_id = CAST(:categoriaId AS uuid))
-           AND (CAST(:status AS text) IS NULL OR c.status = CAST(:status AS text))
-           AND (CAST(:ativo AS boolean) IS NULL OR c.ativo = CAST(:ativo AS boolean))
- """,
-    countQuery = """
-            SELECT count(*) FROM conta_receber c
-            WHERE c.tenant_id = :tenantId
-            AND (CAST(:pessoaId AS uuid) IS NULL OR c.pessoa_id = CAST(:pessoaId AS uuid))
-            AND (CAST(:categoriaId AS uuid) IS NULL OR c.categoria_id = CAST(:categoriaId AS uuid))
-            AND (CAST(:status AS text) IS NULL OR c.status = CAST(:status AS text))
-            AND (CAST(:ativo AS boolean) IS NULL OR c.ativo = CAST(:ativo AS boolean))
- """,
-    nativeQuery = true)
+                      SELECT * FROM conta_receber c
+                      WHERE c.tenant_id = :tenantId
+                      AND (CAST(:pessoaId AS uuid) IS NULL OR c.pessoa_id = CAST(:pessoaId AS uuid))
+                      AND (CAST(:categoriaId AS uuid) IS NULL OR c.categoria_id = CAST(:categoriaId AS uuid))
+                      AND (CAST(:status AS text) IS NULL OR c.status = CAST(:status AS text))
+                      AND (CAST(:ativo AS boolean) IS NULL OR c.ativo = CAST(:ativo AS boolean))
+            """,
+            countQuery = """
+                               SELECT count(*) FROM conta_receber c
+                               WHERE c.tenant_id = :tenantId
+                               AND (CAST(:pessoaId AS uuid) IS NULL OR c.pessoa_id = CAST(:pessoaId AS uuid))
+                               AND (CAST(:categoriaId AS uuid) IS NULL OR c.categoria_id = CAST(:categoriaId AS uuid))
+                               AND (CAST(:status AS text) IS NULL OR c.status = CAST(:status AS text))
+                               AND (CAST(:ativo AS boolean) IS NULL OR c.ativo = CAST(:ativo AS boolean))
+                    """,
+            nativeQuery = true)
     Page<ContaReceber> findAllWithFilters(
             Pageable pageable,
             @Param("tenantId") UUID tenantId,
@@ -41,11 +42,11 @@ public interface ContaReceberRepository extends JpaRepository<ContaReceber, UUID
     );
 
     @Query(value = """
-            SELECT * FROM conta_receber c
-            WHERE c. tenant_id = :tenantId
-            AND c.ativo = true 
-            ORDER BY c.data_emissao DESC
- """, nativeQuery = true)
+                       SELECT * FROM conta_receber c
+                       WHERE c. tenant_id = :tenantId
+                       AND c.ativo = true 
+                       ORDER BY c.data_emissao DESC
+            """, nativeQuery = true)
     List<ContaReceber> findForSelect(@Param("tenantId") UUID tenantId);
 }
 

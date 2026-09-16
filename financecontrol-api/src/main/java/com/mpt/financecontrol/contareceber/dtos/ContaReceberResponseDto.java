@@ -21,4 +21,5 @@ public record ContaReceberResponseDto(
         Boolean ativo,
         Instant createdAt,
         Instant updatedAt
-) {}
+) {
+}
