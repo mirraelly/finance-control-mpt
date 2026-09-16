@@ -194,13 +194,6 @@ function Transacoes() {
 
   return (
     <div className="transacoes-page">
-      <header className="transacoes-page__header">
-        <div>
-          <h1>Transações</h1>
-          <p>Acompanhe todas as suas receitas e despesas em um só lugar.</p>
-        </div>
-      </header>
-
       <Card
         className="transacoes-toolbar"
         padding="sm"
@@ -283,8 +276,7 @@ function Transacoes() {
                       <div className="transacoes-table__description">
                         <span
                           className={`transacoes-avatar transacoes-avatar--${
-                            CATEGORY_VARIANT[transaction.categoria] ||
-                            "neutral"
+                            CATEGORY_VARIANT[transaction.categoria] || "neutral"
                           }`}
                           aria-hidden="true"
                         >
