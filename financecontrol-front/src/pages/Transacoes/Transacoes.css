@@ -1,0 +1,217 @@
+.transacoes-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  padding: var(--space-2) 0 var(--space-6);
+}
+
+.transacoes-page__header h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-bold);
+}
+
+.transacoes-page__header p {
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+/* Toolbar */
+.transacoes-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border);
+}
+
+.transacoes-toolbar__search {
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+.transacoes-toolbar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.transacoes-toolbar__category .select-field {
+  background-color: var(--bg-primary);
+}
+
+/* Tabs (Todas / Receitas / Despesas) */
+.transacoes-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+.transacoes-tabs__item {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.transacoes-tabs__item:hover:not(.is-active) {
+  color: var(--text-primary);
+}
+
+.transacoes-tabs__item.is-active {
+  background-color: var(--primary);
+  color: var(--color-white);
+}
+
+/* Table card */
+.transacoes-table-card {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.transacoes-table__wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.transacoes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transacoes-table thead th {
+  padding: var(--space-4) var(--space-5);
+  text-align: left;
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.transacoes-table__value-col {
+  text-align: right;
+}
+
+.transacoes-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+
+.transacoes-table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.transacoes-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.transacoes-table td {
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-14);
+  color: var(--text-primary);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.transacoes-table__description {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: var(--font-weight-semibold);
+  white-space: normal;
+}
+
+.transacoes-table__muted {
+  color: var(--text-secondary);
+}
+
+.transacoes-table__value {
+  text-align: right;
+  font-weight: var(--font-weight-bold);
+}
+
+.transacoes-table__value--positive {
+  color: var(--success);
+}
+
+.transacoes-table__value--negative {
+  color: var(--danger);
+}
+
+/* Avatar */
+.transacoes-avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+}
+
+.transacoes-avatar--moradia {
+  background-color: var(--color-indigo-50);
+  color: var(--color-blue-500);
+}
+
+.transacoes-avatar--alimentacao {
+  background-color: var(--color-amber-50);
+  color: var(--color-orange-500);
+}
+
+.transacoes-avatar--entretenimento {
+  background-color: var(--color-purple-50);
+  color: var(--color-purple-600);
+}
+
+.transacoes-avatar--saude {
+  background-color: var(--color-red-50);
+  color: var(--color-red-600);
+}
+
+.transacoes-avatar--neutral {
+  background-color: var(--color-slate-100-alt);
+  color: var(--color-slate-600);
+}
+
+.transacoes-avatar--receita {
+  background-color: var(--color-teal-50);
+  color: var(--color-teal-600);
+}
+
+@media (max-width: 768px) {
+  .transacoes-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .transacoes-toolbar__filters {
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}
