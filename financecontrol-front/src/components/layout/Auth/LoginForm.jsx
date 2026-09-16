@@ -47,9 +47,8 @@ function LoginForm() {
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="maria@email.com"
+          placeholder="email@email.com"
           autoComplete="email"
-          theme="dark"
           fullWidth
           required
         />
@@ -62,7 +61,6 @@ function LoginForm() {
           onChange={(event) => setSenha(event.target.value)}
           placeholder="••••••••"
           autoComplete="current-password"
-          theme="dark"
           fullWidth
           required
         />

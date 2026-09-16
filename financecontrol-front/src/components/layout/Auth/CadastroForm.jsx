@@ -156,7 +156,7 @@ function CadastroForm() {
             id="email"
             type="email"
             value={email}
-            placeholder=" Mariasilva@email.com"
+            placeholder="email@email.com"
             maxLength={255}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -180,7 +180,7 @@ function CadastroForm() {
             pattern="[0-9]{1,4}"
             maxLength={4}
             value={ddi}
-            placeholder="xx"
+            placeholder="00"
             onChange={(event) => {
               const value = event.target.value.replace(/\D/g, "").slice(0, 4);
               setDdi(value);
@@ -304,6 +304,7 @@ function CadastroForm() {
             >
               política de privacidade
             </span>
+            .
           </span>
         </div>
 
