@@ -77,7 +77,7 @@ public class ContaReceberService {
     }
 
     @Transactional(readOnly = true)
-    public List<ContaReceberResponseDto> selec() {
+    public List<ContaReceberResponseDto> select() {
         Tenant tenant = usuarioService.getTenantLogado();
         return repository.findForSelect(tenant.getId())
                 .stream()
