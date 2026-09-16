@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import  usuarioService from '../../services/usuarioService';
+import usuarioService from '../../services/usuarioService';
 import Card from "../../components/common/Card/Card";
 import Button from "../../components/common/Button/Button";
 import Input from "../../components/common/Input/Input";
@@ -9,6 +9,7 @@ import { Calendar03Icon, Call02Icon, Mail01Icon } from "../../assets/icons";
 import "./Perfil.css";
 
 function formatarMesAno(dataISO) {
+    if (!dataISO) return "";
     const data = new Date(dataISO);
     const texto = data.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
     return texto.charAt(0).toUpperCase() + texto.slice(1);
@@ -28,50 +29,57 @@ function Perfil() {
         updatedAt: "2024-03-10",
     });
 
-    const [carregando, setCarregando] = useState(true)
+    const [carregando, setCarregando] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+    const [deletando, setDeletando] = useState(false);
+    
     const [modalAberto, setModalAberto] = useState(false);
+    const [modalDeletarAberto, setModalDeletarAberto] = useState(false);
 
-    const [nomeEditado, setNomeEditado] = useState(usuario.nome);
-    const [telefoneEditado, setTelefoneEditado] = useState(usuario.telefone);
-    const [codigoPaisEditado, setCodigoPaisEditado] = useState(usuario.codigoPais);
+    const [nomeEditado, setNomeEditado] = useState("");
+    const [telefoneEditado, setTelefoneEditado] = useState("");
+    const [codigoPaisEditado, setCodigoPaisEditado] = useState("");
 
     useEffect(() => {
         async function carregarDadosDoPerfil() {
             try {
-                setCarregando(true)
-
-                const userId = localStorage.getItem('userId')
+                setCarregando(true);
+                const userId = localStorage.getItem('userId');
 
                 if (userId) {
-                    const dadosReais = await usuarioService.buscarUsuarioPorId(userId)
-                    setUsuario(dadosReais)
+                    const dadosReais = await usuarioService.buscarUsuarioPorId(userId);
+                    setUsuario(dadosReais);
                 }
             } catch (erro) {
-                console.log("Erro ao carregar dados do perfil:", erro)
+                console.error("Erro ao carregar dados do perfil:", erro);
             } finally {
-                setCarregando(false)
+                setCarregando(false);
             }
         }
 
         carregarDadosDoPerfil();
     }, []);
 
-
     const handleLogout = () => {
-        localStorage.removeItem("token")
-        localStorage.removeItem("userId")
-        window.location.href = "/"
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        window.location.href = "/";
     };
 
     const abrirModalEdicao = () => {
-        setNomeEditado(usuario.nome);
-        setTelefoneEditado(usuario.telefone);
-        setCodigoPaisEditado(usuario.codigoPais);
+        setNomeEditado(usuario.nome || "");
+        setTelefoneEditado(usuario.telefone || "");
+        setCodigoPaisEditado(usuario.codigoPais || "");
         setModalAberto(true);
     };
 
-    const handleSalvar = (event) => {
+    const handleSalvar = async (event) => {
         event.preventDefault();
+
+        if (!nomeEditado.trim() || nomeEditado.trim().length < 3) {
+            alert("Por favor, informe um nome válido com pelo menos 3 caracteres.");
+            return;
+        }
 
         const usuarioUpdateDto = {
             nome: nomeEditado,
@@ -81,12 +89,41 @@ function Perfil() {
             role: usuario.role,
         };
 
-        setUsuario((anterior) => ({
-            ...anterior,
-            ...usuarioUpdateDto,
-        }));
+        try {
+            setSalvando(true);
+            const userId = localStorage.getItem("userId");
 
-        setModalAberto(false);
+            if (userId) {
+                const usuarioAtualizado = await usuarioService.atualizarUsuario(userId, usuarioUpdateDto);
+                setUsuario(usuarioAtualizado);
+            }
+
+            setModalAberto(false);
+        } catch (erro) {
+            console.error("Erro ao atualizar perfil:", erro);
+            alert("Não foi possível salvar as alterações. Tente novamente.");
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+    const handleDeletarConta = async () => {
+        try {
+            setDeletando(true);
+            const userId = localStorage.getItem("userId");
+
+            if (userId) {
+                await usuarioService.deletarUsuario(userId);
+            }
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            window.location.href = "/";
+        } catch (erro) {
+            console.error("Erro ao deletar conta:", erro);
+            alert("Não foi possível excluir sua conta. Tente novamente.");
+            setDeletando(false);
+        }
     };
 
     const iniciais = (usuario.nome || "")
@@ -96,7 +133,6 @@ function Perfil() {
         .slice(0, 2)
         .join("")
         .toUpperCase();
-
 
     if (carregando) {
         return (
@@ -110,7 +146,6 @@ function Perfil() {
         );
     }
 
-
     return (
         <main className="perfil-page">
             <header className="perfil-topo">
@@ -123,7 +158,6 @@ function Perfil() {
             </header>
 
             <div className="perfil-container">
-
                 <Card className="perfil-header-card">
                     <div className="perfil-avatar">{iniciais}</div>
 
@@ -152,7 +186,7 @@ function Perfil() {
                     </div>
 
                     <Button variant="primary" onClick={abrirModalEdicao}>
-                        ✎ Editar perfil
+                        Editar perfil
                     </Button>
                 </Card>
 
@@ -214,10 +248,12 @@ function Perfil() {
                         </div>
                     </div>
 
-                    <div className="perfil-logout-container" style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem" }}>
-                        
+                    <div className="perfil-logout-container" style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem", display: "flex", gap: "1rem" }}>
                         <Button variant="secondary" onClick={handleLogout}>
-                            🚪 Sair da conta
+                            Sair
+                        </Button>
+                        <Button variant="danger" onClick={() => setModalDeletarAberto(true)}>
+                            Excluir conta
                         </Button>
                     </div>
                 </Card>
@@ -230,7 +266,6 @@ function Perfil() {
                         segurança estarão disponíveis em breve.
                     </p>
                 </Card>
-
             </div>
 
             <Modal
@@ -287,14 +322,43 @@ function Perfil() {
                             type="button"
                             variant="secondary"
                             onClick={() => setModalAberto(false)}
+                            disabled={salvando}
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" variant="primary">
-                            Salvar
+                        <Button type="submit" variant="primary" disabled={salvando}>
+                            {salvando ? "Salvando..." : "Salvar"}
                         </Button>
                     </div>
                 </form>
+            </Modal>
+
+            <Modal
+                isOpen={modalDeletarAberto}
+                onClose={() => setModalDeletarAberto(false)}
+                title="Excluir Conta"
+                theme="dark"
+            >
+                <p style={{ color: "#fff", marginBottom: "1.5rem" }}>
+                    Tem certeza que deseja excluir sua conta? Esta ação é irreversível e todos os seus dados serão apagados.
+                </p>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setModalDeletarAberto(false)}
+                        disabled={deletando}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={handleDeletarConta}
+                        disabled={deletando}
+                    >
+                        {deletando ? "Excluindo..." : "Confirmar Exclusão"}
+                    </Button>
+                </div>
             </Modal>
         </main>
     );
