@@ -1,25 +1,20 @@
 package com.mpt.financecontrol.categoria.dtos;
 
-import com.mpt.financecontrol.email.dtos.EmailItemDto;
-import com.mpt.financecontrol.categoria.dtos.CategoriaUpdateDto;
-import com.mpt.financecontrol.categoria.TipoCategoria;
-import com.mpt.financecontrol.telefone.dtos.TelefoneItemDto;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import java.time.LocalDate;
-import java.util.List;
+import jakarta.validation.constraints.Size;
 
 public record CategoriaUpdateDto(
 
-        @Schema(description = "Nome da categoria", example = "Categorias...")
-        @NotBlank(message = "Categoria é obrigatório")
+        @Schema(description = "Nome da categoria", example = "Alimentação")
+        @NotBlank(message = "Nome é obrigatório")
+        @Size(max = 100, message = "Nome deve ter no máximo 100 caracteres")
         String nome,
 
-        @Schema(description = "Tipo da categoria", example = "CATEGORIA")
-        @NotNull(message = "Tipo de categoria é obrigatório")
-        TipoCategoria tipoCategoria
+        @Schema(description = "Descrição da categoria", example = "Gastos com mercado e refeições")
+        @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
+        String descricao,
 
+        @Schema(description = "Definir se a categoria está ativa", example = "true")
+        Boolean ativo
 ) {}

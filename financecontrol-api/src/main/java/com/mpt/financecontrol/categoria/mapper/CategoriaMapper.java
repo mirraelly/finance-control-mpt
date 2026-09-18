@@ -5,8 +5,7 @@ import com.mpt.financecontrol.categoria.entity.Categoria;
 
 public class CategoriaMapper {
 
-    private CategoriaMapper() {
-    }
+    private CategoriaMapper() {}
 
     public static CategoriaResponseDto toResponseDto(Categoria categoria) {
         return new CategoriaResponseDto(

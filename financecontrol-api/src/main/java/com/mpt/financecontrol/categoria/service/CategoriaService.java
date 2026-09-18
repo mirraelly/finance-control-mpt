@@ -1,93 +1,103 @@
 package com.mpt.financecontrol.categoria.service;
 
-import com.mpt.financecontrol.categoria.dtos.CategoriaResponseDtoDto;
-import com.mpt.financecontrol.categoria.dtos.CategoriaUpdateDtoDto;
+import com.mpt.financecontrol.categoria.dtos.CategoriaCreateDto;
+import com.mpt.financecontrol.categoria.dtos.CategoriaResponseDto;
+import com.mpt.financecontrol.categoria.dtos.CategoriaUpdateDto;
 import com.mpt.financecontrol.categoria.entity.Categoria;
+import com.mpt.financecontrol.categoria.mapper.CategoriaMapper;
 import com.mpt.financecontrol.categoria.repository.CategoriaRepository;
-import com.mpt.financecontrol.exceptions.BadRequestException;
-import com.mpt.financecontrol.pessoa.entity.Pessoa;
+import com.mpt.financecontrol.exceptions.ConflictException;
+import com.mpt.financecontrol.exceptions.NotFoundException;
 import com.mpt.financecontrol.tenant.entity.Tenant;
-import com.mpt.financecontrol.tipocategoria.entity.TipoCategoria;
-import com.mpt.financecontrol.tipocategoria.service.TipoCategoriaService;
+import com.mpt.financecontrol.usuario.service.UsuarioService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class CategoriaService {
 
-    private final CategoriaRepository repository;
-    private final TipoCategoriaService tipoCategoriaService;
+    private final CategoriaRepository categoriaRepository;
+    private final UsuarioService      usuarioService;
 
     public CategoriaService(
-            CategoriaRepository repository,
-            TipoCategoriaService tipoCategoriaService
+            CategoriaRepository categoriaRepository,
+            UsuarioService      usuarioService
     ) {
-        this.repository = repository;
-        this.tipoCategoriaService = tipoCategoriaService;
+        this.categoriaRepository = categoriaRepository;
+        this.usuarioService      = usuarioService;
+    }
+
+    @Transactional(readOnly = true)
+    public Categoria findById(UUID id) {
+        Tenant tenant = usuarioService.getTenantLogado();
+
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Categoria não encontrada"));
+
+        if (!categoria.getTenant().getId().equals(tenant.getId()))
+            throw new NotFoundException("Categoria não encontrada");
+
+        return categoria;
+    }
+
+    @Transactional(readOnly = true)
+    public CategoriaResponseDto findByIdResponse(UUID id) {
+        return CategoriaMapper.toResponseDto(findById(id));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CategoriaResponseDto> getAll(Pageable pageable, String nome) {
+        Tenant tenant = usuarioService.getTenantLogado();
+        return categoriaRepository.findAllWithFilters(pageable, tenant.getId(), nome)
+                .map(CategoriaMapper::toResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoriaResponseDto> select() {
+        Tenant tenant = usuarioService.getTenantLogado();
+        return categoriaRepository.findForSelect(tenant.getId())
+                .stream()
+                .map(CategoriaMapper::toResponseDto)
+                .toList();
     }
 
     @Transactional
-    public void sincronizarCategorias(
-            Pessoa pessoa,
-            Tenant tenant,
-            List<CategoriaItemDto> dtos
-    ) {
-        if (dtos == null) {
-            return;
-        }
+    public CategoriaResponseDto create(CategoriaCreateDto dto) {
+        Tenant tenant = usuarioService.getTenantLogado();
 
-        List<Categoria> existentes =
-                repository.findByPessoaId(pessoa.getId());
+        if (categoriaRepository.existsByTenantIdAndNomeNormalizado(tenant.getId(), dto.nome()))
+            throw new ConflictException("Já existe uma categoria com esse nome");
 
-        Set<UUID> idsRecebidos = dtos.stream()
-                .map(CategoriaItemDto::id)
-                .filter(id -> id != null)
-                .collect(Collectors.toSet());
+        Categoria categoria = new Categoria();
+        categoria.setTenant(tenant);
+        categoria.setNome(dto.nome());
+        categoria.setDescricao(dto.descricao());
+        if (dto.ativo() != null)
+            categoria.setAtivo(dto.ativo());
 
-        List<Categoria> remover = existentes.stream()
-                .filter(categoria ->
-                        !idsRecebidos.contains(categoria.getId()))
-                .toList();
+        return CategoriaMapper.toResponseDto(categoriaRepository.save(categoria));
+    }
 
-        repository.deleteAll(remover);
+    @Transactional
+    public CategoriaResponseDto update(UUID id, CategoriaUpdateDto dto) {
+        Categoria categoria = findById(id);
 
-        for (CategoriaItemDto dto : dtos) {
+        categoriaRepository.findByTenantIdAndNomeNormalizado(categoria.getTenant().getId(), dto.nome())
+                .filter(existente -> !existente.getId().equals(id))
+                .ifPresent(e -> {
+                    throw new ConflictException("Já existe outra categoria com esse nome");
+                });
 
-            TipoCategoria tipoCategoria =
-                    tipoCategoriaService.findById(
-                            dto.tipoCategoriaId()
-                    );
+        categoria.setNome(dto.nome());
+        categoria.setDescricao(dto.descricao());
+        if (dto.ativo() != null)
+            categoria.setAtivo(dto.ativo());
 
-            Categoria categoria;
-
-            if (dto.id() != null) {
-
-                categoria = existentes.stream()
-                        .filter(c ->
-                                c.getId().equals(dto.id()))
-                        .findFirst()
-                        .orElseGet(Categoria::new);
-
-            } else {
-
-                categoria = new Categoria();
-            }
-
-            categoria.setTenant(tenant);
-            categoria.setPessoa(pessoa);
-            categoria.setTipoCategoria(tipoCategoria);
-
-            // Ajuste estes campos conforme os atributos
-            // existentes na sua entidade Categoria.
-            categoria.setNome(dto.nome());
-            categoria.setDescricao(dto.descricao());
-
-            repository.save(categoria);
-        }
+        return CategoriaMapper.toResponseDto(categoriaRepository.save(categoria));
     }
 }
