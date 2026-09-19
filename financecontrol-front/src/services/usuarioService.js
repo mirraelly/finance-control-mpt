@@ -6,7 +6,7 @@ export const usuarioService = {
     
     buscarUsuarioPorId: async (id) => {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/usuarios/${id}`, {
+        const response = await axios.get(`${API_URL}/usuario/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -16,7 +16,18 @@ export const usuarioService = {
 
     atualizarUsuario: async (id, dados) => {
         const token = localStorage.getItem('token');
-        const response = await axios.patch(`${API_URL}/usuarios/${id}`, dados, {
+        const response = await axios.patch(`${API_URL}/usuario/${id}`, dados, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    },
+
+
+    deletarUsuario: async (id) =>{
+        const token = localStorage.getItem("token");
+        const response = await axios.delete(`${API_URL}/usuario/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
