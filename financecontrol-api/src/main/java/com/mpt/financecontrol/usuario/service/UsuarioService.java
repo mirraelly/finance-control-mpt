@@ -162,6 +162,11 @@ public class UsuarioService {
         return usuario;
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioResponseDto getPerfilAutenticado() {
+        return UsuarioMapper.toResponseDto(getUsuarioAutenticado());
+    }
+
     public Tenant getTenantLogado() {
         return getUsuarioAutenticado().getTenant();
     }

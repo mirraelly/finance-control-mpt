@@ -29,6 +29,13 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
+    @Operation(summary = "Busca o perfil do usuário autenticado")
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UsuarioResponseDto> getMeuPerfil() {
+        return ResponseEntity.ok(usuarioService.getPerfilAutenticado());
+    }
+
     @Operation(summary = "Busca usuário por id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPERADMIN')")

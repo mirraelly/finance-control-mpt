@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import { HugeiconsIcon, Menu01Icon } from "../../assets/icons";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
@@ -10,6 +10,13 @@ import Header from "../../components/layout/Header/Header";
 function InternalLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const pageTitles = {
+    "/home": "Início",
+    "/perfil": "Perfil",
+    "/componentes-teste": "Componentes",
+  };
+  const title = pageTitles[location.pathname] || "Início";
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => !prev);
@@ -53,7 +60,7 @@ function InternalLayout() {
         >
           <HugeiconsIcon icon={Menu01Icon} size={24} strokeWidth={2} />
         </button>
-        <Header title="Início" />
+        <Header title={title} />
 
         <main className="app-layout__main">
           <Outlet />

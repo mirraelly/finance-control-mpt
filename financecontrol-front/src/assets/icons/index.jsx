@@ -29,7 +29,9 @@ import {
   Menu01Icon,
   PlusIcon,
   Call02Icon,
-  Mail01Icon
+  Mail01Icon,
+  Logout05Icon,
+  Delete02Icon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -60,5 +62,7 @@ export {
   Menu01Icon,
   PlusIcon,
   Call02Icon,
-  Mail01Icon
+  Mail01Icon,
+  Logout05Icon,
+  Delete02Icon,
 };
