@@ -28,6 +28,8 @@ import {
   Calendar03Icon,
   Menu01Icon,
   PlusIcon,
+  Call02Icon,
+  Mail01Icon
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -57,4 +59,6 @@ export {
   Calendar03Icon,
   Menu01Icon,
   PlusIcon,
+  Call02Icon,
+  Mail01Icon
 };

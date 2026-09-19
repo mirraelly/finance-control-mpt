@@ -1,10 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-// import ExternalLayout from "../layouts/External/ExternalLayout";
 import InternalLayout from "../layouts/Internal/InternalLayout";
-
 import Home from "../pages/Home/Home";
 import Login from "../pages/Login/Login";
+import Perfil from "../pages/Perfil/Perfil";
 import Cadastro from "../pages/Cadastro/Cadastro";
 import RecuperarSenha from "../pages/RecuperarSenha/RecuperarSenha";
 import ComponentesTeste from "../pages/ComponentesTeste/ComponentesTeste";
@@ -17,6 +15,7 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route element={<InternalLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/componentes-teste" element={<ComponentesTeste />} />
