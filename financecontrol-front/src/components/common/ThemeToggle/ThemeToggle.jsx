@@ -24,8 +24,18 @@ function ThemeToggle() {
   const nextTheme = isDarkTheme ? THEMES.light : THEMES.dark;
 
   useEffect(() => {
+    document.documentElement.classList.add("theme-transition");
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+    const timeout = setTimeout(() => {
+      document.documentElement.classList.remove("theme-transition");
+    }, 400);
+
+    return () => {
+      clearTimeout(timeout);
+      document.documentElement.classList.remove("theme-transition");
+    };
   }, [theme]);
 
   return (

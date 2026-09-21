@@ -26,9 +26,8 @@ function ForgotPasswordForm() {
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="maria@email.com"
+          placeholder="teste@email.com"
           autoComplete="email"
-          theme="dark"
           fullWidth
           required
         />
