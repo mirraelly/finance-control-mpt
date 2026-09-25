@@ -126,6 +126,17 @@ class ContaFinanceiraControllerTest {
     }
 
     @Test
+    @DisplayName("POST /contas-financeiras -> 400 quando o nome passa de 150 caracteres")
+    void create_comNomeMaiorQue150_retorna400() throws Exception {
+        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("a".repeat(151), true);
+
+        mockMvc.perform(post("/contas-financeiras")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("POST /contas-financeiras -> 409 quando o service lança Conflict")
     void create_comNomeDuplicado_retorna409() throws Exception {
         ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("Banco do Brasil", true);
@@ -150,6 +161,18 @@ class ContaFinanceiraControllerTest {
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Caixa Econômica"));
+    }
+
+    @Test
+    @DisplayName("PUT /contas-financeiras/{id} -> 400 quando o nome está em branco")
+    void update_comNomeEmBranco_retorna400() throws Exception {
+        UUID id = UUID.randomUUID();
+        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("", true);
+
+        mockMvc.perform(put("/contas-financeiras/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

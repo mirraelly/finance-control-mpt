@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -130,7 +131,10 @@ class ContaFinanceiraServiceTest {
 
         assertThat(resultado.nome()).isEqualTo("Caixa Econômica");
         assertThat(resultado.ativo()).isTrue();
-        verify(repository).save(any(ContaFinanceira.class));
+
+        ArgumentCaptor<ContaFinanceira> captor = ArgumentCaptor.forClass(ContaFinanceira.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getTenant().getId()).isEqualTo(tenantId);
     }
 
     @Test

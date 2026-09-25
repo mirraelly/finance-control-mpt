@@ -76,7 +76,7 @@ public class ContaFinanceiraController {
             @ApiResponse(responseCode = "409", description = "Conflito (ex: nome já existente)")
     })
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPERADMIN', 'ORGANIZER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ContaFinanceiraResponseDto> create(
             @RequestBody @Valid ContaFinanceiraCreateDto dto
     ) {
@@ -90,7 +90,7 @@ public class ContaFinanceiraController {
             @ApiResponse(responseCode = "409", description = "Conflito")
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPERADMIN', 'ORGANIZER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ContaFinanceiraResponseDto> update(
             @Parameter(description = "ID da conta financeira")
             @PathVariable UUID id,
