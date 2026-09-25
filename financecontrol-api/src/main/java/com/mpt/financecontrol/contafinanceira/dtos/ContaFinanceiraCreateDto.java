@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.contafinanceira.dtos;
 
+import com.mpt.financecontrol.financeiro.TipoContaFinanceira;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,6 +11,9 @@ public record ContaFinanceiraCreateDto(
         @NotBlank(message = "Nome é obrigatório")
         @Size(max = 150, message = "Nome deve ter no máximo 150 caracteres")
         String nome,
+
+        @Schema(description = "Tipo da conta financeira", example = "CORRENTE")
+        TipoContaFinanceira tipo,
 
         @Schema(description = "Definir se a conta financeira está ativa", example = "true")
         Boolean ativo

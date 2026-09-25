@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="017-create-lancamento-financeiro" author="eduardo">
+
+        <createTable tableName="lancamento_financeiro">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="tenant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conta_financeira_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="categoria_id" type="UUID"/>
+            <column name="tipo" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valor" type="NUMERIC(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descricao" type="VARCHAR(255)"/>
+            <column name="data" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName        ="lancamento_financeiro"
+                baseColumnNames      ="tenant_id"
+                referencedTableName  ="tenant"
+                referencedColumnNames="id"
+                constraintName       ="fk_lancamento_financeiro_tenant"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="lancamento_financeiro"
+                baseColumnNames      ="conta_financeira_id"
+                referencedTableName  ="conta_financeira"
+                referencedColumnNames="id"
+                constraintName       ="fk_lancamento_financeiro_conta_financeira"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="lancamento_financeiro"
+                baseColumnNames      ="categoria_id"
+                referencedTableName  ="categoria"
+                referencedColumnNames="id"
+                constraintName       ="fk_lancamento_financeiro_categoria"/>
+
+        <createIndex tableName="lancamento_financeiro" indexName="idx_lancamento_financeiro_tenant">
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <createIndex tableName="lancamento_financeiro" indexName="idx_lancamento_financeiro_conta_financeira">
+            <column name="conta_financeira_id"/>
+        </createIndex>
+
+        <createIndex tableName="lancamento_financeiro" indexName="idx_lancamento_financeiro_data">
+            <column name="data"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="017-add-lancamento-financeiro-tipo-check" author="eduardo">
+        <sql>
+            ALTER TABLE lancamento_financeiro
+                ADD CONSTRAINT ck_lancamento_financeiro_tipo
+                    CHECK (tipo IN ('ENTRADA', 'SAIDA'));
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE lancamento_financeiro DROP CONSTRAINT ck_lancamento_financeiro_tipo;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

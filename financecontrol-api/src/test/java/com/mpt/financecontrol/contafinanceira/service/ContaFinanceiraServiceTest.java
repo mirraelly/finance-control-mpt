@@ -6,6 +6,7 @@ import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraUpdateDto;
 import com.mpt.financecontrol.contafinanceira.entity.ContaFinanceira;
 import com.mpt.financecontrol.contafinanceira.repository.ContaFinanceiraRepository;
 import com.mpt.financecontrol.exceptions.ConflictException;
+import com.mpt.financecontrol.financeiro.TipoContaFinanceira;
 import com.mpt.financecontrol.exceptions.NotFoundException;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
@@ -123,13 +124,14 @@ class ContaFinanceiraServiceTest {
     @Test
     @DisplayName("create: com nome novo, salva e retorna o DTO")
     void create_comNomeNovo_salvaERetornaDto() {
-        ContaFinanceiraCreateDto dto = new ContaFinanceiraCreateDto("Caixa Econômica", true);
+        ContaFinanceiraCreateDto dto = new ContaFinanceiraCreateDto("Caixa Econômica", TipoContaFinanceira.CAIXA, true);
         when(repository.existsByTenantIdAndNomeNormalizado(tenantId, "Caixa Econômica")).thenReturn(false);
         when(repository.save(any(ContaFinanceira.class))).thenAnswer(returnsFirstArg());
 
         ContaFinanceiraResponseDto resultado = service.create(dto);
 
         assertThat(resultado.nome()).isEqualTo("Caixa Econômica");
+        assertThat(resultado.tipo()).isEqualTo(TipoContaFinanceira.CAIXA);
         assertThat(resultado.ativo()).isTrue();
 
         ArgumentCaptor<ContaFinanceira> captor = ArgumentCaptor.forClass(ContaFinanceira.class);
@@ -138,21 +140,22 @@ class ContaFinanceiraServiceTest {
     }
 
     @Test
-    @DisplayName("create: sem informar ativo, usa o padrão true")
-    void create_semAtivo_usaPadraoTrue() {
-        ContaFinanceiraCreateDto dto = new ContaFinanceiraCreateDto("Santander", null);
+    @DisplayName("create: sem informar tipo e ativo, usa os padrões CORRENTE e true")
+    void create_semTipoEAtivo_usaPadroes() {
+        ContaFinanceiraCreateDto dto = new ContaFinanceiraCreateDto("Santander", null, null);
         when(repository.existsByTenantIdAndNomeNormalizado(tenantId, "Santander")).thenReturn(false);
         when(repository.save(any(ContaFinanceira.class))).thenAnswer(returnsFirstArg());
 
         ContaFinanceiraResponseDto resultado = service.create(dto);
 
+        assertThat(resultado.tipo()).isEqualTo(TipoContaFinanceira.CORRENTE);
         assertThat(resultado.ativo()).isTrue();
     }
 
     @Test
     @DisplayName("create: com nome já existente no tenant, lança ConflictException e não salva")
     void create_comNomeExistente_lancaConflict() {
-        ContaFinanceiraCreateDto dto = new ContaFinanceiraCreateDto("Banco do Brasil", true);
+        ContaFinanceiraCreateDto dto = new ContaFinanceiraCreateDto("Banco do Brasil", TipoContaFinanceira.CORRENTE, true);
         when(repository.existsByTenantIdAndNomeNormalizado(tenantId, "Banco do Brasil")).thenReturn(true);
 
         assertThatThrownBy(() -> service.create(dto))
@@ -165,7 +168,7 @@ class ContaFinanceiraServiceTest {
     @Test
     @DisplayName("update: com dados válidos, atualiza e retorna o DTO")
     void update_comDadosValidos_atualizaERetornaDto() {
-        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Caixa Econômica", false);
+        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Caixa Econômica", TipoContaFinanceira.POUPANCA, false);
         when(repository.findById(id)).thenReturn(Optional.of(conta));
         when(repository.findByTenantIdAndNomeNormalizado(tenantId, "Caixa Econômica")).thenReturn(Optional.empty());
         when(repository.save(any(ContaFinanceira.class))).thenAnswer(returnsFirstArg());
@@ -173,13 +176,14 @@ class ContaFinanceiraServiceTest {
         ContaFinanceiraResponseDto resultado = service.update(id, dto);
 
         assertThat(resultado.nome()).isEqualTo("Caixa Econômica");
+        assertThat(resultado.tipo()).isEqualTo(TipoContaFinanceira.POUPANCA);
         assertThat(resultado.ativo()).isFalse();
     }
 
     @Test
     @DisplayName("update: quando não existe, lança NotFoundException e não salva")
     void update_quandoNaoExiste_lancaNotFound() {
-        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Caixa Econômica", true);
+        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Caixa Econômica", TipoContaFinanceira.CORRENTE, true);
         when(repository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.update(id, dto))
@@ -192,7 +196,7 @@ class ContaFinanceiraServiceTest {
     @Test
     @DisplayName("update: com nome que já pertence a OUTRO registro do tenant, lança ConflictException")
     void update_comNomeDeOutro_lancaConflict() {
-        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Caixa Econômica", true);
+        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Caixa Econômica", TipoContaFinanceira.CORRENTE, true);
         ContaFinanceira outra = novaConta(UUID.randomUUID(), "Caixa Econômica", true, tenant);
         when(repository.findById(id)).thenReturn(Optional.of(conta));
         when(repository.findByTenantIdAndNomeNormalizado(tenantId, "Caixa Econômica")).thenReturn(Optional.of(outra));
@@ -207,7 +211,7 @@ class ContaFinanceiraServiceTest {
     @Test
     @DisplayName("update: mantendo o mesmo nome do próprio registro, não dá conflito")
     void update_comMesmoNome_permite() {
-        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Banco do Brasil", false);
+        ContaFinanceiraUpdateDto dto = new ContaFinanceiraUpdateDto("Banco do Brasil", TipoContaFinanceira.CORRENTE, false);
         when(repository.findById(id)).thenReturn(Optional.of(conta));
         when(repository.findByTenantIdAndNomeNormalizado(tenantId, "Banco do Brasil")).thenReturn(Optional.of(conta));
         when(repository.save(any(ContaFinanceira.class))).thenAnswer(returnsFirstArg());

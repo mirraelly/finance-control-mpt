@@ -11,6 +11,7 @@ public class ContaFinanceiraMapper {
         return new ContaFinanceiraResponseDto(
                 conta.getId(),
                 conta.getNome(),
+                conta.getTipo(),
                 conta.getAtivo(),
                 conta.getCreatedAt(),
                 conta.getUpdatedAt()

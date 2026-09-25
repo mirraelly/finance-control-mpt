@@ -73,6 +73,8 @@ public class ContaFinanceiraService {
         ContaFinanceira conta = new ContaFinanceira();
         conta.setTenant(tenant);
         conta.setNome(dto.nome());
+        if (dto.tipo() != null)
+            conta.setTipo(dto.tipo());
         if (dto.ativo() != null)
             conta.setAtivo(dto.ativo());
 
@@ -91,6 +93,7 @@ public class ContaFinanceiraService {
                 });
 
         conta.setNome(dto.nome());
+        conta.setTipo(dto.tipo());
         conta.setAtivo(dto.ativo());
 
         return ContaFinanceiraMapper.toResponseDto(repository.save(conta));

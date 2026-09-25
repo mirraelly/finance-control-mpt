@@ -1,6 +1,7 @@
 package com.mpt.financecontrol.recebimento.entity;
 
 import com.mpt.financecontrol.baseentity.BaseEntity;
+import com.mpt.financecontrol.contafinanceira.entity.ContaFinanceira;
 import com.mpt.financecontrol.contareceberparcela.entity.ContaReceberParcela;
 import com.mpt.financecontrol.formapagamento.entity.FormaPagamento;
 import com.mpt.financecontrol.tenant.entity.Tenant;
@@ -30,11 +31,24 @@ public class Recebimento extends BaseEntity {
     @JoinColumn(name = "forma_pagamento_id", nullable = false)
     private FormaPagamento formaPagamento;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "conta_financeira_id", nullable = false)
+    private ContaFinanceira contaFinanceira;
+
     @Column(name = "data_recebimento", nullable = false)
     private LocalDate dataRecebimento;
 
     @Column(name = "valor", nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
+
+    @Column(name = "juros", nullable = false, precision = 15, scale = 2)
+    private BigDecimal juros = BigDecimal.ZERO;
+
+    @Column(name = "multa", nullable = false, precision = 15, scale = 2)
+    private BigDecimal multa = BigDecimal.ZERO;
+
+    @Column(name = "desconto", nullable = false, precision = 15, scale = 2)
+    private BigDecimal desconto = BigDecimal.ZERO;
 
     @Column(name = "observacao", length = 255)
     private String observacao;
@@ -63,6 +77,14 @@ public class Recebimento extends BaseEntity {
         this.formaPagamento = formaPagamento;
     }
 
+    public ContaFinanceira getContaFinanceira() {
+        return contaFinanceira;
+    }
+
+    public void setContaFinanceira(ContaFinanceira contaFinanceira) {
+        this.contaFinanceira = contaFinanceira;
+    }
+
     public LocalDate getDataRecebimento() {
         return dataRecebimento;
     }
@@ -77,6 +99,30 @@ public class Recebimento extends BaseEntity {
 
     public void setValor(BigDecimal valor) {
         this.valor = valor;
+    }
+
+    public BigDecimal getJuros() {
+        return juros;
+    }
+
+    public void setJuros(BigDecimal juros) {
+        this.juros = juros;
+    }
+
+    public BigDecimal getMulta() {
+        return multa;
+    }
+
+    public void setMulta(BigDecimal multa) {
+        this.multa = multa;
+    }
+
+    public BigDecimal getDesconto() {
+        return desconto;
+    }
+
+    public void setDesconto(BigDecimal desconto) {
+        this.desconto = desconto;
     }
 
     public String getObservacao() {

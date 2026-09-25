@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="015-alter-conta-financeira" author="eduardo">
+
+        <addColumn tableName="conta_financeira">
+            <column name="tipo" type="VARCHAR(25)" defaultValue="CORRENTE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+    </changeSet>
+
+    <changeSet id="015-add-conta-financeira-tipo-check" author="eduardo">
+        <sql>
+            ALTER TABLE conta_financeira
+                ADD CONSTRAINT ck_conta_financeira_tipo
+                    CHECK (tipo IN ('CORRENTE', 'POUPANCA', 'CAIXA', 'CARTEIRA'));
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE conta_financeira DROP CONSTRAINT ck_conta_financeira_tipo;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

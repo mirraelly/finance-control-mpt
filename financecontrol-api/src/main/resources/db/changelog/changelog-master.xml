@@ -19,4 +19,8 @@
     <include file="db/changelog/changes/012-create-categoria.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/013-create-conta-pagar.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/014-create-conta-receber.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/015-alter-conta-financeira.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/016-alter-pagamento-recebimento.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/017-create-lancamento-financeiro.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/018-create-transferencia-entre-contas.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

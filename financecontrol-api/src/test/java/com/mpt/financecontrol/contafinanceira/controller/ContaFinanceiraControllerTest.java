@@ -8,6 +8,7 @@ import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraResponseDto;
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraUpdateDto;
 import com.mpt.financecontrol.contafinanceira.service.ContaFinanceiraService;
 import com.mpt.financecontrol.exceptions.ConflictException;
+import com.mpt.financecontrol.financeiro.TipoContaFinanceira;
 import com.mpt.financecontrol.exceptions.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,7 @@ class ContaFinanceiraControllerTest {
     private ContaFinanceiraService service;
 
     private ContaFinanceiraResponseDto dto(String nome, Boolean ativo) {
-        return new ContaFinanceiraResponseDto(UUID.randomUUID(), nome, ativo, null, null);
+        return new ContaFinanceiraResponseDto(UUID.randomUUID(), nome, TipoContaFinanceira.CORRENTE, ativo, null, null);
     }
 
     @Test
@@ -104,20 +105,21 @@ class ContaFinanceiraControllerTest {
     @Test
     @DisplayName("POST /contas-financeiras -> 201 quando o corpo é válido")
     void create_comDadosValidos_retorna201() throws Exception {
-        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("Banco do Brasil", true);
+        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("Banco do Brasil", TipoContaFinanceira.CORRENTE, true);
         when(service.create(any())).thenReturn(dto("Banco do Brasil", true));
 
         mockMvc.perform(post("/contas-financeiras")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome").value("Banco do Brasil"));
+                .andExpect(jsonPath("$.nome").value("Banco do Brasil"))
+                .andExpect(jsonPath("$.tipo").value("CORRENTE"));
     }
 
     @Test
     @DisplayName("POST /contas-financeiras -> 400 quando o nome está em branco")
     void create_comNomeEmBranco_retorna400() throws Exception {
-        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("", true);
+        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("", TipoContaFinanceira.CORRENTE, true);
 
         mockMvc.perform(post("/contas-financeiras")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -128,7 +130,7 @@ class ContaFinanceiraControllerTest {
     @Test
     @DisplayName("POST /contas-financeiras -> 400 quando o nome passa de 150 caracteres")
     void create_comNomeMaiorQue150_retorna400() throws Exception {
-        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("a".repeat(151), true);
+        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("a".repeat(151), TipoContaFinanceira.CORRENTE, true);
 
         mockMvc.perform(post("/contas-financeiras")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,7 +141,7 @@ class ContaFinanceiraControllerTest {
     @Test
     @DisplayName("POST /contas-financeiras -> 409 quando o service lança Conflict")
     void create_comNomeDuplicado_retorna409() throws Exception {
-        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("Banco do Brasil", true);
+        ContaFinanceiraCreateDto body = new ContaFinanceiraCreateDto("Banco do Brasil", TipoContaFinanceira.CORRENTE, true);
         when(service.create(any()))
                 .thenThrow(new ConflictException("Já existe uma conta financeira com esse nome"));
 
@@ -153,21 +155,34 @@ class ContaFinanceiraControllerTest {
     @DisplayName("PUT /contas-financeiras/{id} -> 200 quando o corpo é válido")
     void update_comDadosValidos_retorna200() throws Exception {
         UUID id = UUID.randomUUID();
-        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("Caixa Econômica", false);
+        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("Caixa Econômica", TipoContaFinanceira.CORRENTE, false);
         when(service.update(eq(id), any())).thenReturn(dto("Caixa Econômica", false));
 
         mockMvc.perform(put("/contas-financeiras/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome").value("Caixa Econômica"));
+                .andExpect(jsonPath("$.nome").value("Caixa Econômica"))
+                .andExpect(jsonPath("$.tipo").value("CORRENTE"));
+    }
+
+    @Test
+    @DisplayName("PUT /contas-financeiras/{id} -> 400 quando o tipo não é informado")
+    void update_semTipo_retorna400() throws Exception {
+        UUID id = UUID.randomUUID();
+        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("Caixa Econômica", null, true);
+
+        mockMvc.perform(put("/contas-financeiras/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("PUT /contas-financeiras/{id} -> 400 quando o nome está em branco")
     void update_comNomeEmBranco_retorna400() throws Exception {
         UUID id = UUID.randomUUID();
-        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("", true);
+        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("", TipoContaFinanceira.CORRENTE, true);
 
         mockMvc.perform(put("/contas-financeiras/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -179,7 +194,7 @@ class ContaFinanceiraControllerTest {
     @DisplayName("PUT /contas-financeiras/{id} -> 404 quando o service lança NotFound")
     void update_quandoNaoExiste_retorna404() throws Exception {
         UUID id = UUID.randomUUID();
-        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("Caixa Econômica", true);
+        ContaFinanceiraUpdateDto body = new ContaFinanceiraUpdateDto("Caixa Econômica", TipoContaFinanceira.CORRENTE, true);
         when(service.update(eq(id), any()))
                 .thenThrow(new NotFoundException("Conta financeira não encontrada"));
 

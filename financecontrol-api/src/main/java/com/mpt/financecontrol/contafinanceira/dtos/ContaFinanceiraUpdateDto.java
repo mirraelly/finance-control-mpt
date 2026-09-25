@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.contafinanceira.dtos;
 
+import com.mpt.financecontrol.financeiro.TipoContaFinanceira;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,10 @@ public record ContaFinanceiraUpdateDto(
         @NotBlank(message = "Nome é obrigatório")
         @Size(max = 150, message = "Nome deve ter no máximo 150 caracteres")
         String nome,
+
+        @Schema(description = "Tipo da conta financeira", example = "CORRENTE")
+        @NotNull(message = "Tipo é obrigatório")
+        TipoContaFinanceira tipo,
 
         @Schema(description = "Definir se a conta financeira está ativa", example = "true")
         @NotNull(message = "Ativo é obrigatório")

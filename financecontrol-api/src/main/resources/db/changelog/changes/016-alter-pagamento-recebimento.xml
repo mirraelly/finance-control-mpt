@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="016-alter-pagamento-recebimento" author="eduardo">
+
+        <addColumn tableName="pagamento">
+            <column name="conta_financeira_id" type="UUID"/>
+            <column name="juros" type="NUMERIC(15,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="multa" type="NUMERIC(15,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desconto" type="NUMERIC(15,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="recebimento">
+            <column name="conta_financeira_id" type="UUID"/>
+            <column name="juros" type="NUMERIC(15,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="multa" type="NUMERIC(15,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desconto" type="NUMERIC(15,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            UPDATE pagamento p
+                SET conta_financeira_id = f.conta_financeira_id
+                FROM forma_pagamento f
+                WHERE f.id = p.forma_pagamento_id;
+        </sql>
+
+        <sql>
+            UPDATE recebimento r
+                SET conta_financeira_id = f.conta_financeira_id
+                FROM forma_pagamento f
+                WHERE f.id = r.forma_pagamento_id;
+        </sql>
+
+        <addNotNullConstraint
+                tableName       ="pagamento"
+                columnName      ="conta_financeira_id"
+                columnDataType  ="UUID"/>
+
+        <addNotNullConstraint
+                tableName       ="recebimento"
+                columnName      ="conta_financeira_id"
+                columnDataType  ="UUID"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="pagamento"
+                baseColumnNames      ="conta_financeira_id"
+                referencedTableName  ="conta_financeira"
+                referencedColumnNames="id"
+                constraintName       ="fk_pagamento_conta_financeira"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="recebimento"
+                baseColumnNames      ="conta_financeira_id"
+                referencedTableName  ="conta_financeira"
+                referencedColumnNames="id"
+                constraintName       ="fk_recebimento_conta_financeira"/>
+
+        <createIndex tableName="pagamento" indexName="idx_pagamento_conta_financeira">
+            <column name="conta_financeira_id"/>
+        </createIndex>
+
+        <createIndex tableName="recebimento" indexName="idx_recebimento_conta_financeira">
+            <column name="conta_financeira_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
