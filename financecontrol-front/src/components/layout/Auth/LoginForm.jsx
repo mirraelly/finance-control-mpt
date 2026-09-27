@@ -20,7 +20,8 @@ function LoginForm() {
 
     try {
       const response = await authService.login({ email, senha, rememberMe });
-      localStorage.setItem("financecontrol_token", response.token);
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("userId", response.id);
       navigate("/home");
     } catch (err) {
       const message = err?.response?.data?.message || err?.message;
