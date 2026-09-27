@@ -14,6 +14,7 @@ import {
   Settings01Icon,
   Delete02Icon,
   ConstructionIcon,
+  Plant01Icon,
 } from "../../assets/icons";
 import "./Perfil.css";
 
@@ -203,7 +204,17 @@ function Perfil() {
             </div>
             <p className="perfil-mensagem">
               Organizar hoje para conquistar amanhã
-              <span aria-hidden="true">♥</span>
+              <span
+                className="perfil-icone perfil-icone--mensagem"
+                aria-hidden="true"
+              >
+                <HugeiconsIcon
+                  icon={Plant01Icon}
+                  size={16}
+                  color="currentColor"
+                  strokeWidth={2}
+                />
+              </span>
             </p>
           </div>
 
