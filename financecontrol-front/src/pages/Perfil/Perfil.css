@@ -184,6 +184,7 @@
   font-size: var(--font-size-13);
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: fit-content;
 }
 
 .modal-perfil-box-menor {
@@ -423,11 +424,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: var(--space-3);
 }
 
 .perfil-em-breve-icone {
-  width: 52px;
-  height: 52px;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: var(--radius-pill);
   background: linear-gradient(
     135deg,
@@ -568,10 +570,6 @@
     align-items: flex-start;
     padding: 20px;
     gap: 20px;
-  }
-
-  .perfil-header-card button {
-    width: 100%;
   }
 
   .perfil-contato {

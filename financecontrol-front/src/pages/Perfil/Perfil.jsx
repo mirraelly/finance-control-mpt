@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import usuarioService from "../../services/usuarioService";
+import { formatarTelefone } from "../../utils/formatters";
 import Card from "../../components/common/Card/Card";
 import Button from "../../components/common/Button/Button";
 import Input from "../../components/common/Input/Input";
@@ -12,6 +13,7 @@ import {
   Mail01Icon,
   Settings01Icon,
   Delete02Icon,
+  ConstructionIcon,
 } from "../../assets/icons";
 import "./Perfil.css";
 
@@ -280,8 +282,8 @@ function Perfil() {
         <Card className="perfil-em-breve">
           <span className="perfil-em-breve-icone" aria-hidden="true">
             <HugeiconsIcon
-              icon={Calendar03Icon}
-              size={28}
+              icon={ConstructionIcon}
+              size={20}
               color="currentColor"
               strokeWidth={2}
             />
@@ -356,7 +358,12 @@ function Perfil() {
               type="tel"
               className="modal-perfil-box-maior"
               value={telefoneEditado}
-              onChange={(event) => setTelefoneEditado(event.target.value)}
+              placeholder="(00)00000-0000"
+              maxLength={15}
+              onChange={(event) => {
+                const valorFormatado = formatarTelefone(event.target.value);
+                setTelefoneEditado(valorFormatado);
+              }}
             />
           </div>
 

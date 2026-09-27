@@ -32,6 +32,7 @@ import {
   Mail01Icon,
   Logout05Icon,
   Delete02Icon,
+  ConstructionIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -65,4 +66,5 @@ export {
   Mail01Icon,
   Logout05Icon,
   Delete02Icon,
+  ConstructionIcon,
 };
