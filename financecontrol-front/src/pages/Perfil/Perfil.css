@@ -103,6 +103,7 @@
 
 .perfil-header-info {
   flex: 1;
+  min-width: 0;
 }
 
 .perfil-nome {
@@ -187,6 +188,11 @@
   min-width: fit-content;
 }
 
+.perfil-header-card button:hover {
+  filter: brightness(1.1);
+  box-shadow: var(--shadow-brand-icon);
+}
+
 .modal-perfil-box-menor {
   flex: 1;
 }
@@ -195,12 +201,6 @@
   flex: 2;
 }
 
-.perfil-header-card button:hover {
-  filter: brightness(1.1);
-  box-shadow: var(--shadow-brand-icon);
-}
-
-/* Card Informações */
 .perfil-info-card {
   border: 1px solid var(--border);
   border-radius: var(--rounded-2xl);
@@ -465,7 +465,6 @@
   font-weight: var(--font-weight-semibold);
 }
 
-/* Modal */
 .perfil-modal-subtitulo {
   color: var(--color-form-muted);
   font-size: var(--font-size-14);
@@ -554,9 +553,68 @@
   --border-color: var(--border);
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1100px) {
+  .perfil-header-card {
+    gap: 12px;
+    padding: 18px 20px;
+  }
+
+  .perfil-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .perfil-nome {
+    font-size: var(--font-size-14);
+  }
+
+  .perfil-em-breve-titulo {
+    font-size: var(--font-size-14);
+  }
+
+  .perfil-contato {
+    gap: 8px 12px;
+  }
+
+  .perfil-danger-zone {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px 12px;
+    padding: 14px 18px;
+  }
+
+  .perfil-danger-zone__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .perfil-danger-zone__header p {
+    margin-top: 4px;
+  }
+
+  .perfil-danger-zone > button {
+    align-self: flex-end;
+    width: auto;
+    min-width: fit-content;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 840px) {
+  .perfil-header-card {
+    flex-wrap: wrap;
+  }
+
   .perfil-info-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .perfil-danger-zone {
+    padding: 14px 18px;
   }
 }
 
@@ -565,22 +623,90 @@
     padding: 16px 0;
   }
 
+  .perfil-container {
+    gap: 12px;
+  }
+
   .perfil-header-card {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    padding: 18px 16px;
+    gap: 9px 12px;
+  }
+
+  .perfil-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    flex-shrink: 0;
+    align-self: start;
+  }
+
+  .perfil-header-info {
+    grid-column: 2;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .perfil-header-card button {
+    grid-column: 1 / -1;
+    justify-self: end;
+
+    width: auto;
+    min-width: fit-content;
+    margin-left: 0;
+    align-self: auto;
+    text-align: center;
+  }
+
+  .perfil-nome {
+    font-size: 14px;
+    line-height: 1.25;
   }
 
   .perfil-contato {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-    margin: 3px 0 0;
+    gap: var(--space-1);
+    margin: 8px 0 0;
+  }
+
+  .perfil-contato-item + .perfil-contato-item::before {
+    display: none;
   }
 
   .perfil-info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .perfil-info-item {
+    min-height: 54px;
+  }
+
+  .perfil-secao-cabecalho {
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .perfil-danger-zone {
+    padding: 16px;
+  }
+
+  .perfil-danger-zone__header {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .perfil-danger-zone__header p {
+    margin-top: 4px;
+  }
+
+  .perfil-danger-zone > button {
+    align-self: flex-end;
+    width: auto;
+    min-width: fit-content;
+    margin-left: 0;
   }
 
   .perfil-danger-zone__action {
@@ -611,35 +737,28 @@
   }
 }
 
-@media (max-width: 640px) {
-  .perfil-form-row--nome,
-  .perfil-form-row--telefone {
-    grid-template-columns: 1fr;
-  }
-}
-
-.perfil-form-row.perfil-form-row--telefone {
+.perfil-form-row--telefone {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
   gap: var(--space-3);
   width: 100%;
 }
 
-.perfil-form-row.perfil-form-row--nome > div,
-.perfil-form-row.perfil-form-row--telefone > div {
+.perfil-form-row--nome > div,
+.perfil-form-row--telefone > div {
   width: 100%;
   min-width: 0;
 }
 
-.perfil-form-row.perfil-form-row--nome input,
-.perfil-form-row.perfil-form-row--telefone input {
+.perfil-form-row--nome input,
+.perfil-form-row--telefone input {
   width: 100%;
   box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
-  .perfil-form-row.perfil-form-row--nome,
-  .perfil-form-row.perfil-form-row--telefone {
+  .perfil-form-row--nome,
+  .perfil-form-row--telefone {
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
