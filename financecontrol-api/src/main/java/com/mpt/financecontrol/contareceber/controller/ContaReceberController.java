@@ -26,6 +26,7 @@ import java.util.UUID;
 @RequestMapping("/contas-receber")
 @Tag(name = "Conta Receber", description = "Gerenciamento de contas a receber")
 public class ContaReceberController {
+
     private final ContaReceberService service;
 
     public ContaReceberController(ContaReceberService service) {
@@ -40,7 +41,7 @@ public class ContaReceberController {
     @PreAuthorize("isAuthenticated()")
     public Page<ContaReceberResponseDto> getAll(
             @Parameter(description = "Paginação e ordenação")
-            @PageableDefault(size = 15, sort = "dataEmissao") Pageable pageable,
+            @PageableDefault(size = 15, sort = "data_emissao") Pageable pageable,
 
             @Parameter(description = "Filtro por pessoa")
             @RequestParam(required = false) UUID pessoaId,
@@ -107,5 +108,4 @@ public class ContaReceberController {
     ) {
         return ResponseEntity.ok(service.update(id, dto));
     }
-
 }

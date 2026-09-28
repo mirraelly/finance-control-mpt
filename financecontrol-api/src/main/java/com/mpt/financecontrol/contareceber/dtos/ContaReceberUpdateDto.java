@@ -37,5 +37,4 @@ public record ContaReceberUpdateDto(
 
         @Schema(description = "Definir se a conta está ativa", example = "true")
         Boolean ativo
-) {
-}
+) {}

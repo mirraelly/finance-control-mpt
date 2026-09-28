@@ -41,7 +41,7 @@ public class ContaPagarController {
     @PreAuthorize("isAuthenticated()")
     public Page<ContaPagarResponseDto> getAll(
             @Parameter(description = "Paginação e ordenação")
-            @PageableDefault(size = 15, sort = "dataEmissao") Pageable pageable,
+            @PageableDefault(size = 15, sort = "data_emissao") Pageable pageable,
 
             @Parameter(description = "Filtro por pessoa")
             @RequestParam(required = false) UUID pessoaId,

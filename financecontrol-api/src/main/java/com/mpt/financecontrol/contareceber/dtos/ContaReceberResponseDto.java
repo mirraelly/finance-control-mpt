@@ -8,18 +8,17 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record ContaReceberResponseDto(
-        UUID id,
-        UUID pessoaId,
-        String pessoaNome,
-        UUID categoriaId,
-        String categoriaNome,
-        String descricao,
-        LocalDate dataEmissao,
-        BigDecimal valorTotal,
+        UUID        id,
+        UUID        pessoaId,
+        String      pessoaNome,
+        UUID        categoriaId,
+        String      categoriaNome,
+        String      descricao,
+        LocalDate   dataEmissao,
+        BigDecimal  valorTotal,
         StatusConta status,
-        String observacao,
-        Boolean ativo,
-        Instant createdAt,
-        Instant updatedAt
-) {
-}
+        String      observacao,
+        Boolean     ativo,
+        Instant     createdAt,
+        Instant     updatedAt
+) {}

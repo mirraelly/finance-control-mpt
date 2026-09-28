@@ -5,8 +5,7 @@ import com.mpt.financecontrol.contareceber.entity.ContaReceber;
 
 public class ContaReceberMapper {
 
-    private ContaReceberMapper() {
-    }
+    private ContaReceberMapper() {}
 
     public static ContaReceberResponseDto toResponseDto(ContaReceber contaReceber) {
         return new ContaReceberResponseDto(

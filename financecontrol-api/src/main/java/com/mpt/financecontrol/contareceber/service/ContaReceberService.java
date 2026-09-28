@@ -9,17 +9,14 @@ import com.mpt.financecontrol.contareceber.entity.ContaReceber;
 import com.mpt.financecontrol.contareceber.mapper.ContaReceberMapper;
 import com.mpt.financecontrol.contareceber.repository.ContaReceberRepository;
 import com.mpt.financecontrol.exceptions.NotFoundException;
-
 import com.mpt.financecontrol.financeiro.StatusConta;
 import com.mpt.financecontrol.pessoa.service.PessoaService;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.List;
 import java.util.UUID;
@@ -32,16 +29,15 @@ public class ContaReceberService {
     private final PessoaService pessoaService;
     private final CategoriaRepository categoriaRepository;
 
-
     public ContaReceberService(
-            ContaReceberRepository repository,
-            UsuarioService usuarioService,
-            PessoaService pessoaService,
-            CategoriaRepository categoriaRepository
+            ContaReceberRepository    repository,
+            UsuarioService          usuarioService,
+            PessoaService           pessoaService,
+            CategoriaRepository     categoriaRepository
     ) {
-        this.repository = repository;
-        this.usuarioService = usuarioService;
-        this.pessoaService = pessoaService;
+        this.repository          = repository;
+        this.usuarioService      = usuarioService;
+        this.pessoaService       = pessoaService;
         this.categoriaRepository = categoriaRepository;
     }
 
@@ -101,13 +97,11 @@ public class ContaReceberService {
                 throw new NotFoundException("Categoria não encontrada");
 
             contaReceber.setCategoria(categoria);
-
         }
 
         contaReceber.setDescricao(dto.descricao());
         contaReceber.setDataEmissao(dto.dataEmissao());
         contaReceber.setValorTotal(dto.valorTotal());
-
         if (dto.status() != null)
             contaReceber.setStatus(dto.status());
         contaReceber.setObservacao(dto.observacao());
@@ -154,7 +148,5 @@ public class ContaReceberService {
             contaReceber.setAtivo(dto.ativo());
 
         return ContaReceberMapper.toResponseDto(repository.save(contaReceber));
-
-
     }
 }
