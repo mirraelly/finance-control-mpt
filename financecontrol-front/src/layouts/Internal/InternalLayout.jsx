@@ -13,10 +13,18 @@ function InternalLayout() {
   const location = useLocation();
   const pageTitles = {
     "/home": "Início",
+    "/transacoes": "Transações",
+    "/contas": "Contas",
+    "/orcamento": "Orçamento",
+    "/metas": "Metas",
+    "/investimentos": "Investimentos",
+    "/relatorios": "Relatórios",
+    "/configuracoes": "Configurações",
+    "/administracao": "Administração",
     "/perfil": "Perfil",
     "/componentes-teste": "Componentes",
   };
-  const title = pageTitles[location.pathname] || "Início";
+  const title = pageTitles[location.pathname] || "Transações";
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => !prev);

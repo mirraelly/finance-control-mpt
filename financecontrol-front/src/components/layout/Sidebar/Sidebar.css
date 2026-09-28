@@ -80,6 +80,12 @@
   gap: var(--space-1);
 }
 
+.sidebar__nav-divider {
+  height: 1px;
+  margin: var(--space-3) 0;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .sidebar__nav-item {
   min-height: var(--sidebar-item-height);
   display: flex;

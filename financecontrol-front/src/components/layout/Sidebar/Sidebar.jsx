@@ -6,38 +6,26 @@ import {
   TradeUpIcon,
   Target01Icon,
   Settings01Icon,
+  Plant01Icon,
+  ConstructionIcon,
 } from "../../../assets/icons";
 import { NavLink } from "react-router-dom";
-
+import { Fragment } from "react";
 import "./Sidebar.css";
 
 const menuItems = [
-  {
-    label: "Início",
-    path: "/home",
-    icon: Home07Icon,
-  },
-  {
-    label: "Contas",
-    path: "/contas",
-    icon: Wallet01Icon,
-  },
-  {
-    label: "Orçamento",
-    path: "/orcamento",
-    icon: Chart01Icon,
-  },
-  {
-    label: "Metas",
-    path: "/metas",
-    icon: Target01Icon,
-  },
-  {
-    label: "Configurações",
-    path: "/configuracoes",
-    icon: Settings01Icon,
-  },
+  { label: "Início", path: "/home", icon: Home07Icon },
+  { label: "Transações", path: "/transacoes", icon: TradeUpIcon },
+  { label: "Contas", path: "/contas", icon: Wallet01Icon },
+  { label: "Orçamento", path: "/orcamento", icon: Chart01Icon },
+  { label: "Metas", path: "/metas", icon: Target01Icon },
+  { label: "Investimentos", path: "/investimentos", icon: Plant01Icon },
+  { label: "Relatórios", path: "/relatorios", icon: Chart01Icon },
+  { label: "Configurações", path: "/configuracoes", icon: Settings01Icon },
+  { label: "Administração", path: "/administracao", icon: ConstructionIcon },
 ];
+
+const menuGroups = [menuItems.slice(0, 6), menuItems.slice(6)];
 
 function Sidebar({
   collapsed = false,
@@ -80,24 +68,30 @@ function Sidebar({
 
       <nav className="sidebar__nav" aria-label="Menu principal">
         <div className="sidebar__nav-list">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onCloseMobile}
-              className={({ isActive }) =>
-                `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
-              }
-              title={isCompact ? item.label : undefined}
-            >
-              <span className="sidebar__nav-icon">
-                <HugeiconsIcon icon={item.icon} size={20} strokeWidth={2} />
-              </span>
+          {menuGroups.map((group, groupIndex) => (
+            <Fragment key={groupIndex}>
+              {group.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={onCloseMobile}
+                  className={({ isActive }) =>
+                    `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
+                  }
+                  title={isCompact ? item.label : undefined}
+                >
+                  <span className="sidebar__nav-icon">
+                    <HugeiconsIcon icon={item.icon} size={20} strokeWidth={2} />
+                  </span>
 
-              {!isCompact && (
-                <span className="sidebar__nav-label">{item.label}</span>
-              )}
-            </NavLink>
+                  {!isCompact && (
+                    <span className="sidebar__nav-label">{item.label}</span>
+                  )}
+                </NavLink>
+              ))}
+
+              {groupIndex === 0 && <div className="sidebar__nav-divider" />}
+            </Fragment>
           ))}
         </div>
       </nav>
