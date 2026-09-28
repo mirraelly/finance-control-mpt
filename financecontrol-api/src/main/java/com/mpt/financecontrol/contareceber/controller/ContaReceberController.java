@@ -5,6 +5,7 @@ import com.mpt.financecontrol.contareceber.dtos.ContaReceberResponseDto;
 import com.mpt.financecontrol.contareceber.dtos.ContaReceberUpdateDto;
 import com.mpt.financecontrol.contareceber.service.ContaReceberService;
 import com.mpt.financecontrol.financeiro.StatusConta;
+import com.mpt.financecontrol.recebimento.dtos.RecebimentoCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -83,7 +84,8 @@ public class ContaReceberController {
     @Operation(summary = "Criar conta a receber", description = "Cria uma nova conta a receber")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Criada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Pessoa ou categoria não encontrada")
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "404", description = "Pessoa, categoria ou forma de pagamento não encontrada")
     })
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -96,6 +98,7 @@ public class ContaReceberController {
     @Operation(summary = "Atualizar conta a receber", description = "Atualiza parcialmente uma conta a receber")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou alteração não permitida"),
             @ApiResponse(responseCode = "404", description = "Não encontrada")
     })
     @PatchMapping("/{id}")
@@ -107,5 +110,37 @@ public class ContaReceberController {
             @RequestBody @Valid ContaReceberUpdateDto dto
     ) {
         return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @Operation(summary = "Receber parcela", description = "Registra um recebimento para a parcela e atualiza o status da parcela e da conta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Recebimento registrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou parcela não pode ser recebida"),
+            @ApiResponse(responseCode = "404", description = "Parcela, forma de pagamento ou conta financeira não encontrada")
+    })
+    @PatchMapping("/parcelas/{parcelaId}/receber")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ContaReceberResponseDto> receberParcela(
+            @Parameter(description = "ID da parcela")
+            @PathVariable UUID parcelaId,
+
+            @RequestBody @Valid RecebimentoCreateDto dto
+    ) {
+        return ResponseEntity.ok(service.receberParcela(parcelaId, dto));
+    }
+
+    @Operation(summary = "Estornar recebimento", description = "Exclui o recebimento e atualiza o status da parcela e da conta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Recebimento estornado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Recebimento não pode ser estornado"),
+            @ApiResponse(responseCode = "404", description = "Recebimento não encontrado")
+    })
+    @DeleteMapping("/recebimentos/{recebimentoId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ContaReceberResponseDto> estornarRecebimento(
+            @Parameter(description = "ID do recebimento")
+            @PathVariable UUID recebimentoId
+    ) {
+        return ResponseEntity.ok(service.estornarRecebimento(recebimentoId));
     }
 }

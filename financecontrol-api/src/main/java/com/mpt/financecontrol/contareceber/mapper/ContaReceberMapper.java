@@ -2,6 +2,7 @@ package com.mpt.financecontrol.contareceber.mapper;
 
 import com.mpt.financecontrol.contareceber.dtos.ContaReceberResponseDto;
 import com.mpt.financecontrol.contareceber.entity.ContaReceber;
+import com.mpt.financecontrol.contareceberparcela.mapper.ContaReceberParcelaMapper;
 
 public class ContaReceberMapper {
 
@@ -20,6 +21,7 @@ public class ContaReceberMapper {
                 contaReceber.getStatus(),
                 contaReceber.getObservacao(),
                 contaReceber.getAtivo(),
+                ContaReceberParcelaMapper.toResponseDtoList(contaReceber.getParcelas()),
                 contaReceber.getCreatedAt(),
                 contaReceber.getUpdatedAt()
         );
