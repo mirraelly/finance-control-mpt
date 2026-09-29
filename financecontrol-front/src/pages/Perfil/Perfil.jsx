@@ -522,7 +522,7 @@ function Perfil() {
             />
           </div>
 
-          <div className="perfil-form-botoes">
+          <div className="perfil-form-botoes perfil-senha-botoes">
             <Button
               type="button"
               variant="secondary"
