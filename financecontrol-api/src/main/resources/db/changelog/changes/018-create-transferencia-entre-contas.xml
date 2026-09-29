@@ -27,8 +27,12 @@
                 <constraints nullable="false"/>
             </column>
             <column name="descricao" type="VARCHAR(255)"/>
-            <column name="lancamento_saida_id" type="UUID"/>
-            <column name="lancamento_entrada_id" type="UUID"/>
+            <column name="lancamento_saida_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lancamento_entrada_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
             <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>

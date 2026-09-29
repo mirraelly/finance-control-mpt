@@ -16,6 +16,7 @@ public class RecebimentoMapper {
                 recebimento.getFormaPagamento().getNome(),
                 recebimento.getContaFinanceira().getId(),
                 recebimento.getContaFinanceira().getNome(),
+                recebimento.getLancamentoFinanceiro().getId(),
                 recebimento.getDataRecebimento(),
                 recebimento.getValor(),
                 recebimento.getJuros(),

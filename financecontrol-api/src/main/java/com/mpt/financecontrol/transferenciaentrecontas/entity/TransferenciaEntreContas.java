@@ -39,12 +39,12 @@ public class TransferenciaEntreContas extends BaseEntity {
     @Column(name = "descricao", length = 255)
     private String descricao;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lancamento_saida_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "lancamento_saida_id", nullable = false)
     private LancamentoFinanceiro lancamentoSaida;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lancamento_entrada_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "lancamento_entrada_id", nullable = false)
     private LancamentoFinanceiro lancamentoEntrada;
 
     public Tenant getTenant() {

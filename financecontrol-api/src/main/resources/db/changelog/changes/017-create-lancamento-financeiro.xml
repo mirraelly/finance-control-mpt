@@ -21,6 +21,9 @@
             <column name="tipo" type="VARCHAR(10)">
                 <constraints nullable="false"/>
             </column>
+            <column name="origem" type="VARCHAR(20)" defaultValue="MANUAL">
+                <constraints nullable="false"/>
+            </column>
             <column name="valor" type="NUMERIC(15,2)">
                 <constraints nullable="false"/>
             </column>
@@ -78,6 +81,55 @@
         <rollback>
             <sql>ALTER TABLE lancamento_financeiro DROP CONSTRAINT ck_lancamento_financeiro_tipo;</sql>
         </rollback>
+    </changeSet>
+
+    <changeSet id="017-add-lancamento-financeiro-origem-check" author="eduardo">
+        <sql>
+            ALTER TABLE lancamento_financeiro
+                ADD CONSTRAINT ck_lancamento_financeiro_origem
+                    CHECK (origem IN ('MANUAL', 'RECEBIMENTO', 'PAGAMENTO', 'TRANSFERENCIA'));
+        </sql>
+        <rollback>
+            <sql>ALTER TABLE lancamento_financeiro DROP CONSTRAINT ck_lancamento_financeiro_origem;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="017-add-lancamento-recebimento-pagamento" author="eduardo">
+
+        <addColumn tableName="recebimento">
+            <column name="lancamento_financeiro_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="pagamento">
+            <column name="lancamento_financeiro_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName        ="recebimento"
+                baseColumnNames      ="lancamento_financeiro_id"
+                referencedTableName  ="lancamento_financeiro"
+                referencedColumnNames="id"
+                constraintName       ="fk_recebimento_lancamento_financeiro"/>
+
+        <addForeignKeyConstraint
+                baseTableName        ="pagamento"
+                baseColumnNames      ="lancamento_financeiro_id"
+                referencedTableName  ="lancamento_financeiro"
+                referencedColumnNames="id"
+                constraintName       ="fk_pagamento_lancamento_financeiro"/>
+
+        <createIndex tableName="recebimento" indexName="idx_recebimento_lancamento_financeiro">
+            <column name="lancamento_financeiro_id"/>
+        </createIndex>
+
+        <createIndex tableName="pagamento" indexName="idx_pagamento_lancamento_financeiro">
+            <column name="lancamento_financeiro_id"/>
+        </createIndex>
+
     </changeSet>
 
 </databaseChangeLog>

@@ -4,6 +4,7 @@ import com.mpt.financecontrol.baseentity.BaseEntity;
 import com.mpt.financecontrol.contafinanceira.entity.ContaFinanceira;
 import com.mpt.financecontrol.contareceberparcela.entity.ContaReceberParcela;
 import com.mpt.financecontrol.formapagamento.entity.FormaPagamento;
+import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +35,10 @@ public class Recebimento extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "conta_financeira_id", nullable = false)
     private ContaFinanceira contaFinanceira;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "lancamento_financeiro_id", nullable = false)
+    private LancamentoFinanceiro lancamentoFinanceiro;
 
     @Column(name = "data_recebimento", nullable = false)
     private LocalDate dataRecebimento;
@@ -83,6 +88,14 @@ public class Recebimento extends BaseEntity {
 
     public void setContaFinanceira(ContaFinanceira contaFinanceira) {
         this.contaFinanceira = contaFinanceira;
+    }
+
+    public LancamentoFinanceiro getLancamentoFinanceiro() {
+        return lancamentoFinanceiro;
+    }
+
+    public void setLancamentoFinanceiro(LancamentoFinanceiro lancamentoFinanceiro) {
+        this.lancamentoFinanceiro = lancamentoFinanceiro;
     }
 
     public LocalDate getDataRecebimento() {

@@ -4,6 +4,7 @@ import com.mpt.financecontrol.contareceber.dtos.ContaReceberCreateDto;
 import com.mpt.financecontrol.contareceber.dtos.ContaReceberResponseDto;
 import com.mpt.financecontrol.contareceber.dtos.ContaReceberUpdateDto;
 import com.mpt.financecontrol.contareceber.service.ContaReceberService;
+import com.mpt.financecontrol.contareceberparcela.dtos.ContaReceberParcelaBaixaDto;
 import com.mpt.financecontrol.financeiro.StatusConta;
 import com.mpt.financecontrol.recebimento.dtos.RecebimentoCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,6 +67,31 @@ public class ContaReceberController {
     @PreAuthorize("isAuthenticated()")
     public List<ContaReceberResponseDto> select() {
         return service.select();
+    }
+
+    @Operation(summary = "Listar parcelas", description = "Retorna lista paginada de parcelas a receber para a tela de recebimentos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    @GetMapping("/parcelas")
+    @PreAuthorize("isAuthenticated()")
+    public Page<ContaReceberParcelaBaixaDto> getParcelas(
+            @Parameter(description = "Paginação e ordenação")
+            @PageableDefault(size = 15, sort = "data_vencimento") Pageable pageable,
+
+            @Parameter(description = "Filtro por pessoa")
+            @RequestParam(required = false) UUID pessoaId,
+
+            @Parameter(description = "Filtro por status (sem filtro, oculta as canceladas)")
+            @RequestParam(required = false) StatusConta status,
+
+            @Parameter(description = "Data de vencimento inicial")
+            @RequestParam(required = false) LocalDate dataVencimentoInicio,
+
+            @Parameter(description = "Data de vencimento final")
+            @RequestParam(required = false) LocalDate dataVencimentoFim
+    ) {
+        return service.getParcelas(pageable, pessoaId, status, dataVencimentoInicio, dataVencimentoFim);
     }
 
     @Operation(summary = "Buscar por ID", description = "Retorna uma conta a receber pelo ID")

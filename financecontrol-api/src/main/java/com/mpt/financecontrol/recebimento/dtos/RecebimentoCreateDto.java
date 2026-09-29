@@ -44,8 +44,7 @@ public record RecebimentoCreateDto(
         @NotNull(message = "Forma de pagamento é obrigatória")
         UUID formaPagamentoId,
 
-        @Schema(description = "ID da conta financeira")
-        @NotNull(message = "Conta financeira é obrigatória")
+        @Schema(description = "ID da conta financeira (se não informado, usa a conta da forma de pagamento)")
         UUID contaFinanceiraId,
 
         @Schema(description = "Observações do recebimento")

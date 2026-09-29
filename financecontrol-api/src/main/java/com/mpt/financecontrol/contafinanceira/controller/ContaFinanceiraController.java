@@ -2,6 +2,7 @@ package com.mpt.financecontrol.contafinanceira.controller;
 
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraCreateDto;
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraResponseDto;
+import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto;
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraUpdateDto;
 import com.mpt.financecontrol.contafinanceira.service.ContaFinanceiraService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,6 +55,14 @@ public class ContaFinanceiraController {
     @PreAuthorize("isAuthenticated()")
     public List<ContaFinanceiraResponseDto> select() {
         return service.select();
+    }
+
+    @Operation(summary = "Listar saldos", description = "Retorna o saldo atual das contas financeiras ativas, calculado pelos lançamentos")
+    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    @GetMapping("/saldos")
+    @PreAuthorize("isAuthenticated()")
+    public List<ContaFinanceiraSaldoDto> saldos() {
+        return service.saldos();
     }
 
     @Operation(summary = "Buscar por ID", description = "Retorna uma conta financeira pelo ID")
