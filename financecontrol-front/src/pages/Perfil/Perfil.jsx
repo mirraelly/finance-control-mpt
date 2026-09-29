@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import usuarioService from "../../services/usuarioService";
-import authService from "../../services/authService";
 import { formatarTelefone } from "../../utils/formatters";
 import Card from "../../components/common/Card/Card";
 import Button from "../../components/common/Button/Button";
@@ -20,7 +19,6 @@ import {
   SquareLock02Icon,
   EyeOffIcon,
   ViewIcon,
-  InformationCircleIcon as InfoIcon,
   MultiplicationSignIcon,
   Tick01Icon,
 } from "../../assets/icons";
@@ -58,7 +56,7 @@ function Perfil() {
   const [mostrarSenhaAtual, setMostrarSenhaAtual] = useState(false);
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
   const [mostrarConfirmacaoSenha, setMostrarConfirmacaoSenha] = useState(false);
-  const [validandoSenha, setValidandoSenha] = useState(false);
+  const [alterandoSenha, setAlterandoSenha] = useState(false);
   const [erroSenha, setErroSenha] = useState("");
   const [mensagemSenha, setMensagemSenha] = useState("");
 
@@ -113,7 +111,7 @@ function Perfil() {
   };
 
   const fecharModalSenha = () => {
-    if (validandoSenha) return;
+    if (alterandoSenha) return;
     setModalSenhaAberto(false);
     setSenhaAtual("");
     setNovaSenha("");
@@ -155,22 +153,20 @@ function Perfil() {
       return;
     }
 
-    setValidandoSenha(true);
+    setAlterandoSenha(true);
     try {
-      await authService.login({ email: usuario.email, senha: senhaAtual });
-      setMensagemSenha(
-        "Senha atual confirmada. A troca será concluída quando o serviço de alteração de senha estiver disponível.",
-      );
+      await usuarioService.alterarSenha({ senhaAtual, novaSenha });
+      setSenhaAtual("");
+      setNovaSenha("");
+      setConfirmarNovaSenha("");
+      setMensagemSenha("Senha alterada com sucesso.");
     } catch (erro) {
-      if ([401, 403].includes(erro?.response?.status)) {
-        setErroSenha("A senha atual informada está incorreta.");
-      } else {
-        setErroSenha(
-          "Não foi possível validar a senha atual. Tente novamente.",
-        );
-      }
+      setErroSenha(
+        erro?.response?.data?.erro ||
+          "Não foi possível alterar a senha. Tente novamente.",
+      );
     } finally {
-      setValidandoSenha(false);
+      setAlterandoSenha(false);
     }
   };
 
@@ -557,7 +553,7 @@ function Perfil() {
         theme="dark"
         className="perfil-modal perfil-modal-senha"
         bodyClassName="perfil-modal-senha-corpo"
-        closeOnOverlay={!validandoSenha}
+        closeOnOverlay={!alterandoSenha}
       >
         <form className="perfil-senha-form" onSubmit={handleAlterarSenha}>
           <div className="perfil-senha-campo">
@@ -569,7 +565,7 @@ function Perfil() {
               placeholder="Digite sua senha atual"
               autoComplete="current-password"
               maxLength={100}
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
               onChange={(event) => {
                 setSenhaAtual(event.target.value);
                 limparFeedbackSenha();
@@ -585,7 +581,7 @@ function Perfil() {
                   ? "Ocultar senha atual"
                   : "Mostrar senha atual"
               }
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
               onClick={() => setMostrarSenhaAtual(!mostrarSenhaAtual)}
             >
               <HugeiconsIcon
@@ -606,7 +602,7 @@ function Perfil() {
               autoComplete="new-password"
               minLength={8}
               maxLength={100}
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
               onChange={(event) => {
                 setNovaSenha(event.target.value);
                 limparFeedbackSenha();
@@ -622,7 +618,7 @@ function Perfil() {
               aria-label={
                 mostrarNovaSenha ? "Ocultar nova senha" : "Mostrar nova senha"
               }
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
               onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
             >
               <HugeiconsIcon
@@ -637,7 +633,7 @@ function Perfil() {
             <div className="perfil-senha-requisitos" aria-live="polite">
               <p className="perfil-senha-requisitos__titulo">
                 <HugeiconsIcon
-                  icon={InfoIcon}
+                  icon={InformationCircleIcon}
                   size={16}
                   color="currentColor"
                   strokeWidth={2}
@@ -673,7 +669,7 @@ function Perfil() {
               placeholder="Digite novamente sua nova senha"
               autoComplete="new-password"
               maxLength={100}
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
               onChange={(event) => {
                 setConfirmarNovaSenha(event.target.value);
                 limparFeedbackSenha();
@@ -689,7 +685,7 @@ function Perfil() {
                   ? "Ocultar confirmação"
                   : "Mostrar confirmação"
               }
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
               onClick={() =>
                 setMostrarConfirmacaoSenha(!mostrarConfirmacaoSenha)
               }
@@ -732,12 +728,12 @@ function Perfil() {
               type="button"
               variant="secondary"
               onClick={fecharModalSenha}
-              disabled={validandoSenha}
+              disabled={alterandoSenha}
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" disabled={validandoSenha}>
-              {validandoSenha ? "Validando..." : "Alterar senha"}
+            <Button type="submit" variant="primary" disabled={alterandoSenha}>
+              {alterandoSenha ? "Alterando..." : "Alterar senha"}
             </Button>
           </div>
         </form>

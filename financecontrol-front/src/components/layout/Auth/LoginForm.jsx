@@ -24,7 +24,7 @@ function LoginForm() {
       localStorage.setItem("userId", response.id);
       navigate("/home");
     } catch (err) {
-      const message = err?.response?.data?.message || err?.message;
+      const message = err?.response?.data?.erro || err?.message;
       setError(message || "Erro ao fazer login. Verifique seu e-mail e senha.");
     } finally {
       setLoading(false);

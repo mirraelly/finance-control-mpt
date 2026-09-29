@@ -7,6 +7,7 @@ import com.mpt.financecontrol.exceptions.UnauthorizedException;
 import com.mpt.financecontrol.tenant.dtos.TenantSaveDto;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.tenant.service.TenantService;
+import com.mpt.financecontrol.usuario.dtos.UsuarioAlterarSenhaDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioUpdateDto;
@@ -130,6 +131,20 @@ public class UsuarioService {
         usuarioRepository.saveAndFlush(usuario);
 
         return UsuarioMapper.toResponseDto(usuario);
+    }
+
+    @Transactional
+    public void alterarSenha(UsuarioAlterarSenhaDto dto) {
+        Usuario usuario = getUsuarioAutenticado();
+
+        if (!passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha()))
+            throw new BadRequestException("A senha atual informada está incorreta, verifique!");
+        if (passwordEncoder.matches(dto.novaSenha(), usuario.getSenha()))
+            throw new BadRequestException("A nova senha deve ser diferente da senha atual, verifique!");
+
+        usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));
+        usuario.setUpdatedBy(usuario);
+        usuarioRepository.save(usuario);
     }
 
     @Transactional(readOnly = true)

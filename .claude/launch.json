@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "front",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "financecontrol-front", "run", "dev"],
+      "port": 5173,
+      "autoPort": false
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "C:\\Users\\EDUARD~1\\AppData\\Local\\Temp\\claude\\C--Users-eduardoohlweiler-Documents-finance-control-mpt\\28e64a61-f62a-4959-b625-a34a0b2d2606\\scratchpad\\run-api.cmd"],
+      "port": 8080,
+      "autoPort": false
+    }
+  ]
+}

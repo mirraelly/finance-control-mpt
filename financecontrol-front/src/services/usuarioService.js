@@ -34,6 +34,16 @@ export const usuarioService = {
         return response.data;
     },
 
+    alterarSenha: async (dados) => {
+        const token = localStorage.getItem('token');
+        const response = await axios.patch(`${API_URL}/usuario/me/senha`, dados, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    },
+
 
     deletarUsuario: async (id) =>{
         const token = localStorage.getItem("token");

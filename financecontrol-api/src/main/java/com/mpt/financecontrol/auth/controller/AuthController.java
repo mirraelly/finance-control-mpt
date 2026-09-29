@@ -2,7 +2,10 @@ package com.mpt.financecontrol.auth.controller;
 
 import com.mpt.financecontrol.auth.dtos.AuthLoginDto;
 import com.mpt.financecontrol.auth.dtos.AuthResponseDto;
+import com.mpt.financecontrol.auth.dtos.EsqueciSenhaDto;
+import com.mpt.financecontrol.auth.dtos.RedefinirSenhaDto;
 import com.mpt.financecontrol.auth.service.AuthService;
+import com.mpt.financecontrol.auth.service.RecuperacaoSenhaService;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,10 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Auth", description = "Autenticação e registro de usuários")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthService             authService;
+    private final RecuperacaoSenhaService recuperacaoSenhaService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthService authService, RecuperacaoSenhaService recuperacaoSenhaService) {
+        this.authService             = authService;
+        this.recuperacaoSenhaService = recuperacaoSenhaService;
     }
 
     @PostMapping("/login")
@@ -36,5 +41,19 @@ public class AuthController {
     @Operation(summary = "Registra um novo usuário (cria também o tenant quando é auto-cadastro)")
     public ResponseEntity<UsuarioResponseDto> register(@Valid @RequestBody UsuarioCreateDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
+    }
+
+    @PostMapping("/esqueci-senha")
+    @Operation(summary = "Envia um e-mail com o link de recuperação de senha, caso o e-mail esteja cadastrado")
+    public ResponseEntity<Void> esqueciSenha(@Valid @RequestBody EsqueciSenhaDto dto) {
+        recuperacaoSenhaService.solicitar(dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/redefinir-senha")
+    @Operation(summary = "Redefine a senha a partir do token recebido por e-mail")
+    public ResponseEntity<Void> redefinirSenha(@Valid @RequestBody RedefinirSenhaDto dto) {
+        recuperacaoSenhaService.redefinir(dto);
+        return ResponseEntity.noContent().build();
     }
 }

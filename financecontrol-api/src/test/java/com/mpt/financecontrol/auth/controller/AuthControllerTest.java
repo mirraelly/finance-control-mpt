@@ -3,9 +3,13 @@ package com.mpt.financecontrol.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpt.financecontrol.auth.dtos.AuthLoginDto;
 import com.mpt.financecontrol.auth.dtos.AuthResponseDto;
+import com.mpt.financecontrol.auth.dtos.EsqueciSenhaDto;
+import com.mpt.financecontrol.auth.dtos.RedefinirSenhaDto;
 import com.mpt.financecontrol.auth.service.AuthService;
+import com.mpt.financecontrol.auth.service.RecuperacaoSenhaService;
 import com.mpt.financecontrol.config.JwtFilter;
 import com.mpt.financecontrol.config.SecurityConfig;
+import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.exceptions.UnauthorizedException;
 import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
@@ -24,6 +28,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,6 +51,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private RecuperacaoSenhaService recuperacaoSenhaService;
 
     // login
     @Test
@@ -103,5 +113,71 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nome").value("Eduardo"));
+    }
+
+    @Test
+    @DisplayName("POST /auth/esqueci-senha -> 204 quando o e-mail é válido")
+    void esqueciSenha_comEmailValido_retorna204() throws Exception {
+        EsqueciSenhaDto body = new EsqueciSenhaDto("eduardo@example.com");
+
+        mockMvc.perform(post("/auth/esqueci-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isNoContent());
+
+        verify(recuperacaoSenhaService).solicitar(any());
+    }
+
+    @Test
+    @DisplayName("POST /auth/esqueci-senha -> 400 quando o e-mail é inválido")
+    void esqueciSenha_comEmailInvalido_retorna400() throws Exception {
+        EsqueciSenhaDto body = new EsqueciSenhaDto("naoehemail");
+
+        mockMvc.perform(post("/auth/esqueci-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+
+        verify(recuperacaoSenhaService, never()).solicitar(any());
+    }
+
+    @Test
+    @DisplayName("POST /auth/redefinir-senha -> 204 quando o token e a senha são válidos")
+    void redefinirSenha_comDadosValidos_retorna204() throws Exception {
+        RedefinirSenhaDto body = new RedefinirSenhaDto("token-abc", "NovaSenha@123");
+
+        mockMvc.perform(post("/auth/redefinir-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isNoContent());
+
+        verify(recuperacaoSenhaService).redefinir(any());
+    }
+
+    @Test
+    @DisplayName("POST /auth/redefinir-senha -> 400 quando a senha não atende aos critérios")
+    void redefinirSenha_comSenhaFraca_retorna400() throws Exception {
+        RedefinirSenhaDto body = new RedefinirSenhaDto("token-abc", "fraca");
+
+        mockMvc.perform(post("/auth/redefinir-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+
+        verify(recuperacaoSenhaService, never()).redefinir(any());
+    }
+
+    @Test
+    @DisplayName("POST /auth/redefinir-senha -> 400 quando o token é inválido ou expirado")
+    void redefinirSenha_comTokenInvalido_retorna400() throws Exception {
+        RedefinirSenhaDto body = new RedefinirSenhaDto("token-invalido", "NovaSenha@123");
+        doThrow(new BadRequestException("Link de recuperação inválido ou expirado, solicite um novo!"))
+                .when(recuperacaoSenhaService).redefinir(any());
+
+        mockMvc.perform(post("/auth/redefinir-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro").value("Link de recuperação inválido ou expirado, solicite um novo!"));
     }
 }

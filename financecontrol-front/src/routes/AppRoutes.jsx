@@ -5,6 +5,7 @@ import Login from "../pages/Login/Login";
 import Perfil from "../pages/Perfil/Perfil";
 import Cadastro from "../pages/Cadastro/Cadastro";
 import RecuperarSenha from "../pages/RecuperarSenha/RecuperarSenha";
+import RedefinirSenha from "../pages/RedefinirSenha/RedefinirSenha";
 import ComponentesTeste from "../pages/ComponentesTeste/ComponentesTeste";
 import NotFound from "../pages/NotFound/NotFound";
 
@@ -15,6 +16,7 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
         <Route element={<InternalLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/perfil" element={<Perfil />} />

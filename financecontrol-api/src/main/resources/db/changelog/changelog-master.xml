@@ -23,4 +23,5 @@
     <include file="db/changelog/changes/016-alter-pagamento-recebimento.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/017-create-lancamento-financeiro.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changes/018-create-transferencia-entre-contas.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changes/019-create-token-recuperacao-senha.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

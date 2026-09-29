@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.usuario.controller;
 
+import com.mpt.financecontrol.usuario.dtos.UsuarioAlterarSenhaDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioUpdateDto;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
@@ -34,6 +35,14 @@ public class UsuarioController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UsuarioResponseDto> getMeuPerfil() {
         return ResponseEntity.ok(usuarioService.getPerfilAutenticado());
+    }
+
+    @Operation(summary = "Altera a senha do usuário autenticado")
+    @PatchMapping("/me/senha")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> alterarSenha(@Valid @RequestBody UsuarioAlterarSenhaDto dto) {
+        usuarioService.alterarSenha(dto);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Busca usuário por id")

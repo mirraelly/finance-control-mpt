@@ -27,6 +27,18 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/changelog-master.xml
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   tomcat:
     threads:
@@ -55,6 +67,7 @@ jwt:
 
 app:
   public-url: ${APP_PUBLIC_URL:http://localhost:8080}
+  front-url: ${APP_FRONT_URL:http://localhost:5173}
   superadmin:
     email: ${SUPERADMIN_EMAIL}
     password: ${SUPERADMIN_PASSWORD}
