@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import InternalLayout from "../layouts/Internal/InternalLayout";
+import ProtectedRoute from "./ProtectedRoute";
 import Home from "../pages/Home/Home";
 import Login from "../pages/Login/Login";
 import Perfil from "../pages/Perfil/Perfil";
@@ -15,10 +16,12 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-        <Route element={<InternalLayout />}>
-          <Route path="/home" element={<Home />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/componentes-teste" element={<ComponentesTeste />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<InternalLayout />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/componentes-teste" element={<ComponentesTeste />} />
+          </Route>
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
