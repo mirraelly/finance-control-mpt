@@ -34,6 +34,10 @@ import {
   Delete02Icon,
   ConstructionIcon,
   Plant01Icon,
+  SecurityIcon,
+  SquareLock02Icon,
+  EyeOffIcon,
+  ViewIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -69,4 +73,8 @@ export {
   Delete02Icon,
   ConstructionIcon,
   Plant01Icon,
+  SecurityIcon,
+  SquareLock02Icon,
+  EyeOffIcon,
+  ViewIcon,
 };
