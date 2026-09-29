@@ -10,14 +10,21 @@ import com.mpt.financecontrol.contareceber.dtos.ContaReceberUpdateDto;
 import com.mpt.financecontrol.contareceber.entity.ContaReceber;
 import com.mpt.financecontrol.contareceber.mapper.ContaReceberMapper;
 import com.mpt.financecontrol.contareceber.repository.ContaReceberRepository;
+import com.mpt.financecontrol.contareceberparcela.dtos.ContaReceberParcelaBaixaDto;
 import com.mpt.financecontrol.contareceberparcela.dtos.ContaReceberParcelaItemDto;
 import com.mpt.financecontrol.contareceberparcela.entity.ContaReceberParcela;
+import com.mpt.financecontrol.contareceberparcela.mapper.ContaReceberParcelaMapper;
 import com.mpt.financecontrol.contareceberparcela.repository.ContaReceberParcelaRepository;
 import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
+import com.mpt.financecontrol.financeiro.OrigemLancamento;
 import com.mpt.financecontrol.financeiro.StatusConta;
+import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.formapagamento.entity.FormaPagamento;
 import com.mpt.financecontrol.formapagamento.repository.FormaPagamentoRepository;
+import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
+import com.mpt.financecontrol.lancamentofinanceiro.repository.LancamentoFinanceiroRepository;
+import com.mpt.financecontrol.lancamentofinanceiro.service.LancamentoFinanceiroService;
 import com.mpt.financecontrol.pessoa.service.PessoaService;
 import com.mpt.financecontrol.recebimento.dtos.RecebimentoCreateDto;
 import com.mpt.financecontrol.recebimento.entity.Recebimento;
@@ -30,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +52,8 @@ public class ContaReceberService {
     private final CategoriaRepository categoriaRepository;
     private final FormaPagamentoRepository formaPagamentoRepository;
     private final ContaFinanceiraService contaFinanceiraService;
+    private final LancamentoFinanceiroService lancamentoFinanceiroService;
+    private final LancamentoFinanceiroRepository lancamentoFinanceiroRepository;
 
     public ContaReceberService(
             ContaReceberRepository          repository,
@@ -53,16 +63,20 @@ public class ContaReceberService {
             PessoaService                   pessoaService,
             CategoriaRepository             categoriaRepository,
             FormaPagamentoRepository        formaPagamentoRepository,
-            ContaFinanceiraService          contaFinanceiraService
+            ContaFinanceiraService          contaFinanceiraService,
+            LancamentoFinanceiroService     lancamentoFinanceiroService,
+            LancamentoFinanceiroRepository  lancamentoFinanceiroRepository
     ) {
-        this.repository               = repository;
-        this.parcelaRepository        = parcelaRepository;
-        this.recebimentoRepository    = recebimentoRepository;
-        this.usuarioService           = usuarioService;
-        this.pessoaService            = pessoaService;
-        this.categoriaRepository      = categoriaRepository;
-        this.formaPagamentoRepository = formaPagamentoRepository;
-        this.contaFinanceiraService   = contaFinanceiraService;
+        this.repository                     = repository;
+        this.parcelaRepository              = parcelaRepository;
+        this.recebimentoRepository          = recebimentoRepository;
+        this.usuarioService                 = usuarioService;
+        this.pessoaService                  = pessoaService;
+        this.categoriaRepository            = categoriaRepository;
+        this.formaPagamentoRepository       = formaPagamentoRepository;
+        this.contaFinanceiraService         = contaFinanceiraService;
+        this.lancamentoFinanceiroService    = lancamentoFinanceiroService;
+        this.lancamentoFinanceiroRepository = lancamentoFinanceiroRepository;
     }
 
     @Transactional(readOnly = true)
@@ -103,6 +117,25 @@ public class ContaReceberService {
                 .stream()
                 .map(ContaReceberMapper::toResponseDto)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ContaReceberParcelaBaixaDto> getParcelas(
+            Pageable    pageable,
+            UUID        pessoaId,
+            StatusConta status,
+            LocalDate   dataVencimentoInicio,
+            LocalDate   dataVencimentoFim
+    ) {
+        Tenant tenant = usuarioService.getTenantLogado();
+        return parcelaRepository.findAllWithFilters(
+                        pageable,
+                        tenant.getId(),
+                        pessoaId,
+                        status != null ? status.name() : null,
+                        dataVencimentoInicio,
+                        dataVencimentoFim)
+                .map(ContaReceberParcelaMapper::toBaixaDto);
     }
 
     @Transactional
@@ -316,7 +349,7 @@ public class ContaReceberService {
     public ContaReceberResponseDto receberParcela(UUID parcelaId, RecebimentoCreateDto dto) {
         Tenant tenant = usuarioService.getTenantLogado();
 
-        UUID contaReceberId = parcelaRepository.findContaReceberIdById(parcelaId)
+        UUID contaReceberId = parcelaRepository.findContaReceberIdById(parcelaId, tenant.getId())
                 .orElseThrow(() -> new NotFoundException("Parcela não encontrada"));
 
         ContaReceber contaReceber = repository.findByIdForUpdate(contaReceberId)
@@ -324,9 +357,6 @@ public class ContaReceberService {
 
         ContaReceberParcela parcela = parcelaRepository.findById(parcelaId)
                 .orElseThrow(() -> new NotFoundException("Parcela não encontrada"));
-
-        if (!parcela.getTenant().getId().equals(tenant.getId()))
-            throw new NotFoundException("Parcela não encontrada");
 
         if (!Boolean.TRUE.equals(contaReceber.getAtivo()))
             throw new BadRequestException("Conta a receber inativa");
@@ -362,16 +392,30 @@ public class ContaReceberService {
         if (!Boolean.TRUE.equals(formaPagamento.getAtivo()))
             throw new BadRequestException("Forma de pagamento inativa");
 
-        ContaFinanceira contaFinanceira = contaFinanceiraService.findById(dto.contaFinanceiraId());
+        ContaFinanceira contaFinanceira = dto.contaFinanceiraId() != null
+                ? contaFinanceiraService.findById(dto.contaFinanceiraId())
+                : formaPagamento.getContaFinanceira();
 
         if (!Boolean.TRUE.equals(contaFinanceira.getAtivo()))
             throw new BadRequestException("Conta financeira inativa");
+
+        LancamentoFinanceiro lancamento = lancamentoFinanceiroService.registrar(
+                tenant,
+                contaFinanceira,
+                contaReceber.getCategoria(),
+                TipoLancamento.ENTRADA,
+                OrigemLancamento.RECEBIMENTO,
+                dto.valor().add(juros).add(multa),
+                dto.dataRecebimento(),
+                "Recebimento parcela " + parcela.getNumeroParcela()
+                        + (contaReceber.getDescricao() != null ? " - " + contaReceber.getDescricao() : ""));
 
         Recebimento recebimento = new Recebimento();
         recebimento.setTenant(tenant);
         recebimento.setContaReceberParcela(parcela);
         recebimento.setFormaPagamento(formaPagamento);
         recebimento.setContaFinanceira(contaFinanceira);
+        recebimento.setLancamentoFinanceiro(lancamento);
         recebimento.setDataRecebimento(dto.dataRecebimento());
         recebimento.setValor(dto.valor());
         recebimento.setJuros(juros);
@@ -409,7 +453,7 @@ public class ContaReceberService {
     public ContaReceberResponseDto estornarRecebimento(UUID recebimentoId) {
         Tenant tenant = usuarioService.getTenantLogado();
 
-        UUID contaReceberId = recebimentoRepository.findContaReceberIdById(recebimentoId)
+        UUID contaReceberId = recebimentoRepository.findContaReceberIdById(recebimentoId, tenant.getId())
                 .orElseThrow(() -> new NotFoundException("Recebimento não encontrado"));
 
         ContaReceber contaReceber = repository.findByIdForUpdate(contaReceberId)
@@ -418,16 +462,15 @@ public class ContaReceberService {
         Recebimento recebimento = recebimentoRepository.findById(recebimentoId)
                 .orElseThrow(() -> new NotFoundException("Recebimento não encontrado"));
 
-        if (!recebimento.getTenant().getId().equals(tenant.getId()))
-            throw new NotFoundException("Recebimento não encontrado");
-
         if (contaReceber.getStatus() == StatusConta.CANCELADO)
             throw new BadRequestException("Conta a receber cancelada");
 
         ContaReceberParcela parcela = recebimento.getContaReceberParcela();
+        LancamentoFinanceiro lancamento = recebimento.getLancamentoFinanceiro();
 
         parcela.getRecebimentos().remove(recebimento);
         recebimentoRepository.delete(recebimento);
+        lancamentoFinanceiroRepository.delete(lancamento);
 
         BigDecimal saldo = parcela.getValor().subtract(parcela.getRecebimentos().stream()
                 .map(r -> r.getValor().add(r.getDesconto()))

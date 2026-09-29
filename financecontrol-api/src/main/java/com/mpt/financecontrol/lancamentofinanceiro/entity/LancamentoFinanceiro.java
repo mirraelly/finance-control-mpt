@@ -3,6 +3,7 @@ package com.mpt.financecontrol.lancamentofinanceiro.entity;
 import com.mpt.financecontrol.baseentity.BaseEntity;
 import com.mpt.financecontrol.categoria.entity.Categoria;
 import com.mpt.financecontrol.contafinanceira.entity.ContaFinanceira;
+import com.mpt.financecontrol.financeiro.OrigemLancamento;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import jakarta.persistence.Column;
@@ -36,6 +37,10 @@ public class LancamentoFinanceiro extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false, length = 10)
     private TipoLancamento tipo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "origem", nullable = false, length = 20)
+    private OrigemLancamento origem = OrigemLancamento.MANUAL;
 
     @Column(name = "valor", nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
@@ -76,6 +81,14 @@ public class LancamentoFinanceiro extends BaseEntity {
 
     public void setTipo(TipoLancamento tipo) {
         this.tipo = tipo;
+    }
+
+    public OrigemLancamento getOrigem() {
+        return origem;
+    }
+
+    public void setOrigem(OrigemLancamento origem) {
+        this.origem = origem;
     }
 
     public BigDecimal getValor() {

@@ -11,6 +11,7 @@ public record RecebimentoResponseDto(
         String     formaPagamentoNome,
         UUID       contaFinanceiraId,
         String     contaFinanceiraNome,
+        UUID       lancamentoFinanceiroId,
         LocalDate  dataRecebimento,
         BigDecimal valor,
         BigDecimal juros,

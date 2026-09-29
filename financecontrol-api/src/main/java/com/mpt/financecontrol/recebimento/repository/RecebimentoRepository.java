@@ -12,6 +12,6 @@ import java.util.UUID;
 @Repository
 public interface RecebimentoRepository extends JpaRepository<Recebimento, UUID> {
 
-    @Query("SELECT r.contaReceberParcela.contaReceber.id FROM Recebimento r WHERE r.id = :id")
-    Optional<UUID> findContaReceberIdById(@Param("id") UUID id);
+    @Query("SELECT r.contaReceberParcela.contaReceber.id FROM Recebimento r WHERE r.id = :id AND r.tenant.id = :tenantId")
+    Optional<UUID> findContaReceberIdById(@Param("id") UUID id, @Param("tenantId") UUID tenantId);
 }

@@ -2,12 +2,14 @@ package com.mpt.financecontrol.contafinanceira.service;
 
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraCreateDto;
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraResponseDto;
+import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto;
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraUpdateDto;
 import com.mpt.financecontrol.contafinanceira.entity.ContaFinanceira;
 import com.mpt.financecontrol.contafinanceira.mapper.ContaFinanceiraMapper;
 import com.mpt.financecontrol.contafinanceira.repository.ContaFinanceiraRepository;
 import com.mpt.financecontrol.exceptions.ConflictException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
+import com.mpt.financecontrol.lancamentofinanceiro.repository.LancamentoFinanceiroRepository;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
 import org.springframework.data.domain.Page;
@@ -23,10 +25,16 @@ public class ContaFinanceiraService {
 
     private final ContaFinanceiraRepository repository;
     private final UsuarioService usuarioService;
+    private final LancamentoFinanceiroRepository lancamentoFinanceiroRepository;
 
-    public ContaFinanceiraService(ContaFinanceiraRepository repository, UsuarioService usuarioService) {
+    public ContaFinanceiraService(
+            ContaFinanceiraRepository      repository,
+            UsuarioService                 usuarioService,
+            LancamentoFinanceiroRepository lancamentoFinanceiroRepository
+    ) {
         this.repository = repository;
         this.usuarioService = usuarioService;
+        this.lancamentoFinanceiroRepository = lancamentoFinanceiroRepository;
     }
 
     @Transactional(readOnly = true)
@@ -61,6 +69,12 @@ public class ContaFinanceiraService {
                 .stream()
                 .map(ContaFinanceiraMapper::toResponseDto)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContaFinanceiraSaldoDto> saldos() {
+        Tenant tenant = usuarioService.getTenantLogado();
+        return lancamentoFinanceiroRepository.findSaldos(tenant.getId());
     }
 
     @Transactional
