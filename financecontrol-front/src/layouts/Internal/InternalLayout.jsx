@@ -13,6 +13,7 @@ function InternalLayout() {
   const location = useLocation();
   const pageTitles = {
     "/home": "Início",
+    "/dashboard": "Dashboard",
     "/perfil": "Perfil",
     "/componentes-teste": "Componentes",
   };

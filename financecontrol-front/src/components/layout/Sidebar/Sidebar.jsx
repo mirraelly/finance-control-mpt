@@ -18,6 +18,11 @@ const menuItems = [
     icon: Home07Icon,
   },
   {
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: Chart01Icon,
+  },
+  {
     label: "Contas",
     path: "/contas",
     icon: Wallet01Icon,
