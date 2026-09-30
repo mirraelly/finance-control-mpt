@@ -47,6 +47,76 @@
   text-decoration: underline;
 }
 
+.dashboard-period-select {
+  border-radius: 8px;
+}
+
+.dashboard-period-select .select-field__trigger {
+  min-height: 28px;
+  padding: 4px 0;
+  font-size: 10px;
+}
+
+.dashboard-period-select .select-field__chevron {
+  width: 14px;
+  height: 14px;
+}
+
+.dashboard-panel__month-filter {
+  width: 126px;
+  min-width: 0;
+  height: 30px;
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 10px;
+  color-scheme: light;
+}
+
+[data-theme="dark"] .dashboard-panel__month-filter {
+  color-scheme: dark;
+}
+
+.dashboard-period-date-range {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+
+.dashboard-period-date-range label {
+  display: grid;
+  gap: 3px;
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.dashboard-period-date-range input {
+  min-width: 128px;
+  padding: 5px 7px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 10px;
+  color-scheme: light dark;
+}
+
+.dashboard-period-date-range input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.dashboard-period-range-error {
+  margin: 4px 0 0;
+  color: var(--danger);
+  font-size: 10px;
+}
+
 .dashboard-panel__chart {
   width: 100%;
   height: 138px;
@@ -83,8 +153,8 @@
 .dashboard-budget-list__icon,
 .dashboard-goal__icon {
   display: grid;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   place-items: center;
   border-radius: 6px;
   background: color-mix(
@@ -93,8 +163,8 @@
     transparent
   );
   color: var(--budget-color, var(--goal-color, var(--primary)));
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
 }
 
 .dashboard-budget-list__name {
@@ -154,8 +224,8 @@
 }
 
 .dashboard-goal__icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   background: color-mix(in srgb, var(--goal-color) 14%, transparent);
   color: var(--goal-color);
 }
@@ -255,14 +325,14 @@
   align-items: center;
   gap: 6px;
   color: var(--text-secondary);
-  font-size: 9px;
+  font-size: var(--font-size-12);
   white-space: nowrap;
 }
 
 .dashboard-category-legend__dot,
 .dashboard-investments__dot {
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--category-color, var(--investment-color));
 }
@@ -391,5 +461,21 @@
 
   .dashboard-patrimonial__details {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-period-date-range {
+    justify-content: stretch;
+  }
+
+  .dashboard-period-date-range label {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dashboard-period-date-range input {
+    min-width: 0;
+    width: 100%;
   }
 }

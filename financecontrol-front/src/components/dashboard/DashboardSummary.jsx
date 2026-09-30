@@ -1,6 +1,7 @@
 import {
+  ArrowDown04Icon,
   ArrowDownBigIcon,
-  ArrowUp01Icon,
+  ArrowUp04Icon,
   ArrowUpBigIcon,
   Chart01Icon,
   HugeiconsIcon,
@@ -53,7 +54,7 @@ function DashboardSummary() {
           className={`dashboard-stat dashboard-stat--${item.tone}`}
         >
           <span className="dashboard-stat__icon" aria-hidden="true">
-            <HugeiconsIcon icon={item.icon} size={21} strokeWidth={2.2} />
+            <HugeiconsIcon icon={item.icon} size={24} strokeWidth={2.2} />
           </span>
           <div className="dashboard-stat__content">
             <h2 className="dashboard-stat__label">{item.label}</h2>
@@ -66,7 +67,9 @@ function DashboardSummary() {
               }`}
             >
               <HugeiconsIcon
-                icon={ArrowUp01Icon}
+                icon={
+                  item.trend === "negative" ? ArrowDown04Icon : ArrowUp04Icon
+                }
                 size={12}
                 strokeWidth={2.5}
                 aria-hidden="true"

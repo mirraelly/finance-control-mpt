@@ -2,7 +2,7 @@ export const dashboardChartBaseOptions = {
     chart: {
         backgroundColor: "transparent",
         height: 138,
-        spacing: [8, 8, 18, 8],
+        spacing: [8, 8, 10, 8],
         style: { fontFamily: "inherit" },
     },
     title: { text: null },

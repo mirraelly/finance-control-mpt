@@ -1,5 +1,7 @@
+import { useState } from "react";
 import DashboardChartPanel from "./DashboardChartPanel";
 import { formatDashboardCurrency } from "./dashboardChartOptions";
+import { getCurrentMonthKey } from "./dashboardPeriods";
 
 const budgets = [
   { name: "Moradia", spent: 2100, limit: 2200, percent: 95, color: "#08a779" },
@@ -35,14 +37,48 @@ const initials = {
   Saúde: "S",
 };
 
+function getBudgetsForMonth(monthKey) {
+  if (!monthKey) return budgets;
+
+  const [year, month] = monthKey.split("-").map(Number);
+  const today = new Date();
+  const monthOffset =
+    (year - today.getFullYear()) * 12 + (month - (today.getMonth() + 1));
+  const factor = 1 + Math.sin(monthOffset * 0.7) * 0.04;
+
+  return budgets.map((budget) => {
+    const spent = Math.round(budget.spent * factor);
+    const limit = Math.round(budget.limit * factor);
+
+    return {
+      ...budget,
+      spent,
+      limit,
+      percent: Math.round((spent / limit) * 100),
+    };
+  });
+}
+
 function BudgetChart() {
+  const [month, setMonth] = useState(getCurrentMonthKey);
+  const selectedBudgets = getBudgetsForMonth(month);
+
   return (
     <DashboardChartPanel
       title="Orçamento do mês"
-      action={<span>Setembro/2026</span>}
+      action={
+        <input
+          className="dashboard-panel__month-filter"
+          type="month"
+          value={month}
+          max={getCurrentMonthKey()}
+          aria-label="Mês do orçamento"
+          onChange={(event) => setMonth(event.target.value)}
+        />
+      }
     >
       <ul className="dashboard-budget-list">
-        {budgets.map((budget) => (
+        {selectedBudgets.map((budget) => (
           <li key={budget.name}>
             <span
               className="dashboard-budget-list__icon"
