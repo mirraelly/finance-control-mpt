@@ -81,8 +81,11 @@ function Header({ title = "Início" }) {
     localStorage.removeItem("token");
     localStorage.removeItem("financecontrol_token");
     localStorage.removeItem("userId");
+    localStorage.removeItem("role");
     navigate("/", { replace: true });
   };
+
+  const isSuperadmin = localStorage.getItem("role") === "SUPERADMIN";
 
   return (
     <header className="header-container">
@@ -96,23 +99,27 @@ function Header({ title = "Início" }) {
       </div>
 
       <div className="header-right-group">
-        <Input
-          className="header-search"
-          shadow={false}
-          icon={<HugeiconsIcon icon={Search01Icon} size={18} />}
-          placeholder="Buscar transações..."
-        />
+        {!isSuperadmin && (
+          <Input
+            className="header-search"
+            shadow={false}
+            icon={<HugeiconsIcon icon={Search01Icon} size={18} />}
+            placeholder="Buscar transações..."
+          />
+        )}
 
         <div className="controls-box">
-          <Button
-            size="md"
-            variant="primary"
-            onClick={() => setShowTransactionModal(true)}
-            icon={<HugeiconsIcon icon={PlusIcon} size={18} />}
-          >
-            {" "}
-            Transação
-          </Button>
+          {!isSuperadmin && (
+            <Button
+              size="md"
+              variant="primary"
+              onClick={() => setShowTransactionModal(true)}
+              icon={<HugeiconsIcon icon={PlusIcon} size={18} />}
+            >
+              {" "}
+              Transação
+            </Button>
+          )}
 
           <ThemeToggle></ThemeToggle>
 

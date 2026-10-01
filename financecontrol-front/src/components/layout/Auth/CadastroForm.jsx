@@ -83,7 +83,7 @@ function CadastroForm() {
         navigate("/");
       }, 2000);
     } catch (err) {
-      const message = err?.response?.data?.message || err?.message;
+      const message = err?.response?.data?.erro || err?.message;
       setError(message || "Erro ao realizar cadastro. Tente novamente.");
     } finally {
       setLoading(false);

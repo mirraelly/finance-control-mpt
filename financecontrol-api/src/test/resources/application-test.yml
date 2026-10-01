@@ -11,12 +11,17 @@ spring:
   liquibase:
     enabled: false
 
+  mail:
+    host: localhost
+    username: teste@teste.local
+
 jwt:
   secret: "chave-de-teste-somente-para-testes-com-mais-de-32-bytes" 
   expiration: 86400000
 
 app:
   public-url: http://localhost:8080
+  front-url: http://localhost:5173
   superadmin:
     email: admin@teste.local
     password: admin12345

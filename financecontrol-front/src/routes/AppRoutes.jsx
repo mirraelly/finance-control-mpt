@@ -6,7 +6,11 @@ import Login from "../pages/Login/Login";
 import Perfil from "../pages/Perfil/Perfil";
 import Cadastro from "../pages/Cadastro/Cadastro";
 import RecuperarSenha from "../pages/RecuperarSenha/RecuperarSenha";
+import RedefinirSenha from "../pages/RedefinirSenha/RedefinirSenha";
 import ComponentesTeste from "../pages/ComponentesTeste/ComponentesTeste";
+import UsuarioList from "../pages/Usuarios/UsuarioList";
+import UsuarioForm from "../pages/Usuarios/UsuarioForm";
+import LogLoginList from "../pages/LogsLogin/LogLoginList";
 import NotFound from "../pages/NotFound/NotFound";
 
 function AppRoutes() {
@@ -16,11 +20,22 @@ function AppRoutes() {
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<InternalLayout />}>
-            <Route path="/home" element={<Home />} />
             <Route path="/perfil" element={<Perfil />} />
-            <Route path="/componentes-teste" element={<ComponentesTeste />} />
+
+            <Route element={<ProtectedRoute roles={["USER"]} />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/componentes-teste" element={<ComponentesTeste />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={["SUPERADMIN"]} />}>
+              <Route path="/admin/usuarios" element={<UsuarioList />} />
+              <Route path="/admin/usuarios/novo" element={<UsuarioForm />} />
+              <Route path="/admin/usuarios/:id" element={<UsuarioForm />} />
+              <Route path="/admin/logs-login" element={<LogLoginList />} />
+            </Route>
           </Route>
         </Route>
         <Route path="*" element={<NotFound />} />

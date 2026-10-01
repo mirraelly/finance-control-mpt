@@ -15,8 +15,14 @@ function InternalLayout() {
     "/home": "Início",
     "/perfil": "Perfil",
     "/componentes-teste": "Componentes",
+    "/admin/usuarios": "Usuários",
+    "/admin/logs-login": "Logs de login",
   };
-  const title = pageTitles[location.pathname] || "Início";
+  const currentPath = Object.keys(pageTitles).find(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
+  const title = pageTitles[currentPath] || "Início";
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => !prev);

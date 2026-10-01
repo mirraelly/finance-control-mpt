@@ -263,6 +263,7 @@ const DatePicker = forwardRef(function DatePicker(
         type="button"
         id={id}
         className="date-picker__trigger"
+        style={height ? { minHeight: height, height } : undefined}
         onClick={() => !disabled && setIsOpen((open) => !open)}
         disabled={disabled}
         aria-haspopup="dialog"
