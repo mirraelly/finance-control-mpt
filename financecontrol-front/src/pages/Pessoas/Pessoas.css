@@ -45,9 +45,26 @@
   padding: var(--space-6);
 }
 
+.pessoas-mensagem {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--success) 10%, transparent);
+  color: var(--success);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+}
+
 .pessoas-table__wrapper {
   width: 100%;
   overflow-x: auto;
+  transition: opacity 0.15s ease;
+}
+
+.pessoas-table__wrapper--carregando {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .pessoas-table {
@@ -283,6 +300,22 @@
   display: flex;
   justify-content: flex-start;
   gap: var(--space-3);
+}
+
+@media (max-width: 1200px) {
+  .pessoas-table thead th,
+  .pessoas-table td {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  .pessoas-table td:first-child {
+    white-space: normal;
+  }
+
+  .pessoas-table__col-cidade {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {

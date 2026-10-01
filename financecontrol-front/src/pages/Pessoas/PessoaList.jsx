@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
   Search01Icon,
@@ -41,7 +41,9 @@ const TIPO_LABEL = {
 
 function PessoaList() {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [pessoas, setPessoas] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [totalPaginas, setTotalPaginas] = useState(0);
@@ -59,6 +61,15 @@ function PessoaList() {
   const [pessoaSelecionada, setPessoaSelecionada] = useState(null);
   const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
+
+  useEffect(() => {
+    if (!mensagem) return;
+
+    navigate(location.pathname, { replace: true, state: null });
+    const timeout = setTimeout(() => setMensagem(""), 4000);
+
+    return () => clearTimeout(timeout);
+  }, [mensagem, navigate, location.pathname]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -103,6 +114,11 @@ function PessoaList() {
         pessoaSelecionada.id,
         !pessoaSelecionada.ativo,
       );
+      setMensagem(
+        pessoaSelecionada.ativo
+          ? "Pessoa inativada com sucesso."
+          : "Pessoa ativada com sucesso.",
+      );
       setPessoaSelecionada(null);
       setRecarregar((valor) => valor + 1);
     } catch (erro) {
@@ -117,7 +133,7 @@ function PessoaList() {
   };
 
   const renderConteudo = () => {
-    if (carregando) {
+    if (carregando && pessoas.length === 0) {
       return <Loading message="Carregando pessoas..." />;
     }
 
@@ -145,7 +161,10 @@ function PessoaList() {
 
     return (
       <>
-        <div className="pessoas-table__wrapper">
+        <div
+          className={`pessoas-table__wrapper ${carregando ? "pessoas-table__wrapper--carregando" : ""}`}
+          aria-busy={carregando}
+        >
           <table className="pessoas-table">
             <thead>
               <tr>
@@ -153,7 +172,9 @@ function PessoaList() {
                 <th className="pessoas-table__col-secundaria">CPF / CNPJ</th>
                 <th className="pessoas-table__col-tipo">Tipo</th>
                 <th className="pessoas-table__col-secundaria">Telefone</th>
-                <th className="pessoas-table__col-secundaria">Cidade</th>
+                <th className="pessoas-table__col-secundaria pessoas-table__col-cidade">
+                  Cidade
+                </th>
                 <th>Situação</th>
                 <th className="pessoas-table__acoes-col">Ações</th>
               </tr>
@@ -203,7 +224,7 @@ function PessoaList() {
                     <td className="pessoas-table__muted pessoas-table__col-secundaria">
                       {telefone ? formatarTelefone(telefone.numero) : "-"}
                     </td>
-                    <td className="pessoas-table__muted pessoas-table__col-secundaria">
+                    <td className="pessoas-table__muted pessoas-table__col-secundaria pessoas-table__col-cidade">
                       {endereco?.cidadeNome
                         ? `${endereco.cidadeNome}/${endereco.estadoSigla}`
                         : "-"}
@@ -323,6 +344,12 @@ function PessoaList() {
           </Button>
         </div>
       </Card>
+
+      {mensagem && (
+        <p className="pessoas-mensagem" role="status">
+          {mensagem}
+        </p>
+      )}
 
       <Card
         className="pessoas-table-card"

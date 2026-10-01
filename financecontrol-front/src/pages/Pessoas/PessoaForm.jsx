@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   HugeiconsIcon,
   Calendar03Icon,
+  ContactBookIcon,
   Delete02Icon,
   PlusIcon,
 } from "../../assets/icons";
@@ -19,6 +20,7 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import Loading from "../../components/common/Loading";
+import EmptyState from "../../components/common/EmptyState";
 import "./Pessoas.css";
 
 const TIPO_PESSOA_OPTIONS = [
@@ -75,6 +77,7 @@ function PessoaForm() {
   const [carregando, setCarregando] = useState(isEdicao);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  const [erroCarregamento, setErroCarregamento] = useState(false);
 
   const isFisica = tipoPessoa === "PESSOA_FISICA";
 
@@ -161,7 +164,7 @@ function PessoaForm() {
         );
       } catch (erro) {
         console.error("Erro ao carregar pessoa:", erro);
-        setErro("Não foi possível carregar os dados da pessoa.");
+        setErroCarregamento(true);
       } finally {
         setCarregando(false);
       }
@@ -316,7 +319,13 @@ function PessoaForm() {
         await pessoaService.criarPessoa(dados);
       }
 
-      navigate("/cadastros/pessoas");
+      navigate("/cadastros/pessoas", {
+        state: {
+          mensagem: isEdicao
+            ? "Pessoa atualizada com sucesso."
+            : "Pessoa cadastrada com sucesso.",
+        },
+      });
     } catch (erro) {
       setErro(
         erro?.response?.data?.erro ||
@@ -331,9 +340,33 @@ function PessoaForm() {
     return <Loading message="Carregando pessoa..." />;
   }
 
+  if (erroCarregamento) {
+    return (
+      <div className="pessoas-page">
+        <Card className="pessoa-form-card" padding="lg" radius="lg" shadow={false}>
+          <EmptyState
+            icon={<HugeiconsIcon icon={ContactBookIcon} size={32} />}
+            title="Pessoa não encontrada"
+            description="Não foi possível carregar os dados desta pessoa."
+            action={
+              <Button onClick={() => navigate("/cadastros/pessoas")}>
+                Voltar para a lista
+              </Button>
+            }
+            fullWidth
+          />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="pessoas-page">
-      <form className="pessoa-form" onSubmit={handleSubmit}>
+      <form
+        className="pessoa-form"
+        onSubmit={handleSubmit}
+        onChange={() => erro && setErro("")}
+      >
         <Card className="pessoa-form-card" padding="lg" radius="lg" shadow={false}>
           <div className="pessoa-form__cabecalho">
             <h2>{isEdicao ? "Editar pessoa" : "Nova pessoa"}</h2>
@@ -408,9 +441,8 @@ function PessoaForm() {
                 inputMode="numeric"
                 value={cnh}
                 onChange={(event) =>
-                  setCnh(event.target.value.replace(/\D/g, ""))
+                  setCnh(event.target.value.replace(/\D/g, "").slice(0, 11))
                 }
-                maxLength={11}
                 fullWidth
               />
               <Select
