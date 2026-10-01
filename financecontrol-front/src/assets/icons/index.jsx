@@ -45,6 +45,7 @@ import {
   ArrowRight01Icon,
   UserBlock01Icon,
   UserCheck01Icon,
+  ContactBookIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -91,4 +92,5 @@ export {
   ArrowRight01Icon,
   UserBlock01Icon,
   UserCheck01Icon,
+  ContactBookIcon,
 };

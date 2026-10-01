@@ -17,6 +17,7 @@ function InternalLayout() {
     "/componentes-teste": "Componentes",
     "/admin/usuarios": "Usuários",
     "/admin/logs-login": "Logs de login",
+    "/cadastros/pessoas": "Pessoas",
   };
   const currentPath = Object.keys(pageTitles).find(
     (path) =>

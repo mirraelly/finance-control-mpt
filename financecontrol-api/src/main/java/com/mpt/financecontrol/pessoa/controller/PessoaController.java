@@ -1,5 +1,7 @@
 package com.mpt.financecontrol.pessoa.controller;
 
+import com.mpt.financecontrol.pessoa.TipoPessoa;
+import com.mpt.financecontrol.pessoa.dtos.PessoaAtivoDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaCreateDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaResponseDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaUpdateDto;
@@ -32,7 +34,7 @@ public class PessoaController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar pessoas", description = "Retorna lista paginada de pessoas com filtro por nome")
+    @Operation(summary = "Listar pessoas", description = "Retorna lista paginada de pessoas com filtros por nome, CPF/CNPJ, tipo de pessoa e situação")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     })
@@ -43,9 +45,18 @@ public class PessoaController {
             @PageableDefault(size = 15, sort = "nome") Pageable pageable,
 
             @Parameter(description = "Filtro por nome")
-            @RequestParam(required = false) String nome
+            @RequestParam(required = false) String nome,
+
+            @Parameter(description = "Filtro por CPF ou CNPJ, com ou sem pontuação")
+            @RequestParam(required = false) String documento,
+
+            @Parameter(description = "Filtro por tipo de pessoa")
+            @RequestParam(required = false) TipoPessoa tipoPessoa,
+
+            @Parameter(description = "Filtro por situação")
+            @RequestParam(required = false) Boolean ativo
     ) {
-        return service.getAll(pageable, nome);
+        return service.getAll(pageable, nome, documento, tipoPessoa, ativo);
     }
 
     @Operation(summary = "Listar para select", description = "Retorna lista simples de pessoas (ativo = true)")
@@ -96,5 +107,22 @@ public class PessoaController {
             @RequestBody @Valid PessoaUpdateDto dto
     ) {
         return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @Operation(summary = "Ativa ou inativa uma pessoa")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Situação alterada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Não encontrada")
+    })
+    @PatchMapping("/{id}/ativo")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> alterarAtivo(
+            @Parameter(description = "ID da pessoa")
+            @PathVariable UUID id,
+
+            @RequestBody @Valid PessoaAtivoDto dto
+    ) {
+        service.alterarAtivo(id, dto.ativo());
+        return ResponseEntity.noContent().build();
     }
 }
