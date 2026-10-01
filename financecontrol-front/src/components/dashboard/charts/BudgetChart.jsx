@@ -1,7 +1,7 @@
 import { useState } from "react";
-import DashboardChartPanel from "./DashboardChartPanel";
-import { formatDashboardCurrency } from "./dashboardChartOptions";
-import { getCurrentMonthKey } from "./dashboardPeriods";
+import DashboardChartPanel from "../panels/DashboardChartPanel";
+import { formatDashboardCurrency } from "../utils/dashboardChartOptions";
+import { getCurrentMonthKey } from "../utils/dashboardPeriods";
 
 const budgets = [
   { name: "Moradia", spent: 2100, limit: 2200, percent: 95, color: "#08a779" },

@@ -1,10 +1,10 @@
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import DashboardChartPanel from "./DashboardChartPanel";
+import DashboardChartPanel from "../panels/DashboardChartPanel";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
-} from "./dashboardChartOptions";
+} from "../utils/dashboardChartOptions";
 
 const investments = [
   { name: "Ações BR", share: "35%", value: 12285, color: "#08a779" },

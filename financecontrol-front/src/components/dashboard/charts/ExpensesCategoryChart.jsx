@@ -1,17 +1,17 @@
 import { useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import Select from "../common/Select";
-import DashboardChartPanel from "./DashboardChartPanel";
+import Select from "../../common/Select";
+import DashboardChartPanel from "../panels/DashboardChartPanel";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
-} from "./dashboardChartOptions";
+} from "../utils/dashboardChartOptions";
 import {
   dashboardMonthlyData,
   filterDashboardMonths,
   getCurrentMonthKey,
-} from "./dashboardPeriods";
+} from "../utils/dashboardPeriods";
 
 const periods = [
   { value: "month", label: "Este mês" },

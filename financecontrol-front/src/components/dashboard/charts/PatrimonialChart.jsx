@@ -1,13 +1,13 @@
 import { useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import Select from "../common/Select";
-import DashboardChartPanel from "./DashboardChartPanel";
+import Select from "../../common/Select";
+import DashboardChartPanel from "../panels/DashboardChartPanel";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
-} from "./dashboardChartOptions";
-import { dashboardMonthLabels } from "./dashboardPeriods";
+} from "../utils/dashboardChartOptions";
+import { dashboardMonthLabels } from "../utils/dashboardPeriods";
 
 const currentYear = new Date().getFullYear();
 const currentYearValues = [

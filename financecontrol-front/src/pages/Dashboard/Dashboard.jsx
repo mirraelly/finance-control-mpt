@@ -1,11 +1,13 @@
-import DashboardSummary from "../../components/dashboard/DashboardSummary";
-import RevenueExpenseChart from "../../components/dashboard/RevenueExpenseChart";
-import ExpensesCategoryChart from "../../components/dashboard/ExpensesCategoryChart";
-import BudgetChart from "../../components/dashboard/BudgetChart";
-import GoalsChart from "../../components/dashboard/GoalsChart";
-import InvestmentsChart from "../../components/dashboard/InvestmentsChart";
-import PatrimonialChart from "../../components/dashboard/PatrimonialChart";
-import DashboardRecentTransactions from "../../components/dashboard/DashboardRecentTransactions";
+import {
+  BudgetChart,
+  DashboardRecentTransactions,
+  DashboardSummary,
+  ExpensesCategoryChart,
+  GoalsChart,
+  InvestmentsChart,
+  PatrimonialChart,
+  RevenueExpenseChart,
+} from "../../components/dashboard";
 import "./Dashboard.css";
 
 function Dashboard() {

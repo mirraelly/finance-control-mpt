@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Badge from "../common/Badge";
-import Pagination from "../common/Pagination/Pagination";
-import DashboardChartPanel from "./DashboardChartPanel";
+import Badge from "../../common/Badge";
+import Pagination from "../../common/Pagination/Pagination";
+import DashboardChartPanel from "../panels/DashboardChartPanel";
 import "./DashboardRecentTransactions.css";
-import { HugeiconsIcon, ArrowRight01Icon } from "../../assets/icons";
-import { MOCK_TRANSACTIONS } from "../../constants/mockTransactions";
-import { getCurrentMonthKey } from "./dashboardPeriods";
+import { HugeiconsIcon, ArrowRight01Icon } from "../../../assets/icons";
+import { MOCK_TRANSACTIONS } from "../../../constants/mockTransactions";
+import { getCurrentMonthKey } from "../utils/dashboardPeriods";
 
 const CATEGORY_VARIANT = {
   moradia: "moradia",

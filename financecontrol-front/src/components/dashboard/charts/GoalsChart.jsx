@@ -3,9 +3,9 @@ import {
   Plant01Icon,
   Target01Icon,
   Wallet01Icon,
-} from "../../assets/icons";
-import DashboardChartPanel from "./DashboardChartPanel";
-import { formatDashboardCurrency } from "./dashboardChartOptions";
+} from "../../../assets/icons";
+import DashboardChartPanel from "../panels/DashboardChartPanel";
+import { formatDashboardCurrency } from "../utils/dashboardChartOptions";
 
 const goals = [
   {
