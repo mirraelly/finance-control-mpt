@@ -1,0 +1,77 @@
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 12px;
+}
+
+.table-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.table-pagination__button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--font-size-12);
+  cursor: pointer;
+}
+
+.table-pagination__button:hover:not(:disabled):not(.is-active) {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.table-pagination__button.is-active {
+  font-weight: var(--font-weight-bold);
+  color: var(--font-primary);
+}
+
+.table-pagination__button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.table-pagination__button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.table-pagination__page-size {
+  flex: 0 0 68px;
+}
+
+.table-pagination__page-size .select-field__trigger {
+  min-height: 32px;
+  padding: 4px 8px;
+  min-width: fit-content;
+}
+
+.table-pagination__page-size .select-field__value {
+  font-size: var(--font-size-12);
+}
+
+@media (max-width: 420px) {
+  .table-pagination {
+    justify-content: center;
+    gap: 6px;
+    padding-inline: 6px;
+  }
+
+  .table-pagination__button {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+  }
+}

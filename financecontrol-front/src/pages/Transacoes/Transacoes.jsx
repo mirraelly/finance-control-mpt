@@ -7,7 +7,9 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import EmptyState from "../../components/common/EmptyState";
+import Pagination from "../../components/common/Pagination/Pagination";
 import NewTransactionModal from "../../components/transaction/NewTransactionModal";
+import { MOCK_TRANSACTIONS } from "../../constants/mockTransactions";
 import "./Transacoes.css";
 
 // Dados mockados — depois substituir pela chamada real da API
@@ -39,99 +41,6 @@ const TABS = [
   { value: "despesas", label: "Despesas" },
 ];
 
-const MOCK_TRANSACTIONS = [
-  {
-    id: 1,
-    descricao: "Aluguel Apartamento",
-    categoria: "moradia",
-    categoriaLabel: "Moradia",
-    data: "2026-07-30",
-    metodo: "Débito Automático",
-    valor: 2100,
-    tipo: "despesa",
-  },
-  {
-    id: 2,
-    descricao: "Mercado Extra",
-    categoria: "alimentacao",
-    categoriaLabel: "Alimentação",
-    data: "2026-07-29",
-    metodo: "Cartão Crédito",
-    valor: 420,
-    tipo: "despesa",
-  },
-  {
-    id: 3,
-    descricao: "Netflix + Spotify",
-    categoria: "entretenimento",
-    categoriaLabel: "Entretenimento",
-    data: "2026-07-27",
-    metodo: "Cartão Crédito",
-    valor: 89,
-    tipo: "despesa",
-  },
-  {
-    id: 4,
-    descricao: "Academia SmartFit",
-    categoria: "saude",
-    categoriaLabel: "Saúde",
-    data: "2026-07-26",
-    metodo: "Débito Automático",
-    valor: 119,
-    tipo: "despesa",
-  },
-  {
-    id: 5,
-    descricao: "Uber — Corridas",
-    categoria: "transporte",
-    categoriaLabel: "Transporte",
-    data: "2026-07-24",
-    metodo: "App",
-    valor: 156,
-    tipo: "despesa",
-  },
-  {
-    id: 6,
-    descricao: "Salário — Empresa XYZ",
-    categoria: "receita",
-    categoriaLabel: "Receita",
-    data: "2026-07-31",
-    metodo: "Transferência",
-    valor: 8500,
-    tipo: "receita",
-  },
-  {
-    id: 7,
-    descricao: "Freelance — Design",
-    categoria: "receita",
-    categoriaLabel: "Receita",
-    data: "2026-07-28",
-    metodo: "PIX",
-    valor: 1800,
-    tipo: "receita",
-  },
-  {
-    id: 8,
-    descricao: "Rendimento CDB",
-    categoria: "investimento",
-    categoriaLabel: "Investimento",
-    data: "2026-07-25",
-    metodo: "Automático",
-    valor: 312,
-    tipo: "receita",
-  },
-  {
-    id: 9,
-    descricao: "Dividendos FII HGLG",
-    categoria: "investimento",
-    categoriaLabel: "Investimento",
-    data: "2026-07-23",
-    metodo: "Automático",
-    valor: 248,
-    tipo: "receita",
-  },
-];
-
 function formatCurrency(value) {
   return value.toLocaleString("pt-BR", {
     style: "currency",
@@ -150,6 +59,8 @@ function Transacoes() {
   const [activeTab, setActiveTab] = useState("todas");
   const [category, setCategory] = useState("todas");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const filteredTransactions = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -172,7 +83,13 @@ function Transacoes() {
     });
   }, [transactions, searchTerm, activeTab, category]);
 
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   const handleCreateTransaction = (values) => {
+    setCurrentPage(1);
     const categoryOption = CATEGORY_OPTIONS.find(
       (option) => option.value === values.categoria,
     );
@@ -185,6 +102,7 @@ function Transacoes() {
         categoriaLabel: categoryOption?.label || values.categoria,
         data: values.data,
         metodo: "Manual",
+        conta: "Nubank",
         valor: values.valor,
         tipo: values.tipo,
       },
@@ -206,7 +124,10 @@ function Transacoes() {
           icon={<HugeiconsIcon icon={Search01Icon} size={18} stroke="2" />}
           placeholder="Buscar descrição ou categoria..."
           value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
+          onChange={(event) => {
+            setSearchTerm(event.target.value);
+            setCurrentPage(1);
+          }}
           fullWidth
           className="transacoes-toolbar__search"
         />
@@ -226,7 +147,10 @@ function Transacoes() {
                 className={`transacoes-tabs__item ${
                   activeTab === tab.value ? "is-active" : ""
                 }`}
-                onClick={() => setActiveTab(tab.value)}
+                onClick={() => {
+                  setActiveTab(tab.value);
+                  setCurrentPage(1);
+                }}
               >
                 {tab.label}
               </button>
@@ -237,7 +161,10 @@ function Transacoes() {
             id="transacoes-category"
             options={CATEGORY_OPTIONS}
             value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            onChange={(event) => {
+              setCategory(event.target.value);
+              setCurrentPage(1);
+            }}
             width="180px"
             className="transacoes-toolbar__category"
           />
@@ -270,7 +197,7 @@ function Transacoes() {
                 </tr>
               </thead>
               <tbody>
-                {filteredTransactions.map((transaction) => (
+                {paginatedTransactions.map((transaction) => (
                   <tr key={transaction.id}>
                     <td>
                       <div className="transacoes-table__description">
@@ -322,6 +249,18 @@ function Transacoes() {
             title="Nenhuma transação encontrada"
             description="Tente ajustar a busca ou os filtros selecionados."
             fullWidth
+          />
+        )}
+        {filteredTransactions.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            pageSize={pageSize}
+            totalItems={filteredTransactions.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
           />
         )}
       </Card>

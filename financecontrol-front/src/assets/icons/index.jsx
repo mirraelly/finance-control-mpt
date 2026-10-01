@@ -37,6 +37,9 @@ import {
   Delete02Icon,
   ConstructionIcon,
   Plant01Icon,
+  ArrowRight01Icon,
+  ArrowLeftDoubleIcon,
+  ArrowRightDoubleIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -75,4 +78,7 @@ export {
   Delete02Icon,
   ConstructionIcon,
   Plant01Icon,
+  ArrowRight01Icon,
+  ArrowLeftDoubleIcon,
+  ArrowRightDoubleIcon,
 };

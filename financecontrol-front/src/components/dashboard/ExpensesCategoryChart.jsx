@@ -177,8 +177,12 @@ function ExpensesCategoryChart() {
               <span className="dashboard-category-legend__name">
                 {category.name}
               </span>
-              <span>{category.percent}</span>
-              <strong>{formatDashboardCurrency(category.value)}</strong>
+              <strong className="dashboard-category-legend__amount">
+                {formatDashboardCurrency(category.value)}
+              </strong>
+              <span className="dashboard-category-legend__percent">
+                {category.percent}
+              </span>
             </li>
           ))}
         </ul>
