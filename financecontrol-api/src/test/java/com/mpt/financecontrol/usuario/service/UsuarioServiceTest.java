@@ -1,8 +1,13 @@
 package com.mpt.financecontrol.usuario.service;
 
 import com.mpt.financecontrol.exceptions.BadRequestException;
+import com.mpt.financecontrol.tenant.dtos.TenantSaveDto;
+import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.tenant.service.TenantService;
 import com.mpt.financecontrol.usuario.dtos.UsuarioAlterarSenhaDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioUpdateDto;
 import com.mpt.financecontrol.usuario.entity.Role;
 import com.mpt.financecontrol.usuario.entity.Usuario;
 import com.mpt.financecontrol.usuario.repository.UsuarioRepository;
@@ -101,5 +106,111 @@ class UsuarioServiceTest {
 
         assertThat(usuario.getSenha()).isEqualTo("hashNovo");
         verify(usuarioRepository).save(usuario);
+    }
+
+    @Test
+    @DisplayName("alterarAtivo: no próprio usuário, lança BadRequestException e não salva")
+    void alterarAtivo_noProprioUsuario_lancaBadRequest() {
+        assertThatThrownBy(() -> service.alterarAtivo(usuario.getId(), false))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Você não pode desativar o seu próprio usuário, verifique!");
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("alterarAtivo: em outro usuário, grava a nova situação")
+    void alterarAtivo_emOutroUsuario_gravaSituacao() {
+        Usuario outro = novoUsuario("Outro", "outro@example.com", Role.USER, novoTenant());
+        when(usuarioRepository.findById(outro.getId())).thenReturn(Optional.of(outro));
+
+        service.alterarAtivo(outro.getId(), false);
+
+        assertThat(outro.getAtivo()).isFalse();
+        verify(usuarioRepository).save(outro);
+    }
+
+    @Test
+    @DisplayName("create: feito pelo SUPERADMIN, cria um tenant novo e usa a role informada")
+    void create_peloSuperadmin_criaTenantNovo() {
+        usuario.setRole(Role.SUPERADMIN);
+        usuario.setTenant(novoTenant());
+        Tenant tenantNovo = novoTenant();
+        UsuarioCreateDto dto = new UsuarioCreateDto("Maria", "maria@example.com", "Senha@123", null, null, Role.USER);
+        when(usuarioRepository.findByEmail("maria@example.com")).thenReturn(Optional.empty());
+        when(tenantService.create(any(TenantSaveDto.class))).thenReturn(tenantNovo);
+        when(passwordEncoder.encode("Senha@123")).thenReturn("hashMaria");
+
+        UsuarioResponseDto resultado = service.create(dto);
+
+        assertThat(resultado.tenantId()).isEqualTo(tenantNovo.getId());
+        assertThat(resultado.tenantId()).isNotEqualTo(usuario.getTenant().getId());
+        assertThat(resultado.role()).isEqualTo(Role.USER);
+    }
+
+    @Test
+    @DisplayName("update: feito pelo SUPERADMIN, altera usuário de outro tenant")
+    void update_peloSuperadmin_alteraUsuarioDeOutroTenant() {
+        usuario.setRole(Role.SUPERADMIN);
+        usuario.setTenant(novoTenant());
+        Usuario outro = novoUsuario("Outro", "outro@example.com", Role.USER, novoTenant());
+        when(usuarioRepository.findById(outro.getId())).thenReturn(Optional.of(outro));
+
+        UsuarioResponseDto resultado = service.update(outro.getId(),
+                new UsuarioUpdateDto("Outro Nome", "51999999999", "55", true, Role.USER));
+
+        assertThat(resultado.nome()).isEqualTo("Outro Nome");
+        verify(usuarioRepository).saveAndFlush(outro);
+    }
+
+    @Test
+    @DisplayName("update: SUPERADMIN não pode remover o próprio acesso de super administrador")
+    void update_superadminRemovendoPropriaRole_lancaBadRequest() {
+        usuario.setRole(Role.SUPERADMIN);
+        usuario.setTenant(novoTenant());
+
+        assertThatThrownBy(() -> service.update(usuario.getId(),
+                new UsuarioUpdateDto("Eduardo", null, "55", true, Role.USER)))
+                .isInstanceOf(BadRequestException.class);
+
+        verify(usuarioRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    @DisplayName("update: sem telefone no corpo, mantém o telefone atual")
+    void update_semTelefone_mantemTelefoneAtual() {
+        usuario.setTenant(novoTenant());
+        usuario.setTelefone("(51)99999-8888");
+
+        service.update(usuario.getId(), new UsuarioUpdateDto("Eduardo", null, "55", null, null));
+
+        assertThat(usuario.getTelefone()).isEqualTo("(51)99999-8888");
+    }
+
+    @Test
+    @DisplayName("update: com telefone vazio, limpa o telefone")
+    void update_comTelefoneVazio_limpaTelefone() {
+        usuario.setTenant(novoTenant());
+        usuario.setTelefone("(51)99999-8888");
+
+        service.update(usuario.getId(), new UsuarioUpdateDto("Eduardo", "", "55", null, null));
+
+        assertThat(usuario.getTelefone()).isEmpty();
+    }
+
+    private Tenant novoTenant() {
+        Tenant tenant = new Tenant();
+        ReflectionTestUtils.setField(tenant, "id", UUID.randomUUID());
+        return tenant;
+    }
+
+    private Usuario novoUsuario(String nome, String email, Role role, Tenant tenant) {
+        Usuario novo = new Usuario();
+        novo.setNome(nome);
+        novo.setEmail(email);
+        novo.setRole(role);
+        novo.setTenant(tenant);
+        ReflectionTestUtils.setField(novo, "id", UUID.randomUUID());
+        return novo;
     }
 }

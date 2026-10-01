@@ -10,6 +10,7 @@ import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +34,8 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Autentica um usuário e retorna o token JWT")
-    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody AuthLoginDto dto) {
-        return ResponseEntity.ok(authService.login(dto));
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody AuthLoginDto dto, HttpServletRequest request) {
+        return ResponseEntity.ok(authService.login(dto, getEnderecoIp(request), request.getHeader("User-Agent")));
     }
 
     @PostMapping("/register")
@@ -55,5 +56,13 @@ public class AuthController {
     public ResponseEntity<Void> redefinirSenha(@Valid @RequestBody RedefinirSenhaDto dto) {
         recuperacaoSenhaService.redefinir(dto);
         return ResponseEntity.noContent().build();
+    }
+
+    private String getEnderecoIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank())
+            return forwardedFor.split(",")[0].trim();
+
+        return request.getRemoteAddr();
     }
 }

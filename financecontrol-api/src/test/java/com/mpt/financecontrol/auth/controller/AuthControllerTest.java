@@ -62,7 +62,7 @@ class AuthControllerTest {
         AuthLoginDto body = new AuthLoginDto("eduardo@example.com", "senha12345");
         AuthResponseDto resposta =
                 new AuthResponseDto("token-abc", UUID.randomUUID(), "Eduardo", "eduardo@example.com", Role.USER);
-        when(authService.login(any())).thenReturn(resposta);
+        when(authService.login(any(), any(), any())).thenReturn(resposta);
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +76,7 @@ class AuthControllerTest {
     @DisplayName("POST /auth/login -> 401 quando o service lança Unauthorized")
     void login_comCredenciaisInvalidas_retorna401() throws Exception {
         AuthLoginDto body = new AuthLoginDto("eduardo@example.com", "senhaErrada");
-        when(authService.login(any()))
+        when(authService.login(any(), any(), any()))
                 .thenThrow(new UnauthorizedException("E-mail ou senha inválidos"));
 
         mockMvc.perform(post("/auth/login")

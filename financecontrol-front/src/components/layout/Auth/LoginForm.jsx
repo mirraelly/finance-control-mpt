@@ -22,7 +22,8 @@ function LoginForm() {
       const response = await authService.login({ email, senha, rememberMe });
       localStorage.setItem("token", response.token);
       localStorage.setItem("userId", response.id);
-      navigate("/home");
+      localStorage.setItem("role", response.role);
+      navigate(response.role === "SUPERADMIN" ? "/admin/usuarios" : "/home");
     } catch (err) {
       const message = err?.response?.data?.erro || err?.message;
       setError(message || "Erro ao fazer login. Verifique seu e-mail e senha.");

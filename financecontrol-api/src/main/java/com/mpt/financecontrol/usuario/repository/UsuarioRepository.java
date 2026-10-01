@@ -22,19 +22,25 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
                 WHERE (CAST(:tenantId AS uuid) IS NULL OR u.tenant_id = CAST(:tenantId AS uuid))
                     AND   (CAST(:nome  AS text) IS NULL OR unaccent(lower(u.nome))  LIKE unaccent(lower('%' || CAST(:nome  AS text) || '%')))
                     AND   (CAST(:email AS text) IS NULL OR unaccent(lower(u.email)) LIKE unaccent(lower('%' || CAST(:email AS text) || '%')))
+                    AND   (CAST(:ativo AS boolean) IS NULL OR u.ativo = CAST(:ativo AS boolean))
+                    AND   (CAST(:role  AS text) IS NULL OR u.role = CAST(:role AS text))
     """,
     countQuery = """
         SELECT count(*) FROM usuario u
                 WHERE (CAST(:tenantId AS uuid) IS NULL OR u.tenant_id = CAST(:tenantId AS uuid))
                     AND   (CAST(:nome  AS text) IS NULL OR unaccent(lower(u.nome))  LIKE unaccent(lower('%' || CAST(:nome  AS text) || '%')))
                     AND   (CAST(:email AS text) IS NULL OR unaccent(lower(u.email)) LIKE unaccent(lower('%' || CAST(:email AS text) || '%')))
+                    AND   (CAST(:ativo AS boolean) IS NULL OR u.ativo = CAST(:ativo AS boolean))
+                    AND   (CAST(:role  AS text) IS NULL OR u.role = CAST(:role AS text))
     """,
     nativeQuery = true)
     Page<Usuario> findAllWithFilters(
             Pageable pageable,
-            @Param("tenantId") UUID   tenantId,
-            @Param("nome")      String nome,
-            @Param("email")     String email
+            @Param("tenantId") UUID    tenantId,
+            @Param("nome")      String  nome,
+            @Param("email")     String  email,
+            @Param("ativo")     Boolean ativo,
+            @Param("role")      String  role
     );
 
     @Query(value = """

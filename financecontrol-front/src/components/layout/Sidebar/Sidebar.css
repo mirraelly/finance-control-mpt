@@ -74,6 +74,10 @@
   text-transform: uppercase;
 }
 
+.sidebar__nav-group + .sidebar__nav-group {
+  margin-top: var(--space-4);
+}
+
 .sidebar__nav-list {
   display: flex;
   flex-direction: column;

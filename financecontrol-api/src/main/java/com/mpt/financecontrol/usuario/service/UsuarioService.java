@@ -70,15 +70,9 @@ public class UsuarioService {
 
         Usuario actingUser = getUsuarioLogado();
 
-        Tenant tenant;
-        Role role;
-        if (actingUser != null) {
-            tenant = actingUser.getTenant();
-            role   = actingUser.getRole() == Role.SUPERADMIN && dto.role() != null ? dto.role() : Role.USER;
-        } else {
-            tenant = tenantService.create(new TenantSaveDto(dto.nome()));
-            role = Role.USER;
-        }
+        boolean isSuperadmin = actingUser != null && actingUser.getRole() == Role.SUPERADMIN;
+        Role    role         = isSuperadmin && dto.role() != null ? dto.role() : Role.USER;
+        Tenant  tenant       = tenantService.create(new TenantSaveDto(dto.nome()));
 
         Usuario usuario = new Usuario();
         usuario.setTenant(tenant);
@@ -106,15 +100,18 @@ public class UsuarioService {
         boolean isSuperadmin = actingUser.getRole() == Role.SUPERADMIN;
         boolean isSelf       = usuario.getId().equals(actingUser.getId());
 
-        if (!usuario.getTenant().getId().equals(actingUser.getTenant().getId()))
-            throw new NotFoundException("Usuário não encontrado, verifique!");
         if (!isSuperadmin && !isSelf)
             throw new NotFoundException("Usuário não encontrado, verifique!");
         if (dto.nome() == null || dto.nome().isBlank())
             throw new BadRequestException("O nome do usuário é obrigatório, verifique!");
+        if (isSuperadmin && isSelf && dto.ativo() != null && !dto.ativo())
+            throw new BadRequestException("Você não pode desativar o seu próprio usuário, verifique!");
+        if (isSuperadmin && isSelf && dto.role() != null && dto.role() != Role.SUPERADMIN)
+            throw new BadRequestException("Você não pode remover o seu próprio acesso de super administrador, verifique!");
 
         usuario.setNome(dto.nome());
-        usuario.setTelefone(dto.telefone());
+        if (dto.telefone() != null)
+            usuario.setTelefone(dto.telefone());
         if (dto.codigoPais() != null && !dto.codigoPais().isBlank())
             usuario.setCodigoPais(dto.codigoPais());
 
@@ -134,6 +131,19 @@ public class UsuarioService {
     }
 
     @Transactional
+    public void alterarAtivo(UUID id, Boolean ativo) {
+        Usuario actingUser = getUsuarioAutenticado();
+        Usuario usuario    = findById(id);
+
+        if (usuario.getId().equals(actingUser.getId()))
+            throw new BadRequestException("Você não pode desativar o seu próprio usuário, verifique!");
+
+        usuario.setAtivo(ativo);
+        usuario.setUpdatedBy(actingUser);
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
     public void alterarSenha(UsuarioAlterarSenhaDto dto) {
         Usuario usuario = getUsuarioAutenticado();
 
@@ -148,8 +158,16 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UsuarioResponseDto> getAll(Pageable pageable, UUID tenantId, String nome, String email) {
-        return usuarioRepository.findAllWithFilters(pageable, tenantId, nome, email)
+    public Page<UsuarioResponseDto> getAll(
+            Pageable pageable,
+            UUID     tenantId,
+            String   nome,
+            String   email,
+            Boolean  ativo,
+            Role     role
+    ) {
+        String roleFiltro = role != null ? role.name() : null;
+        return usuarioRepository.findAllWithFilters(pageable, tenantId, nome, email, ativo, roleFiltro)
                 .map(UsuarioMapper::toResponseDto);
     }
 
