@@ -1,7 +1,11 @@
 package com.mpt.financecontrol.usuario.controller;
 
+import com.mpt.financecontrol.usuario.dtos.UsuarioAlterarSenhaDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioAtivoDto;
+import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioUpdateDto;
+import com.mpt.financecontrol.usuario.entity.Role;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,6 +15,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +41,14 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.getPerfilAutenticado());
     }
 
+    @Operation(summary = "Altera a senha do usuário autenticado")
+    @PatchMapping("/me/senha")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> alterarSenha(@Valid @RequestBody UsuarioAlterarSenhaDto dto) {
+        usuarioService.alterarSenha(dto);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Busca usuário por id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPERADMIN')")
@@ -55,11 +68,39 @@ public class UsuarioController {
     @PreAuthorize("hasAnyRole('SUPERADMIN')")
     public Page<UsuarioResponseDto> getAll(
             @PageableDefault(size = 15, sort = "nome") Pageable pageable,
-            @RequestParam(required = false) UUID   tenantId,
-            @RequestParam(required = false) String nome,
-            @RequestParam(required = false) String email
+            @RequestParam(required = false) UUID    tenantId,
+            @RequestParam(required = false) String  nome,
+            @RequestParam(required = false) String  email,
+            @RequestParam(required = false) Boolean ativo,
+            @RequestParam(required = false) Role    role
     ) {
-        return usuarioService.getAll(pageable, tenantId, nome, email);
+        return usuarioService.getAll(pageable, tenantId, nome, email, ativo, role);
+    }
+
+    @Operation(summary = "Cadastra um novo usuário", description = "O usuário é criado com um tenant próprio")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso"),
+            @ApiResponse(responseCode = "409", description = "E-mail já cadastrado")
+    })
+    @PostMapping
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    public ResponseEntity<UsuarioResponseDto> create(@Valid @RequestBody UsuarioCreateDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.create(dto));
+    }
+
+    @Operation(summary = "Ativa ou desativa um usuário")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Situação alterada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível desativar o próprio usuário")
+    })
+    @PatchMapping("/{id}/ativo")
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    public ResponseEntity<Void> alterarAtivo(
+            @PathVariable       UUID            id,
+            @Valid @RequestBody UsuarioAtivoDto dto
+    ) {
+        usuarioService.alterarAtivo(id, dto.ativo());
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(

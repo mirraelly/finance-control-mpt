@@ -31,15 +31,15 @@ function formatDate(isoDate) {
 }
 
 function DashboardRecentTransactions() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const currentMonth = getCurrentMonthKey();
   const transactions = MOCK_TRANSACTIONS.filter((transaction) =>
     transaction.data.startsWith(currentMonth),
   ).sort((first, second) => second.data.localeCompare(first.data));
   const paginatedTransactions = transactions.slice(
-    (currentPage - 1) * pageSize,
     currentPage * pageSize,
+    (currentPage + 1) * pageSize,
   );
 
   return (
@@ -114,10 +114,11 @@ function DashboardRecentTransactions() {
         </table>
       </div>
       <Pagination
-        currentPage={currentPage}
+        page={currentPage}
         pageSize={pageSize}
-        totalItems={transactions.length}
-        onPageChange={setCurrentPage}
+        totalElements={transactions.length}
+        totalPages={Math.ceil(transactions.length / pageSize)}
+        onChange={setCurrentPage}
         onPageSizeChange={(size) => {
           setPageSize(size);
           setCurrentPage(1);

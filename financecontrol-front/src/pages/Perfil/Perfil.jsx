@@ -15,6 +15,12 @@ import {
   Delete02Icon,
   ConstructionIcon,
   Plant01Icon,
+  SecurityIcon,
+  SquareLock02Icon,
+  EyeOffIcon,
+  ViewIcon,
+  MultiplicationSignIcon,
+  Tick01Icon,
 } from "../../assets/icons";
 import "./Perfil.css";
 
@@ -37,11 +43,33 @@ function Perfil() {
   const [deletando, setDeletando] = useState(false);
 
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalSenhaAberto, setModalSenhaAberto] = useState(false);
   const [modalDeletarAberto, setModalDeletarAberto] = useState(false);
 
   const [nomeEditado, setNomeEditado] = useState("");
   const [telefoneEditado, setTelefoneEditado] = useState("");
   const [codigoPaisEditado, setCodigoPaisEditado] = useState("");
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarNovaSenha, setConfirmarNovaSenha] = useState("");
+  const [novaSenhaFocada, setNovaSenhaFocada] = useState(false);
+  const [mostrarSenhaAtual, setMostrarSenhaAtual] = useState(false);
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
+  const [mostrarConfirmacaoSenha, setMostrarConfirmacaoSenha] = useState(false);
+  const [alterandoSenha, setAlterandoSenha] = useState(false);
+  const [erroSenha, setErroSenha] = useState("");
+  const [mensagemSenha, setMensagemSenha] = useState("");
+
+  const requisitosSenhaNova = [
+    { texto: "Mínimo de 8 caracteres", atendido: novaSenha.length >= 8 },
+    { texto: "Incluir uma letra maiúscula", atendido: /[A-Z]/.test(novaSenha) },
+    { texto: "Incluir uma letra minúscula", atendido: /[a-z]/.test(novaSenha) },
+    { texto: "Incluir um número", atendido: /\d/.test(novaSenha) },
+    {
+      texto: "Incluir um símbolo",
+      atendido: /[^A-Za-z0-9\s]/.test(novaSenha),
+    },
+  ];
 
   useEffect(() => {
     async function carregarDadosDoPerfil() {
@@ -67,6 +95,79 @@ function Perfil() {
     setTelefoneEditado(usuario.telefone || "");
     setCodigoPaisEditado(usuario.codigoPais || "");
     setModalAberto(true);
+  };
+
+  const abrirModalSenha = () => {
+    setSenhaAtual("");
+    setNovaSenha("");
+    setConfirmarNovaSenha("");
+    setNovaSenhaFocada(false);
+    setMostrarSenhaAtual(false);
+    setMostrarNovaSenha(false);
+    setMostrarConfirmacaoSenha(false);
+    setErroSenha("");
+    setMensagemSenha("");
+    setModalSenhaAberto(true);
+  };
+
+  const fecharModalSenha = () => {
+    if (alterandoSenha) return;
+    setModalSenhaAberto(false);
+    setSenhaAtual("");
+    setNovaSenha("");
+    setConfirmarNovaSenha("");
+    setNovaSenhaFocada(false);
+    setMostrarSenhaAtual(false);
+    setMostrarNovaSenha(false);
+    setMostrarConfirmacaoSenha(false);
+    setErroSenha("");
+    setMensagemSenha("");
+  };
+
+  const limparFeedbackSenha = () => {
+    setErroSenha("");
+    setMensagemSenha("");
+  };
+
+  const handleAlterarSenha = async (event) => {
+    event.preventDefault();
+    limparFeedbackSenha();
+
+    if (!senhaAtual) {
+      setErroSenha("Informe sua senha atual.");
+      return;
+    }
+
+    if (
+      requisitosSenhaNova.some(({ atendido }) => !atendido) ||
+      novaSenha.length > 100
+    ) {
+      setErroSenha(
+        "A nova senha deve ter entre 8 e 100 caracteres e atender a todos os critérios.",
+      );
+      return;
+    }
+
+    if (novaSenha !== confirmarNovaSenha) {
+      setErroSenha("A nova senha e a confirmação não correspondem.");
+      return;
+    }
+
+    setAlterandoSenha(true);
+    try {
+      await usuarioService.alterarSenha({ senhaAtual, novaSenha });
+      setSenhaAtual("");
+      setNovaSenha("");
+      setConfirmarNovaSenha("");
+      setMensagemSenha("Senha alterada com sucesso.");
+    } catch (erro) {
+      setErroSenha(
+        erro?.response?.data?.erro ||
+          "Não foi possível alterar a senha. Tente novamente.",
+      );
+    } finally {
+      setAlterandoSenha(false);
+    }
   };
 
   const handleSalvar = async (event) => {
@@ -290,6 +391,45 @@ function Perfil() {
           </div>
         </Card>
 
+        <Card className="perfil-info-card perfil-seguranca-card">
+          <div className="perfil-secao-cabecalho">
+            <div className="perfil-secao-icone">
+              <HugeiconsIcon
+                icon={SecurityIcon}
+                size={22}
+                color="currentColor"
+                strokeWidth={2}
+              />
+            </div>
+            <div className="perfil-secao-caixa-title">
+              <h2 className="perfil-secao-titulo">Segurança</h2>
+              <p className="perfil-secao-descricao">
+                Proteja o acesso a sua conta.
+              </p>
+            </div>
+          </div>
+
+          <div className="perfil-seguranca-item">
+            <div className="perfil-info-icon-wrapper">
+              <HugeiconsIcon
+                icon={SquareLock02Icon}
+                size={20}
+                color="currentColor"
+                strokeWidth={2}
+              />
+            </div>
+            <div className="perfil-info-detalhes perfil-seguranca-item__detalhes">
+              <span className="perfil-info-label">Senha</span>
+              <span className="perfil-info-valor">
+                Mantenha sua senha atualizada e segura.
+              </span>
+            </div>
+            <Button variant="primary" onClick={abrirModalSenha}>
+              Alterar senha
+            </Button>
+          </div>
+        </Card>
+
         <Card className="perfil-em-breve">
           <span className="perfil-em-breve-icone" aria-hidden="true">
             <HugeiconsIcon
@@ -378,7 +518,7 @@ function Perfil() {
             />
           </div>
 
-          <div className="perfil-form-botoes">
+          <div className="perfil-form-botoes perfil-senha-botoes">
             <Button
               type="button"
               variant="secondary"
@@ -389,6 +529,211 @@ function Perfil() {
             </Button>
             <Button type="submit" variant="primary" disabled={salvando}>
               {salvando ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={modalSenhaAberto}
+        onClose={fecharModalSenha}
+        title={
+          <span className="perfil-senha-modal-titulo">
+            <span className="perfil-senha-modal-icone">
+              <HugeiconsIcon
+                icon={SquareLock02Icon}
+                size={22}
+                color="currentColor"
+                strokeWidth={2}
+              />
+            </span>
+            Alterar senha
+          </span>
+        }
+        theme="dark"
+        className="perfil-modal perfil-modal-senha"
+        bodyClassName="perfil-modal-senha-corpo"
+        closeOnOverlay={!alterandoSenha}
+      >
+        <form className="perfil-senha-form" onSubmit={handleAlterarSenha}>
+          <div className="perfil-senha-campo">
+            <Input
+              label="SENHA ATUAL"
+              id="perfil-senha-atual"
+              type={mostrarSenhaAtual ? "text" : "password"}
+              value={senhaAtual}
+              placeholder="Digite sua senha atual"
+              autoComplete="current-password"
+              maxLength={100}
+              disabled={alterandoSenha}
+              onChange={(event) => {
+                setSenhaAtual(event.target.value);
+                limparFeedbackSenha();
+              }}
+              required
+              fullWidth
+            />
+            <button
+              className="perfil-senha-visibilidade"
+              type="button"
+              aria-label={
+                mostrarSenhaAtual
+                  ? "Ocultar senha atual"
+                  : "Mostrar senha atual"
+              }
+              disabled={alterandoSenha}
+              onClick={() => setMostrarSenhaAtual(!mostrarSenhaAtual)}
+            >
+              <HugeiconsIcon
+                icon={mostrarSenhaAtual ? EyeOffIcon : ViewIcon}
+                size={18}
+                color="currentColor"
+              />
+            </button>
+          </div>
+
+          <div className="perfil-senha-campo">
+            <Input
+              label="NOVA SENHA"
+              id="perfil-nova-senha"
+              type={mostrarNovaSenha ? "text" : "password"}
+              value={novaSenha}
+              placeholder="Digite sua nova senha"
+              autoComplete="new-password"
+              minLength={8}
+              maxLength={100}
+              disabled={alterandoSenha}
+              onChange={(event) => {
+                setNovaSenha(event.target.value);
+                limparFeedbackSenha();
+              }}
+              onFocus={() => setNovaSenhaFocada(true)}
+              onBlur={() => setNovaSenhaFocada(false)}
+              required
+              fullWidth
+            />
+            <button
+              className="perfil-senha-visibilidade"
+              type="button"
+              aria-label={
+                mostrarNovaSenha ? "Ocultar nova senha" : "Mostrar nova senha"
+              }
+              disabled={alterandoSenha}
+              onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
+            >
+              <HugeiconsIcon
+                icon={mostrarNovaSenha ? EyeOffIcon : ViewIcon}
+                size={18}
+                color="currentColor"
+              />
+            </button>
+          </div>
+
+          {novaSenhaFocada && (
+            <div className="perfil-senha-requisitos" aria-live="polite">
+              <p className="perfil-senha-requisitos__titulo">
+                <HugeiconsIcon
+                  icon={InformationCircleIcon}
+                  size={16}
+                  color="currentColor"
+                  strokeWidth={2}
+                />
+                A senha deve atender aos seguintes critérios:
+              </p>
+              <ul>
+                {requisitosSenhaNova.map(({ texto, atendido }) => (
+                  <li
+                    key={texto}
+                    className={atendido ? "atendido" : "nao-atendido"}
+                  >
+                    <HugeiconsIcon
+                      icon={atendido ? Tick01Icon : MultiplicationSignIcon}
+                      size={14}
+                      color="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    />
+                    {texto}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="perfil-senha-campo">
+            <Input
+              label="CONFIRMAR NOVA SENHA"
+              id="perfil-confirmar-nova-senha"
+              type={mostrarConfirmacaoSenha ? "text" : "password"}
+              value={confirmarNovaSenha}
+              placeholder="Digite novamente sua nova senha"
+              autoComplete="new-password"
+              maxLength={100}
+              disabled={alterandoSenha}
+              onChange={(event) => {
+                setConfirmarNovaSenha(event.target.value);
+                limparFeedbackSenha();
+              }}
+              required
+              fullWidth
+            />
+            <button
+              className="perfil-senha-visibilidade"
+              type="button"
+              aria-label={
+                mostrarConfirmacaoSenha
+                  ? "Ocultar confirmação"
+                  : "Mostrar confirmação"
+              }
+              disabled={alterandoSenha}
+              onClick={() =>
+                setMostrarConfirmacaoSenha(!mostrarConfirmacaoSenha)
+              }
+            >
+              <HugeiconsIcon
+                icon={mostrarConfirmacaoSenha ? EyeOffIcon : ViewIcon}
+                size={18}
+                color="currentColor"
+              />
+            </button>
+          </div>
+
+          {confirmarNovaSenha && novaSenha !== confirmarNovaSenha && (
+            <p
+              className="perfil-senha-feedback perfil-senha-feedback--erro"
+              role="alert"
+            >
+              A nova senha e a confirmação não correspondem.
+            </p>
+          )}
+          {erroSenha && (
+            <p
+              className="perfil-senha-feedback perfil-senha-feedback--erro"
+              role="alert"
+            >
+              {erroSenha}
+            </p>
+          )}
+          {mensagemSenha && (
+            <p
+              className="perfil-senha-feedback perfil-senha-feedback--sucesso"
+              role="status"
+            >
+              {mensagemSenha}
+            </p>
+          )}
+
+          <div className="perfil-form-botoes perfil-senha-botoes">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={fecharModalSenha}
+              disabled={alterandoSenha}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" variant="primary" disabled={alterandoSenha}>
+              {alterandoSenha ? "Alterando..." : "Alterar senha"}
             </Button>
           </div>
         </form>

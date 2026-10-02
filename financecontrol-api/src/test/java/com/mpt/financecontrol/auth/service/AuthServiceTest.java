@@ -4,6 +4,8 @@ import com.mpt.financecontrol.auth.dtos.AuthLoginDto;
 import com.mpt.financecontrol.auth.dtos.AuthResponseDto;
 import com.mpt.financecontrol.config.JwtUtil;
 import com.mpt.financecontrol.exceptions.UnauthorizedException;
+import com.mpt.financecontrol.loginlog.entity.MotivoFalhaLogin;
+import com.mpt.financecontrol.loginlog.service.LoginLogService;
 import com.mpt.financecontrol.usuario.dtos.UsuarioCreateDto;
 import com.mpt.financecontrol.usuario.dtos.UsuarioResponseDto;
 import com.mpt.financecontrol.usuario.entity.Role;
@@ -44,8 +46,14 @@ class AuthServiceTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    @Mock
+    private LoginLogService loginLogService;
+
     @InjectMocks
     private AuthService service;
+
+    private static final String IP         = "127.0.0.1";
+    private static final String USER_AGENT = "JUnit";
 
     // Usuário "com id" (o id vem da BaseEntity, então setamos via reflexão em teste).
     private Usuario novoUsuario(UUID id, String nome, String email, String senhaHash, Role role, boolean ativo) {
@@ -70,13 +78,14 @@ class AuthServiceTest {
         when(passwordEncoder.matches("senhaCorreta", "hashArmazenado")).thenReturn(true);
         when(jwtUtil.gerar(id, Role.USER)).thenReturn("token-abc");
 
-        AuthResponseDto resultado = service.login(dto);
+        AuthResponseDto resultado = service.login(dto, IP, USER_AGENT);
 
         assertThat(resultado.token()).isEqualTo("token-abc");
         assertThat(resultado.id()).isEqualTo(id);
         assertThat(resultado.nome()).isEqualTo("Eduardo");
         assertThat(resultado.email()).isEqualTo("eduardo@example.com");
         assertThat(resultado.role()).isEqualTo(Role.USER);
+        verify(loginLogService).registrar(usuario, "eduardo@example.com", true, null, IP, USER_AGENT);
     }
 
     @Test
@@ -85,10 +94,11 @@ class AuthServiceTest {
         AuthLoginDto dto = new AuthLoginDto("naoexiste@example.com", "senha");
         when(usuarioRepository.findByEmail("naoexiste@example.com")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.login(dto))
+        assertThatThrownBy(() -> service.login(dto, IP, USER_AGENT))
                 .isInstanceOf(UnauthorizedException.class);
 
         verify(jwtUtil, never()).gerar(any(), any());
+        verify(loginLogService).registrar(null, "naoexiste@example.com", false, MotivoFalhaLogin.USUARIO_INEXISTENTE, IP, USER_AGENT);
     }
 
     @Test
@@ -98,9 +108,11 @@ class AuthServiceTest {
         Usuario inativo = novoUsuario(UUID.randomUUID(), "Inativo", "inativo@example.com", "hash", Role.USER, false);
         when(usuarioRepository.findByEmail("inativo@example.com")).thenReturn(Optional.of(inativo));
 
-        assertThatThrownBy(() -> service.login(dto))
+        assertThatThrownBy(() -> service.login(dto, IP, USER_AGENT))
                 .isInstanceOf(UnauthorizedException.class)
                 .hasMessage("Usuário inativo, contate o administrador");
+
+        verify(loginLogService).registrar(inativo, "inativo@example.com", false, MotivoFalhaLogin.USUARIO_INATIVO, IP, USER_AGENT);
     }
 
     @Test
@@ -112,10 +124,11 @@ class AuthServiceTest {
         when(usuarioRepository.findByEmail("eduardo@example.com")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches("senhaErrada", "hashArmazenado")).thenReturn(false);
 
-        assertThatThrownBy(() -> service.login(dto))
+        assertThatThrownBy(() -> service.login(dto, IP, USER_AGENT))
                 .isInstanceOf(UnauthorizedException.class);
 
         verify(jwtUtil, never()).gerar(any(), any());
+        verify(loginLogService).registrar(usuario, "eduardo@example.com", false, MotivoFalhaLogin.SENHA_INVALIDA, IP, USER_AGENT);
     }
 
     // register

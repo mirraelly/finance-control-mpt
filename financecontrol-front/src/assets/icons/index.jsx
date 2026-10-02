@@ -40,6 +40,16 @@ import {
   ArrowRight01Icon,
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
+  SecurityIcon,
+  SquareLock02Icon,
+  EyeOffIcon,
+  ViewIcon,
+  UserGroupIcon,
+  UserAdd01Icon,
+  Clock01Icon,
+  Edit02Icon,
+  UserBlock01Icon,
+  UserCheck01Icon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -81,4 +91,14 @@ export {
   ArrowRight01Icon,
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
+  SecurityIcon,
+  SquareLock02Icon,
+  EyeOffIcon,
+  ViewIcon,
+  UserGroupIcon,
+  UserAdd01Icon,
+  Clock01Icon,
+  Edit02Icon,
+  UserBlock01Icon,
+  UserCheck01Icon,
 };

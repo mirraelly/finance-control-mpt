@@ -6,41 +6,64 @@ import {
   TradeUpIcon,
   Target01Icon,
   Settings01Icon,
+  UserGroupIcon,
+  Clock01Icon,
 } from "../../../assets/icons";
 import { NavLink } from "react-router-dom";
 
 import "./Sidebar.css";
 
-const menuItems = [
+const menuGroups = [
   {
-    label: "Início",
-    path: "/home",
-    icon: Home07Icon,
+    roles: ["USER"],
+    items: [
+      {
+        label: "Dashboard",
+        path: "/dashboard",
+        icon: Chart01Icon,
+      },
+      {
+        label: "Transações",
+        path: "/transacoes",
+        icon: Home07Icon,
+      },
+      {
+        label: "Contas",
+        path: "/contas",
+        icon: Wallet01Icon,
+      },
+      {
+        label: "Orçamento",
+        path: "/orcamento",
+        icon: Chart01Icon,
+      },
+      {
+        label: "Metas",
+        path: "/metas",
+        icon: Target01Icon,
+      },
+      {
+        label: "Configurações",
+        path: "/configuracoes",
+        icon: Settings01Icon,
+      },
+    ],
   },
   {
-    label: "Dashboard",
-    path: "/dashboard",
-    icon: Chart01Icon,
-  },
-  {
-    label: "Contas",
-    path: "/contas",
-    icon: Wallet01Icon,
-  },
-  {
-    label: "Orçamento",
-    path: "/orcamento",
-    icon: Chart01Icon,
-  },
-  {
-    label: "Metas",
-    path: "/metas",
-    icon: Target01Icon,
-  },
-  {
-    label: "Configurações",
-    path: "/configuracoes",
-    icon: Settings01Icon,
+    title: "Administração",
+    roles: ["SUPERADMIN"],
+    items: [
+      {
+        label: "Usuários",
+        path: "/admin/usuarios",
+        icon: UserGroupIcon,
+      },
+      {
+        label: "Logs de login",
+        path: "/admin/logs-login",
+        icon: Clock01Icon,
+      },
+    ],
   },
 ];
 
@@ -51,6 +74,10 @@ function Sidebar({
   onCloseMobile,
 }) {
   const isCompact = collapsed && !mobileOpen;
+  const role = localStorage.getItem("role");
+  const visibleGroups = menuGroups.filter((group) =>
+    group.roles.includes(role),
+  );
 
   return (
     <aside
@@ -84,27 +111,35 @@ function Sidebar({
       </div>
 
       <nav className="sidebar__nav" aria-label="Menu principal">
-        <div className="sidebar__nav-list">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onCloseMobile}
-              className={({ isActive }) =>
-                `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
-              }
-              title={isCompact ? item.label : undefined}
-            >
-              <span className="sidebar__nav-icon">
-                <HugeiconsIcon icon={item.icon} size={20} strokeWidth={2} />
-              </span>
+        {visibleGroups.map((group) => (
+          <div key={group.title || "principal"} className="sidebar__nav-group">
+            {group.title && !isCompact && (
+              <span className="sidebar__nav-title">{group.title}</span>
+            )}
 
-              {!isCompact && (
-                <span className="sidebar__nav-label">{item.label}</span>
-              )}
-            </NavLink>
-          ))}
-        </div>
+            <div className="sidebar__nav-list">
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={onCloseMobile}
+                  className={({ isActive }) =>
+                    `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
+                  }
+                  title={isCompact ? item.label : undefined}
+                >
+                  <span className="sidebar__nav-icon">
+                    <HugeiconsIcon icon={item.icon} size={20} strokeWidth={2} />
+                  </span>
+
+                  {!isCompact && (
+                    <span className="sidebar__nav-label">{item.label}</span>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="sidebar__bottom">

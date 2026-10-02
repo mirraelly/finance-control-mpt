@@ -30,6 +30,12 @@ const Button = ({
     ...(height && { height }),
   };
 
+  const hasLabel =
+    children !== undefined &&
+    children !== null &&
+    children !== false &&
+    children !== "";
+
   return (
     <button className={classNames} style={style} type={type} {...props}>
       {icon && iconPosition === "left" && (
@@ -37,7 +43,7 @@ const Button = ({
           {icon}
         </span>
       )}
-      <span className="button__label">{children}</span>
+      {hasLabel && <span className="button__label">{children}</span>}
       {icon && iconPosition === "right" && (
         <span className="button__icon" aria-hidden="true">
           {icon}

@@ -34,6 +34,11 @@ export APP_PUBLIC_URL=http://localhost:8080
 export SUPERADMIN_EMAIL=admin@financecontrol.com
 export SUPERADMIN_PASSWORD=123456
 export SUPERADMIN_NAME=Administrador
+export MAIL_USER=seu-email@gmail.com
+export MAIL_PASSWORD=sua-senha-de-app
+export MAIL_HOST=smtp.gmail.com
+export MAIL_PORT=587
+export APP_FRONT_URL=http://localhost:5173
 ```
 
 Observações:
@@ -41,6 +46,9 @@ Observações:
 - `JWT_SECRET` é usada para assinar os tokens de autenticação.
 - `SUPERADMIN_*` definem o usuário administrador inicial criado pela aplicação.
 - `APP_PUBLIC_URL` é opcional e já tem valor padrão de `http://localhost:8080`.
+- `MAIL_USER` e `MAIL_PASSWORD` são usadas para enviar o e-mail de recuperação de senha. No Gmail, `MAIL_PASSWORD` deve ser uma senha de app (https://myaccount.google.com/apppasswords), que exige a verificação em duas etapas ativa.
+- `MAIL_HOST` e `MAIL_PORT` são opcionais e já têm valor padrão de `smtp.gmail.com` e `587`.
+- `APP_FRONT_URL` é opcional, já tem valor padrão de `http://localhost:5173` e é usada para montar o link de recuperação de senha.
 
 ## Como rodar
 

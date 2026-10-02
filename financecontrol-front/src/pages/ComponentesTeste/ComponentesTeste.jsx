@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   HugeiconsIcon,
-  Home01Icon,
+  ArrowRight01Icon,
   SaveMoneyDollarIcon,
   Wallet01Icon,
 } from "../../assets/icons";

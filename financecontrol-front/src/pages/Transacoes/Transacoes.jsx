@@ -59,7 +59,7 @@ function Transacoes() {
   const [activeTab, setActiveTab] = useState("todas");
   const [category, setCategory] = useState("todas");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
 
   const filteredTransactions = useMemo(() => {
@@ -84,8 +84,8 @@ function Transacoes() {
   }, [transactions, searchTerm, activeTab, category]);
 
   const paginatedTransactions = filteredTransactions.slice(
-    (currentPage - 1) * pageSize,
     currentPage * pageSize,
+    (currentPage + 1) * pageSize,
   );
 
   const handleCreateTransaction = (values) => {
@@ -253,10 +253,11 @@ function Transacoes() {
         )}
         {filteredTransactions.length > 0 && (
           <Pagination
-            currentPage={currentPage}
+            page={currentPage}
             pageSize={pageSize}
-            totalItems={filteredTransactions.length}
-            onPageChange={setCurrentPage}
+            totalElements={filteredTransactions.length}
+            totalPages={Math.ceil(transactions.length / pageSize)}
+            onChange={setCurrentPage}
             onPageSizeChange={(size) => {
               setPageSize(size);
               setCurrentPage(1);
