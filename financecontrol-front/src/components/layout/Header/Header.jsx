@@ -14,6 +14,7 @@ import Input from "../../common/Input";
 import ThemeToggle from "../../common/ThemeToggle/ThemeToggle";
 import NewTransactionModal from "../../transaction/NewTransactionModal";
 import usuarioService from "../../../services/usuarioService";
+import lancamentoFinanceiroService from "../../../services/lancamentoFinanceiroService";
 
 function Header({ title = "Início" }) {
   const currentDate = new Date().toLocaleDateString("pt-BR", {
@@ -64,8 +65,8 @@ function Header({ title = "Início" }) {
     .join("")
     .toUpperCase();
 
-  const handleCreateTransaction = (transaction) => {
-    console.log("Nova transação:", transaction);
+  const handleCreateTransaction = async (transaction) => {
+    await lancamentoFinanceiroService.criar(transaction);
   };
 
   const handleNotifications = () => {
@@ -164,6 +165,7 @@ function Header({ title = "Início" }) {
         onClose={() => setShowTransactionModal(false)}
         onSubmit={handleCreateTransaction}
         theme="auto"
+        apiEnabled
       />
     </header>
   );
