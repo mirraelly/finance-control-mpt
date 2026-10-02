@@ -12,7 +12,8 @@ function InternalLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const pageTitles = {
-    "/home": "Início",
+    "/dashboard": "Dashboard",
+    "/transacoes": "Transações",
     "/perfil": "Perfil",
     "/componentes-teste": "Componentes",
     "/admin/usuarios": "Usuários",

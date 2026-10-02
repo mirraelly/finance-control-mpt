@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   HugeiconsIcon,
-  Home01Icon,
+  ArrowRight01Icon,
   SaveMoneyDollarIcon,
   Wallet01Icon,
 } from "../../assets/icons";
@@ -147,7 +147,7 @@ function ComponentesTeste() {
             </Card>
             <Card padding="md" shadow={false}>
               <div className="component-lab__card-title">
-                <HugeiconsIcon icon={Home01Icon} size={20} />
+                <HugeiconsIcon icon={ArrowRight01Icon} size={20} />
                 Próxima conta
               </div>
               <strong className="component-lab__amount">R$ 890,00</strong>

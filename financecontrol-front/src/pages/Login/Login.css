@@ -146,6 +146,36 @@ h2.aside-content-text {
   gap: 20px;
 }
 
+.login-senha-campo {
+  position: relative;
+  min-width: 0;
+}
+
+.login-senha-campo .input-field {
+  padding-right: 42px;
+}
+
+.login-senha-visibilidade {
+  position: absolute;
+  top: 30px;
+  right: 9px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.login-senha-visibilidade:focus-visible {
+  border-radius: 5px;
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
 .login-label {
   display: grid;
   gap: 10px;

@@ -156,6 +156,36 @@ h2.aside-content-text {
   gap: 20px;
 }
 
+.cadastro-senha-campo {
+  position: relative;
+  min-width: 0;
+}
+
+.cadastro-senha-campo .input-field {
+  padding-right: 42px;
+}
+
+.cadastro-senha-visibilidade {
+  position: absolute;
+  top: 30px;
+  right: 9px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.cadastro-senha-visibilidade:focus-visible {
+  border-radius: 5px;
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
 .cadastro-nome-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

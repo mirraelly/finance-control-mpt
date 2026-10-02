@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import InternalLayout from "../layouts/Internal/InternalLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -13,7 +14,10 @@ import UsuarioForm from "../pages/Usuarios/UsuarioForm";
 import LogLoginList from "../pages/LogsLogin/LogLoginList";
 import PessoaList from "../pages/Pessoas/PessoaList";
 import PessoaForm from "../pages/Pessoas/PessoaForm";
+import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
+
+const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
 function AppRoutes() {
   return (
@@ -28,7 +32,19 @@ function AppRoutes() {
             <Route path="/perfil" element={<Perfil />} />
 
             <Route element={<ProtectedRoute roles={["USER"]} />}>
-              <Route path="/home" element={<Home />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <Suspense
+                    fallback={
+                      <Loading size="sm" label="Carregando dashboard..." />
+                    }
+                  >
+                    <Dashboard />
+                  </Suspense>
+                }
+              />
+              <Route path="/transacoes" element={<Home />} />
               <Route path="/componentes-teste" element={<ComponentesTeste />} />
             </Route>
 

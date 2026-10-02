@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { HugeiconsIcon, CheckIcon } from "../../../assets/icons";
+import {
+  HugeiconsIcon,
+  CheckIcon,
+  EyeOffIcon,
+  ViewIcon,
+} from "../../../assets/icons";
 import authService from "../../../services/authService";
 import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
@@ -8,6 +13,7 @@ import Input from "../../common/Input/Input";
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +29,9 @@ function LoginForm() {
       localStorage.setItem("token", response.token);
       localStorage.setItem("userId", response.id);
       localStorage.setItem("role", response.role);
-      navigate(response.role === "SUPERADMIN" ? "/admin/usuarios" : "/home");
+      navigate(
+        response.role === "SUPERADMIN" ? "/admin/usuarios" : "/dashboard",
+      );
     } catch (err) {
       const message = err?.response?.data?.erro || err?.message;
       setError(message || "Erro ao fazer login. Verifique seu e-mail e senha.");
@@ -55,17 +63,31 @@ function LoginForm() {
           required
         />
 
-        <Input
-          id="login-password"
-          label="SENHA"
-          type="password"
-          value={senha}
-          onChange={(event) => setSenha(event.target.value)}
-          placeholder="••••••••"
-          autoComplete="current-password"
-          fullWidth
-          required
-        />
+        <div className="login-senha-campo">
+          <Input
+            id="login-password"
+            label="SENHA"
+            type={mostrarSenha ? "text" : "password"}
+            value={senha}
+            onChange={(event) => setSenha(event.target.value)}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            fullWidth
+            required
+          />
+          <button
+            className="login-senha-visibilidade"
+            type="button"
+            aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+            onClick={() => setMostrarSenha((visivel) => !visivel)}
+          >
+            <HugeiconsIcon
+              icon={mostrarSenha ? EyeOffIcon : ViewIcon}
+              size={18}
+              color="currentColor"
+            />
+          </button>
+        </div>
 
         <div className="remember-row">
           <label className="remember-me-label">

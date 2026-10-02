@@ -93,8 +93,6 @@
 }
 
 .button:disabled {
-  background: var(--color-mint-400);
-  border-color: var(--color-mint-400);
   opacity: 1;
   cursor: not-allowed;
 }

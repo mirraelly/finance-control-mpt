@@ -8,6 +8,8 @@ import {
   InformationCircleIcon,
   MultiplicationSignIcon,
   Tick01Icon,
+  EyeOffIcon,
+  ViewIcon,
 } from "../../../assets/icons";
 import Modal from "../../common/Modal/Modal";
 import TermosServico from "../../common/Legal/TermosServico";
@@ -24,6 +26,8 @@ function CadastroForm() {
   const [senhaFocada, setSenhaFocada] = useState(false);
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
   const [aceitouTermos, setAceitouTermos] = useState(false);
   const [termosAberto, setTermosAberto] = useState(false);
   const [privacidadeAberta, setPrivacidadeAberta] = useState(false);
@@ -201,7 +205,7 @@ function CadastroForm() {
           />
         </div>
         <div>
-          <div>
+          <div className="cadastro-senha-campo">
             <Input
               label={
                 <>
@@ -209,7 +213,7 @@ function CadastroForm() {
                 </>
               }
               id="senha"
-              type="password"
+              type={mostrarSenha ? "text" : "password"}
               value={senha}
               placeholder="Digite aqui sua senha"
               minLength={8}
@@ -219,6 +223,18 @@ function CadastroForm() {
               onBlur={() => setSenhaFocada(false)}
               required
             />
+            <button
+              className="cadastro-senha-visibilidade"
+              type="button"
+              aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+              onClick={() => setMostrarSenha((visivel) => !visivel)}
+            >
+              <HugeiconsIcon
+                icon={mostrarSenha ? EyeOffIcon : ViewIcon}
+                size={18}
+                color="currentColor"
+              />
+            </button>
           </div>
           {senhaFocada && (
             <div className="cadastro-senha-requisitos" aria-live="polite">
@@ -251,7 +267,7 @@ function CadastroForm() {
           )}
         </div>
 
-        <div>
+        <div className="cadastro-senha-campo">
           <Input
             label={
               <>
@@ -259,7 +275,7 @@ function CadastroForm() {
               </>
             }
             id="confirmarSenha"
-            type="password"
+            type={mostrarConfirmarSenha ? "text" : "password"}
             value={confirmarSenha}
             placeholder="Confirme aqui a sua senha"
             minLength={8}
@@ -267,6 +283,22 @@ function CadastroForm() {
             onChange={(event) => setConfirmarSenha(event.target.value)}
             required
           />
+          <button
+            className="cadastro-senha-visibilidade"
+            type="button"
+            aria-label={
+              mostrarConfirmarSenha
+                ? "Ocultar confirmação de senha"
+                : "Mostrar confirmação de senha"
+            }
+            onClick={() => setMostrarConfirmarSenha((visivel) => !visivel)}
+          >
+            <HugeiconsIcon
+              icon={mostrarConfirmarSenha ? EyeOffIcon : ViewIcon}
+              size={18}
+              color="currentColor"
+            />
+          </button>
         </div>
 
         <div className="confirmar-label">
