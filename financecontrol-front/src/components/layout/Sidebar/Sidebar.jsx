@@ -8,6 +8,7 @@ import {
   Settings01Icon,
   UserGroupIcon,
   Clock01Icon,
+  ContactBookIcon,
 } from "../../../assets/icons";
 import { NavLink } from "react-router-dom";
 
@@ -46,6 +47,17 @@ const menuGroups = [
         label: "Configurações",
         path: "/configuracoes",
         icon: Settings01Icon,
+      },
+    ],
+  },
+  {
+    title: "Cadastros",
+    roles: ["USER", "SUPERADMIN"],
+    items: [
+      {
+        label: "Pessoas",
+        path: "/cadastros/pessoas",
+        icon: ContactBookIcon,
       },
     ],
   },

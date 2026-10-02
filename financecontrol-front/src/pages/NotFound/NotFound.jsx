@@ -13,17 +13,15 @@ function NotFound() {
           A página que você está procurando não existe ou foi movida para outro
           lugar.
         </p>
-        <Link to="/dashboard" className="notfound__link">
-          <a className="notfound__button">
-            <HugeiconsIcon icon={Home01Icon} size={18} stroke="2" />
-            Ir para Dashboard
-          </a>
+        <Link to="/dashboard" className="notfound__button">
+          <HugeiconsIcon icon={Home01Icon} size={18} stroke="2" />
+          Ir para Dashboard
         </Link>
       </section>
 
       <section className="notfound__image">
         <img
-          src="/public/images/not-found-pig.png"
+          src="/images/not-found-pig.png"
           alt="Imagem ilustrativa de página não encontrada"
         />
       </section>
