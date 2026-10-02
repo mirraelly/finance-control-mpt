@@ -18,8 +18,13 @@ const menuGroups = [
     roles: ["USER"],
     items: [
       {
-        label: "Início",
-        path: "/home",
+        label: "Dashboard",
+        path: "/dashboard",
+        icon: Chart01Icon,
+      },
+      {
+        label: "Transações",
+        path: "/transacoes",
         icon: Home07Icon,
       },
       {

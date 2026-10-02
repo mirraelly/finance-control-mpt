@@ -13,6 +13,10 @@
   font-size: var(--font-size-13);
 }
 
+.pagination__page {
+  padding: 0 var(--space-2);
+}
+
 .pagination__controls {
   display: flex;
   align-items: center;

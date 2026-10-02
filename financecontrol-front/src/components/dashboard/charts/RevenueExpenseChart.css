@@ -1,0 +1,15 @@
+.revenue-expense-chart__period-filter {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-panel__chart.revenue-expense-chart__plot {
+  height: 196px;
+}
+
+@media (max-width: 520px) {
+  .revenue-expense-chart__period-filter {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
