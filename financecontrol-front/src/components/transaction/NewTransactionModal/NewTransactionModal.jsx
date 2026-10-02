@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   HugeiconsIcon,
-  Upload01Icon,
   ArrowDownBigIcon,
   ArrowUpBigIcon,
 } from "../../../assets/icons";
@@ -10,24 +9,16 @@ import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
 import Select from "../../common/Select/Select";
 import DatePicker from "../../common/DatePicker/Datepicker";
+import lancamentoFinanceiroService from "../../../services/lancamentoFinanceiroService";
 import "./NewTransactionModal.css";
-
-// Dados mockados
-const DEFAULT_CURRENCIES = [
-  { value: "BRL", label: "R$" },
-  { value: "USD", label: "US$" },
-  { value: "EUR", label: "€" },
-  { value: "GBP", label: "£" },
-];
 
 const DEFAULT_VALUES = {
   tipo: "despesa",
   valor: "",
-  moeda: "BRL",
   descricao: "",
   categoria: "",
+  contaFinanceiraId: "",
   data: new Date().toISOString().slice(0, 10),
-  comprovante: null,
 };
 
 const DEFAULT_CATEGORIES = [
@@ -48,27 +39,84 @@ function NewTransactionModal({
   categories = DEFAULT_CATEGORIES,
   theme = "dark",
   initialValues = EMPTY_INITIAL_VALUES,
+  apiEnabled = false,
 }) {
   const [values, setValues] = useState({ ...DEFAULT_VALUES, ...initialValues });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(apiEnabled);
+  const [apiCategories, setApiCategories] = useState(null);
+  const [accounts, setAccounts] = useState([]);
+  const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    if (!apiEnabled) return undefined;
+
+    let isCurrent = true;
+
+    Promise.all([
+      lancamentoFinanceiroService.listarContasAtivas(),
+      lancamentoFinanceiroService.listarCategoriasAtivas(),
+    ])
+      .then(([accountOptions, categoryOptions]) => {
+        if (!isCurrent) return;
+        setAccounts(
+          accountOptions.map((account) => ({
+            value: account.id,
+            label: account.nome,
+          })),
+        );
+        setApiCategories(
+          categoryOptions.map((category) => ({
+            value: category.id,
+            label: category.nome,
+          })),
+        );
+      })
+      .catch(() => {
+        if (isCurrent)
+          setFormError("Não foi possível carregar contas e categorias.");
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoadingOptions(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [apiEnabled]);
+
+  const categoryOptions = apiCategories ?? categories;
 
   const handleClose = () => {
     setValues({ ...DEFAULT_VALUES, ...initialValues });
     setIsSubmitting(false);
+    setFormError("");
     onClose?.();
   };
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
     setValues((current) => ({ ...current, [name]: files ? files[0] : value }));
+    setFormError("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (apiEnabled && (!values.contaFinanceiraId || !values.categoria)) {
+      setFormError("Selecione uma conta financeira e uma categoria.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit?.({ ...values, valor: Number(values.valor) });
       handleClose();
+    } catch (error) {
+      setFormError(
+        error.response?.data?.message ||
+          error.response?.data?.detail ||
+          "Não foi possível salvar a transação. Tente novamente.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -93,12 +141,11 @@ function NewTransactionModal({
           >
             Cancelar
           </Button>
-
           <Button
             type="submit"
             form="new-transaction-form"
             variant={values.tipo === "despesa" ? "secondary" : "primary"}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoadingOptions}
             fullWidth
           >
             {isSubmitting ? "Salvando..." : "Confirmar"}
@@ -142,97 +189,87 @@ function NewTransactionModal({
           ))}
         </div>
 
-        <div className="transaction-form">
-          <div class="transaction-value">
-            <Select
-              id="transaction-currency"
-              name="moeda"
-              label="MOEDA"
-              options={DEFAULT_CURRENCIES}
-              value={values.moeda}
-              onChange={handleChange}
-              theme={theme}
-              height="40px"
-              fullWidth
-              placeholder="Escolha"
-            ></Select>
+        {apiEnabled && (
+          <Select
+            id="transaction-account"
+            name="contaFinanceiraId"
+            label="CONTA FINANCEIRA"
+            options={accounts}
+            value={values.contaFinanceiraId}
+            onChange={handleChange}
+            theme={theme}
+            fullWidth
+            required
+            disabled={isLoadingOptions || accounts.length === 0}
+            placeholder={
+              isLoadingOptions ? "Carregando contas..." : "Selecione uma conta"
+            }
+          />
+        )}
 
-            <Input
-              id="transaction-value"
-              name="valor"
-              label="VALOR"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={values.valor}
-              onChange={handleChange}
-              placeholder="0,00"
-              theme={theme}
-              fullWidth
-              required
-            />
-          </div>
+        <div className="transaction-value">
+          <DatePicker
+            id="transaction-date"
+            name="data"
+            label="DATA"
+            value={values.data}
+            onChange={handleChange}
+            theme={theme}
+            fullWidth
+            required
+            dropdownPosition="rigth"
+          />
 
           <Input
-            id="transaction-description"
-            name="descricao"
-            label="DESCRIÇÃO"
-            value={values.descricao}
+            id="transaction-value"
+            name="valor"
+            label="VALOR"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={values.valor}
             onChange={handleChange}
-            placeholder="Ex: Mercado Extra, Salário..."
+            placeholder="0,00"
             theme={theme}
             fullWidth
             required
           />
-
-          <div className="transaction-form__row">
-            <Select
-              id="transaction-category"
-              name="categoria"
-              label="CATEGORIA"
-              options={categories}
-              value={values.categoria}
-              onChange={handleChange}
-              theme={theme}
-              fullWidth
-              required
-              placeholder="Selecione uma categoria"
-              dropdownPosition="top"
-            />
-
-            <DatePicker
-              id="transaction-date"
-              name="data"
-              label="DATA"
-              value={values.data}
-              onChange={handleChange}
-              theme={theme}
-              fullWidth
-              required
-              dropdownPosition="top"
-            />
-          </div>
-
-          <label className="transaction-upload" htmlFor="transaction-receipt">
-            <span className="transaction-upload__label">COMPROVANTE</span>
-            <span className="transaction-upload__box">
-              <HugeiconsIcon
-                aria-hidden="true"
-                icon={Upload01Icon}
-                size={18}
-                stroke="2"
-              />
-              {values.comprovante?.name || "Clique para anexar um arquivo"}
-            </span>
-            <input
-              id="transaction-receipt"
-              name="comprovante"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleChange}
-            />
-          </label>
         </div>
+
+        <div>
+          <Select
+            id="transaction-category"
+            name="categoria"
+            label="CATEGORIA"
+            options={categoryOptions}
+            value={values.categoria}
+            onChange={handleChange}
+            theme={theme}
+            fullWidth
+            required
+            disabled={isLoadingOptions || categoryOptions.length === 0}
+            placeholder="Selecione uma categoria"
+            dropdownPosition="top"
+          />
+        </div>
+
+        <Input
+          id="transaction-description"
+          name="descricao"
+          label="DESCRIÇÃO"
+          value={values.descricao}
+          onChange={handleChange}
+          placeholder="Ex: Mercado Extra, Salário..."
+          theme={theme}
+          fullWidth
+          required
+        />
+
+        {formError && (
+          <p className="transaction-form__error" role="alert">
+            {formError}
+          </p>
+        )}
       </form>
     </Modal>
   );

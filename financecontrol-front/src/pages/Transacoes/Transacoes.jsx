@@ -10,6 +10,7 @@ import EmptyState from "../../components/common/EmptyState";
 import Pagination from "../../components/common/Pagination/Pagination";
 import NewTransactionModal from "../../components/transaction/NewTransactionModal";
 import { MOCK_TRANSACTIONS } from "../../constants/mockTransactions";
+import lancamentoFinanceiroService from "../../services/lancamentoFinanceiroService";
 import "./Transacoes.css";
 
 // Dados mockados — depois substituir pela chamada real da API
@@ -88,26 +89,23 @@ function Transacoes() {
     (currentPage + 1) * pageSize,
   );
 
-  const handleCreateTransaction = (values) => {
-    setCurrentPage(1);
-    const categoryOption = CATEGORY_OPTIONS.find(
-      (option) => option.value === values.categoria,
-    );
-
+  const handleCreateTransaction = async (values) => {
+    const created = await lancamentoFinanceiroService.criar(values);
     setTransactions((current) => [
       {
-        id: Date.now(),
-        descricao: values.descricao,
-        categoria: values.categoria,
-        categoriaLabel: categoryOption?.label || values.categoria,
-        data: values.data,
+        id: created.id,
+        descricao: created.descricao,
+        categoria: created.categoriaId,
+        categoriaLabel: created.categoriaNome || "Sem categoria",
+        data: created.data,
         metodo: "Manual",
-        conta: "Nubank",
-        valor: values.valor,
-        tipo: values.tipo,
+        conta: created.contaFinanceiraNome,
+        valor: Number(created.valor),
+        tipo: created.tipo === "ENTRADA" ? "receita" : "despesa",
       },
       ...current,
     ]);
+    setCurrentPage(0);
   };
 
   return (
@@ -271,6 +269,7 @@ function Transacoes() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateTransaction}
         theme="auto"
+        apiEnabled
       />
     </div>
   );
