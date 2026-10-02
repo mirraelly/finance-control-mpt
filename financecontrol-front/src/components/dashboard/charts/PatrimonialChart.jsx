@@ -38,7 +38,8 @@ function getYearData(year) {
   return Array.from({ length: monthCount }, (_, index) => ({
     month: dashboardMonthLabels[index],
     value: Math.round(
-      initialValue + ((finalValue - initialValue) * index) / (monthCount - 1),
+      initialValue + ((finalValue - initialValue) * index) /
+        Math.max(monthCount - 1, 1),
     ),
   }));
 }

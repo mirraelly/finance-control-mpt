@@ -46,6 +46,7 @@ function PessoaList() {
   const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [pessoas, setPessoas] = useState([]);
   const [pagina, setPagina] = useState(0);
+  const [tamanhoPagina, setTamanhoPagina] = useState(15);
   const [totalPaginas, setTotalPaginas] = useState(0);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [carregando, setCarregando] = useState(true);
@@ -88,6 +89,7 @@ function PessoaList() {
         setErro("");
         const resposta = await pessoaService.listarPessoas({
           page: pagina,
+          size: tamanhoPagina,
           nome: nomeFiltro || undefined,
           documento: documentoFiltro || undefined,
           tipoPessoa: tipoPessoa || undefined,
@@ -105,7 +107,7 @@ function PessoaList() {
     }
 
     carregarPessoas();
-  }, [pagina, nomeFiltro, documentoFiltro, tipoPessoa, situacao, recarregar]);
+  }, [pagina, tamanhoPagina, nomeFiltro, documentoFiltro, tipoPessoa, situacao, recarregar]);
 
   const handleConfirmarSituacao = async () => {
     try {
@@ -276,6 +278,11 @@ function PessoaList() {
           totalPages={totalPaginas}
           totalElements={totalRegistros}
           onChange={setPagina}
+          pageSize={tamanhoPagina}
+          onPageSizeChange={(tamanho) => {
+            setTamanhoPagina(tamanho);
+            setPagina(0);
+          }}
         />
       </>
     );

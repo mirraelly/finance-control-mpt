@@ -18,7 +18,6 @@ const DEFAULT_VALUES = {
   descricao: "",
   categoria: "",
   contaFinanceiraId: "",
-  data: new Date().toISOString().slice(0, 10),
 };
 
 const DEFAULT_CATEGORIES = [
@@ -41,7 +40,11 @@ function NewTransactionModal({
   initialValues = EMPTY_INITIAL_VALUES,
   apiEnabled = false,
 }) {
-  const [values, setValues] = useState({ ...DEFAULT_VALUES, ...initialValues });
+  const [values, setValues] = useState({
+    ...DEFAULT_VALUES,
+    data: new Date().toLocaleDateString("sv-SE"),
+    ...initialValues,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingOptions, setIsLoadingOptions] = useState(apiEnabled);
   const [apiCategories, setApiCategories] = useState(null);
@@ -85,10 +88,14 @@ function NewTransactionModal({
     };
   }, [apiEnabled]);
 
-  const categoryOptions = apiCategories ?? categories;
+  const categoryOptions = apiCategories ?? (apiEnabled ? [] : categories);
 
   const handleClose = () => {
-    setValues({ ...DEFAULT_VALUES, ...initialValues });
+    setValues({
+      ...DEFAULT_VALUES,
+      data: new Date().toLocaleDateString("sv-SE"),
+      ...initialValues,
+    });
     setIsSubmitting(false);
     setFormError("");
     onClose?.();
@@ -113,8 +120,7 @@ function NewTransactionModal({
       handleClose();
     } catch (error) {
       setFormError(
-        error.response?.data?.message ||
-          error.response?.data?.detail ||
+        error.response?.data?.erro ||
           "Não foi possível salvar a transação. Tente novamente.",
       );
     } finally {
@@ -217,7 +223,6 @@ function NewTransactionModal({
             theme={theme}
             fullWidth
             required
-            dropdownPosition="rigth"
           />
 
           <Input

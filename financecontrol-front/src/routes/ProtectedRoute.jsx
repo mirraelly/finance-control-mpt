@@ -13,7 +13,7 @@ export default function ProtectedRoute({ roles }) {
 
   if (roles && !roles.includes(role)) {
     return (
-      <Navigate to={role === "SUPERADMIN" ? "/admin/usuarios" : "/home"} replace />
+      <Navigate to={role === "SUPERADMIN" ? "/admin/usuarios" : "/dashboard"} replace />
     );
   }
 
