@@ -6,7 +6,7 @@ import {
   UserAdd01Icon,
   ContactBookIcon,
   Edit02Icon,
-  UserBlock01Icon,
+  UnavailableIcon,
   UserCheck01Icon,
 } from "../../assets/icons";
 import pessoaService from "../../services/pessoaService";
@@ -249,7 +249,13 @@ function PessoaList() {
                           onClick={() =>
                             navigate(`/cadastros/pessoas/${pessoa.id}`)
                           }
-                          icon={<HugeiconsIcon icon={Edit02Icon} size={18} />}
+                          icon={
+                            <HugeiconsIcon
+                              icon={Edit02Icon}
+                              size={18}
+                              color="var(--color-emerald-500)"
+                            />
+                          }
                         />
                         <Button
                           variant="ghost"
@@ -259,7 +265,8 @@ function PessoaList() {
                           onClick={() => setPessoaSelecionada(pessoa)}
                           icon={
                             <HugeiconsIcon
-                              icon={pessoa.ativo ? UserBlock01Icon : UserCheck01Icon}
+                              icon={pessoa.ativo ? UnavailableIcon : UserCheck01Icon}
+                              color={pessoa.ativo ? '#b91c1c': '#16a34a'}
                               size={18}
                             />
                           }

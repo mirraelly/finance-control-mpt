@@ -57,37 +57,24 @@
   font-size: var(--font-size-12);
 }
 
-.dashboard-transactions__avatar {
+.dashboard-transactions__type {
   display: inline-grid;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 28px;
+  height: 28px;
   place-items: center;
   border-radius: 50%;
-  background: var(--color-indigo-50);
-  color: var(--color-blue-500);
   font-size: var(--font-size-12);
   font-weight: 700;
 }
 
-.dashboard-transactions__avatar--alimentacao {
-  background: var(--color-amber-50);
-  color: var(--color-orange-500);
+.dashboard-transactions__type--revenue {
+  background: var(--color-teal-50);
+  color: var(--color-teal-600);
 }
 
-.dashboard-transactions__avatar--entretenimento {
-  background: var(--color-purple-50);
-  color: var(--color-purple-600);
-}
-
-.dashboard-transactions__avatar--saude {
+.dashboard-transactions__type--expense {
   background: var(--color-red-50);
   color: var(--color-red-600);
-}
-
-.dashboard-transactions__avatar--neutral {
-  background: var(--color-slate-100-alt);
-  color: var(--color-slate-600);
 }
 
 .dashboard-transactions__amount-heading,

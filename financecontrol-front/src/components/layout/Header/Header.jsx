@@ -100,14 +100,6 @@ function Header({ title = "Início" }) {
       </div>
 
       <div className="header-right-group">
-        {!isSuperadmin && (
-          <Input
-            className="header-search"
-            shadow={false}
-            icon={<HugeiconsIcon icon={Search01Icon} size={18} />}
-            placeholder="Buscar transações..."
-          />
-        )}
 
         <div className="controls-box">
           {!isSuperadmin && (

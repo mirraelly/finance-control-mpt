@@ -20,23 +20,15 @@ function Pagination({
   pageSizeOptions = [5, 10, 15, 30, 50],
 }) {
   const pageSizeId = useId();
-
-  if (totalPages <= 1) {
-    return (
-      <div className="pagination">
-        <span className="pagination__info">{totalElements} registro(s)</span>
-      </div>
-    );
-  }
-
   const sizeOptions = pageSizeOptions.map((size) => ({
     value: String(size),
     label: String(size),
   }));
 
-  const lastPage = Math.max(totalPages - 1, 0);
-  const isFirst = page <= 0;
-  const isLast = page >= lastPage;
+  const pageCount = Math.max(totalPages, 1);
+  const lastPage = pageCount - 1;
+  const isFirst = page <= 0 || totalPages <= 1;
+  const isLast = page >= lastPage || totalPages <= 1;
 
   return (
     <nav className="pagination" aria-label="Paginação">
@@ -49,7 +41,7 @@ function Pagination({
           variant="ghost"
           size="sm"
           onClick={() => onChange(0)}
-          disabled={isFirst}
+          disabled={isFirst || !onChange}
           aria-label="Primeira página"
           icon={<HugeiconsIcon icon={ArrowLeftDoubleIcon} size={16} />}
         />
@@ -57,18 +49,18 @@ function Pagination({
           variant="ghost"
           size="sm"
           onClick={() => onChange(page - 1)}
-          disabled={page === 0}
+          disabled={isFirst || !onChange}
           aria-label="Página anterior"
           icon={<HugeiconsIcon icon={ArrowLeft01Icon} size={16} />}
         />
         <span className="pagination__page">
-          Página {page + 1} de {totalPages}
+          Página {page + 1} de {pageCount}
         </span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => onChange(page + 1)}
-          disabled={page >= totalPages - 1}
+          disabled={isLast || !onChange}
           aria-label="Próxima página"
           icon={<HugeiconsIcon icon={ArrowRight01Icon} size={16} />}
         />
@@ -76,7 +68,7 @@ function Pagination({
           variant="ghost"
           size="sm"
           onClick={() => onChange(lastPage)}
-          disabled={isLast}
+          disabled={isLast || !onChange}
           aria-label="Última página"
           icon={<HugeiconsIcon icon={ArrowRightDoubleIcon} size={16} />}
         />
@@ -86,7 +78,7 @@ function Pagination({
         aria-label="Itens por página"
         options={sizeOptions}
         value={String(pageSize)}
-        onChange={(event) => onPageSizeChange(Number(event.target.value))}
+        onChange={(event) => onPageSizeChange?.(Number(event.target.value))}
         dropdownPosition="top"
         width="68px"
         height="32px"

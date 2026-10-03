@@ -14,6 +14,11 @@ import UsuarioForm from "../pages/Usuarios/UsuarioForm";
 import LogLoginList from "../pages/LogsLogin/LogLoginList";
 import PessoaList from "../pages/Pessoas/PessoaList";
 import PessoaForm from "../pages/Pessoas/PessoaForm";
+import CategoriaList from "../pages/Categorias/CategoriaList";
+import ContaFinanceiraList from "../pages/ContasFinanceiras/ContaFinanceiraList";
+import ContasPagarList from "../pages/ContasPagarReceber/ContasPagarList";
+import ContasReceberList from "../pages/ContasPagarReceber/ContasReceberList";
+import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
 
@@ -59,6 +64,20 @@ function AppRoutes() {
               <Route path="/cadastros/pessoas" element={<PessoaList />} />
               <Route path="/cadastros/pessoas/nova" element={<PessoaForm />} />
               <Route path="/cadastros/pessoas/:id" element={<PessoaForm />} />
+              <Route path="/cadastros/categorias" element={<CategoriaList />} />
+              <Route
+                path="/cadastros/contas-financeiras"
+                element={<ContaFinanceiraList />}
+              />
+              <Route
+                path="/cadastros/contas-pagar"
+                element={<ContasPagarList />}
+              />
+              <Route
+                path="/cadastros/contas-receber"
+                element={<ContasReceberList />}
+              />
+              <Route path="/cadastros/notificacoes" element={<Notificacoes />} />
             </Route>
           </Route>
         </Route>

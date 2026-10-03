@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useLocation, NavLink } from "react-router-dom";
 import {
   HugeiconsIcon,
   Home07Icon,
@@ -5,17 +7,17 @@ import {
   Chart01Icon,
   TradeUpIcon,
   Target01Icon,
-  Settings01Icon,
   UserGroupIcon,
   Clock01Icon,
   ContactBookIcon,
+  ArrowDown01Icon,
 } from "../../../assets/icons";
-import { NavLink } from "react-router-dom";
 
 import "./Sidebar.css";
 
 const menuGroups = [
   {
+    key: "principal",
     roles: ["USER"],
     items: [
       {
@@ -43,25 +45,57 @@ const menuGroups = [
         path: "/metas",
         icon: Target01Icon,
       },
-      {
-        label: "Configurações",
-        path: "/configuracoes",
-        icon: Settings01Icon,
-      },
+      // {
+      //   label: "Configurações",
+      //   path: "/configuracoes",
+      //   icon: Settings01Icon,
+      // },
     ],
   },
-    {
-    title: "Cadastros",
+  {
+    key: "cadastros",
     roles: ["USER", "SUPERADMIN"],
     items: [
       {
-        label: "Pessoas",
-        path: "/cadastros/pessoas",
+        label: "Cadastros",
         icon: ContactBookIcon,
+        children: [
+          {
+            label: "Pessoas",
+            path: "/cadastros/pessoas",
+            icon: ContactBookIcon,
+          },
+          {
+            label: "Categorias",
+            path: "/cadastros/categorias",
+            icon: Chart01Icon,
+          },
+          {
+            label: "Contas financeiras",
+            path: "/cadastros/contas-financeiras",
+            icon: Wallet01Icon,
+          },
+          {
+            label: "Contas a pagar",
+            path: "/cadastros/contas-pagar",
+            icon: Wallet01Icon,
+          },
+          {
+            label: "Contas a receber",
+            path: "/cadastros/contas-receber",
+            icon: Wallet01Icon,
+          },
+          // {
+          //   label: "Notificações",
+          //   path: "/cadastros/notificacoes",
+          //   icon: Notification01Icon,
+          // },
+        ],
       },
     ],
   },
   {
+    key: "administracao",
     title: "Administração",
     roles: ["SUPERADMIN"],
     items: [
@@ -86,6 +120,11 @@ function Sidebar({
   onCloseMobile,
 }) {
   const isCompact = collapsed && !mobileOpen;
+  const location = useLocation();
+  const cadastrosAtivo = location.pathname.startsWith("/cadastros/");
+  const [cadastrosOpen, setCadastrosOpen] = useState(() =>
+    cadastrosAtivo,
+  );
   const role = localStorage.getItem("role");
   const visibleGroups = menuGroups.filter((group) =>
     group.roles.includes(role),
@@ -124,31 +163,105 @@ function Sidebar({
 
       <nav className="sidebar__nav" aria-label="Menu principal">
         {visibleGroups.map((group) => (
-          <div key={group.title || "principal"} className="sidebar__nav-group">
+          <div
+            key={group.key}
+            className={`sidebar__nav-group sidebar__nav-group--${group.key}`}
+          >
             {group.title && !isCompact && (
               <span className="sidebar__nav-title">{group.title}</span>
             )}
 
             <div className="sidebar__nav-list">
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={onCloseMobile}
-                  className={({ isActive }) =>
-                    `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
-                  }
-                  title={isCompact ? item.label : undefined}
-                >
-                  <span className="sidebar__nav-icon">
-                    <HugeiconsIcon icon={item.icon} size={20} strokeWidth={2} />
-                  </span>
+              {group.items.map((item) =>
+                item.children ? (
+                  <div className="sidebar__nav-item-group" key={item.label}>
+                    <button
+                      type="button"
+                      className={`sidebar__nav-item sidebar__nav-toggle${cadastrosOpen || cadastrosAtivo ? " sidebar__nav-item--active" : ""}`}
+                      onClick={() => setCadastrosOpen((open) => !open)}
+                      aria-expanded={cadastrosOpen}
+                      aria-controls="sidebar-cadastros-submenu"
+                      title={isCompact ? item.label : undefined}
+                    >
+                      <span className="sidebar__nav-icon">
+                        <HugeiconsIcon
+                          icon={item.icon}
+                          size={20}
+                          strokeWidth={2}
+                        />
+                      </span>
+                      {!isCompact && (
+                        <>
+                          <span className="sidebar__nav-label">
+                            {item.label}
+                          </span>
+                          <HugeiconsIcon
+                            icon={ArrowDown01Icon}
+                            size={16}
+                            strokeWidth={2}
+                            className={`sidebar__nav-chevron${cadastrosOpen ? " sidebar__nav-chevron--open" : ""}`}
+                          />
+                        </>
+                      )}
+                    </button>
 
-                  {!isCompact && (
-                    <span className="sidebar__nav-label">{item.label}</span>
-                  )}
-                </NavLink>
-              ))}
+                    {cadastrosOpen && (
+                      <div
+                        className="sidebar__nav-sublist"
+                        id="sidebar-cadastros-submenu"
+                        aria-label="Submenus de Cadastros"
+                      >
+                        {item.children.map((child) => (
+                          <NavLink
+                            key={child.path}
+                            to={child.path}
+                            onClick={onCloseMobile}
+                            className={({ isActive }) =>
+                              `sidebar__nav-item sidebar__nav-subitem${isActive ? " sidebar__nav-item--active" : ""}`
+                            }
+                            title={isCompact ? child.label : undefined}
+                          >
+                            <span className="sidebar__nav-icon">
+                              <HugeiconsIcon
+                                icon={child.icon}
+                                size={20}
+                                strokeWidth={2}
+                              />
+                            </span>
+                            {!isCompact && (
+                              <span className="sidebar__nav-label">
+                                {child.label}
+                              </span>
+                            )}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={onCloseMobile}
+                    className={({ isActive }) =>
+                      `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`
+                    }
+                    title={isCompact ? item.label : undefined}
+                  >
+                    <span className="sidebar__nav-icon">
+                      <HugeiconsIcon
+                        icon={item.icon}
+                        size={20}
+                        strokeWidth={2}
+                      />
+                    </span>
+
+                    {!isCompact && (
+                      <span className="sidebar__nav-label">{item.label}</span>
+                    )}
+                  </NavLink>
+                ),
+              )}
             </div>
           </div>
         ))}
