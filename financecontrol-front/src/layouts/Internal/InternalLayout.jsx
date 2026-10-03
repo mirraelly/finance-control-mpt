@@ -3,7 +3,6 @@ import { Outlet, useLocation } from "react-router-dom";
 
 import {
   HugeiconsIcon,
-  Menu01Icon,
   PanelRightOpenIcon,
 } from "../../assets/icons";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
@@ -34,6 +33,14 @@ function InternalLayout() {
       location.pathname === path || location.pathname.startsWith(`${path}/`),
   );
   const title = pageTitles[currentPath] || "Início";
+  const currentDate = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const formattedDate =
+    currentDate.charAt(0).toUpperCase() + currentDate.slice(1);
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => !prev);
@@ -81,15 +88,12 @@ function InternalLayout() {
       )}
 
       <div className="app-layout__content">
-        <button
-          type="button"
-          className="app-layout__mobile-menu"
-          onClick={handleOpenMobileMenu}
-          aria-label="Abrir menu"
-        >
-          <HugeiconsIcon icon={Menu01Icon} size={24} strokeWidth={2} />
-        </button>
-        <Header title={title} />
+        <Header title={title} onOpenMobileMenu={handleOpenMobileMenu} />
+
+        <div className="app-layout__mobile-page-heading">
+          <h1>{title}</h1>
+          <span>{formattedDate}</span>
+        </div>
 
         <main className="app-layout__main">
           <Outlet />

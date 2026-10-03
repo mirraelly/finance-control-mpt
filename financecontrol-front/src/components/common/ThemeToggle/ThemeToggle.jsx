@@ -21,12 +21,14 @@ function getInitialTheme() {
 function ThemeToggle() {
   const [theme, setTheme] = useState(getInitialTheme);
   const isDarkTheme = theme === THEMES.dark;
-  const nextTheme = isDarkTheme ? THEMES.light : THEMES.dark;
 
   useEffect(() => {
     document.documentElement.classList.add("theme-transition");
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_STORAGE_KEY, theme);
+    window.dispatchEvent(
+      new CustomEvent("financecontrol:theme-changed", { detail: theme }),
+    );
 
     const timeout = setTimeout(() => {
       document.documentElement.classList.remove("theme-transition");
@@ -38,11 +40,25 @@ function ThemeToggle() {
     };
   }, [theme]);
 
+  useEffect(() => {
+    const toggleTheme = () => {
+      setTheme((currentTheme) =>
+        currentTheme === THEMES.dark ? THEMES.light : THEMES.dark,
+      );
+    };
+
+    window.addEventListener("financecontrol:toggle-theme", toggleTheme);
+    return () =>
+      window.removeEventListener("financecontrol:toggle-theme", toggleTheme);
+  }, []);
+
   return (
     <button
       type="button"
       className="theme-toggle"
-      onClick={() => setTheme(nextTheme)}
+      onClick={() =>
+        window.dispatchEvent(new Event("financecontrol:toggle-theme"))
+      }
       aria-label={isDarkTheme ? "Ativar tema claro" : "Ativar tema escuro"}
       title={isDarkTheme ? "Ativar tema claro" : "Ativar tema escuro"}
     >

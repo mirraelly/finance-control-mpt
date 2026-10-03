@@ -29,6 +29,10 @@
   display: flex;
 }
 
+.app-layout__mobile-page-heading {
+  display: none;
+}
+
 .app-layout__mobile-menu {
   display: none;
 }
@@ -100,6 +104,27 @@
 
   .app-layout__sidebar-toggle {
     display: none;
+  }
+
+  .app-layout__mobile-page-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 16px 0;
+    background-color: var(--main-background);
+  }
+
+  .app-layout__mobile-page-heading h1 {
+    margin: 0;
+    color: var(--header-title);
+    font-size: var(--font-size-20);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+  }
+
+  .app-layout__mobile-page-heading span {
+    color: var(--header-date);
+    font-size: var(--font-size-12);
   }
 
   .app-layout__overlay {
