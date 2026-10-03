@@ -40,6 +40,8 @@ function NewTransactionModal({
   theme = "dark",
   initialValues = EMPTY_INITIAL_VALUES,
   apiEnabled = false,
+  title = "Nova Transação",
+  submitLabel = "Confirmar",
 }) {
   const [values, setValues] = useState({
     ...DEFAULT_VALUES,
@@ -108,10 +110,15 @@ function NewTransactionModal({
     setFormError("");
   };
 
+  const handleTypeChange = (tipo) => {
+    setValues((current) => ({ ...current, tipo }));
+    setFormError("");
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (apiEnabled && (!values.contaFinanceiraId || !values.categoria)) {
-      setFormError("Selecione uma conta financeira e uma categoria.");
+    if (apiEnabled && !values.contaFinanceiraId) {
+      setFormError("Selecione uma conta financeira.");
       return;
     }
 
@@ -120,10 +127,8 @@ function NewTransactionModal({
       await onSubmit?.({ ...values, valor: Number(values.valor) });
       handleClose();
     } catch (error) {
-      setFormError(
-        error.response?.data?.erro ||
-          "Não foi possível salvar a transação. Tente novamente.",
-      );
+      console.error("Erro ao salvar transação:", error);
+      setFormError("Não foi possível salvar a transação. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +138,7 @@ function NewTransactionModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Nova Transação"
+      title={title}
       theme={theme}
       size="md"
       className="new-transaction-modal"
@@ -155,7 +160,7 @@ function NewTransactionModal({
             disabled={isSubmitting || isLoadingOptions}
             fullWidth
           >
-            {isSubmitting ? "Salvando..." : "Confirmar"}
+            {isSubmitting ? "Salvando..." : submitLabel}
           </Button>
         </div>
       }
@@ -171,19 +176,27 @@ function NewTransactionModal({
           aria-label="Tipo de transação"
         >
           {[
-            ["despesa", "Despesa", "expense", ArrowDownBigIcon],
-            ["receita", "Receita", "income", ArrowUpBigIcon],
-          ].map(([type, label, modifier, icon]) => (
+            {
+              tipo: "despesa",
+              label: "Despesa",
+              modifier: "expense",
+              icon: ArrowDownBigIcon,
+            },
+            {
+              tipo: "receita",
+              label: "Receita",
+              modifier: "income",
+              icon: ArrowUpBigIcon,
+            },
+          ].map(({ tipo, label, modifier, icon }) => (
             <button
-              key={type}
+              key={tipo}
               type="button"
               className={`transaction-type__option transaction-type__option--${modifier} ${
-                values.tipo === type ? "is-active" : ""
+                values.tipo === tipo ? "is-active" : ""
               }`}
-              onClick={() =>
-                setValues((current) => ({ ...current, tipo: type }))
-              }
-              aria-pressed={values.tipo === type}
+              onClick={() => handleTypeChange(tipo)}
+              aria-pressed={values.tipo === tipo}
             >
               <HugeiconsIcon
                 icon={icon}
@@ -253,7 +266,6 @@ function NewTransactionModal({
             onChange={handleChange}
             theme={theme}
             fullWidth
-            required
             disabled={isLoadingOptions || categoryOptions.length === 0}
             placeholder="Selecione uma categoria"
             dropdownPosition="top"

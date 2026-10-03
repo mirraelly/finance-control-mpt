@@ -4,6 +4,7 @@ import com.mpt.financecontrol.financeiro.OrigemLancamento;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.lancamentofinanceiro.dtos.LancamentoFinanceiroCreateDto;
 import com.mpt.financecontrol.lancamentofinanceiro.dtos.LancamentoFinanceiroResponseDto;
+import com.mpt.financecontrol.lancamentofinanceiro.dtos.LancamentoFinanceiroUpdateDto;
 import com.mpt.financecontrol.lancamentofinanceiro.service.LancamentoFinanceiroService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -88,6 +89,23 @@ public class LancamentoFinanceiroController {
             @RequestBody @Valid LancamentoFinanceiroCreateDto dto
     ) {
         return new ResponseEntity<>(service.create(dto), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Atualizar lançamento manual", description = "Atualiza os dados de um lançamento manual")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Lançamento gerado automaticamente ou dados inválidos"),
+            @ApiResponse(responseCode = "404", description = "Não encontrado")
+    })
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LancamentoFinanceiroResponseDto> update(
+            @Parameter(description = "ID do lançamento")
+            @PathVariable UUID id,
+
+            @RequestBody @Valid LancamentoFinanceiroUpdateDto dto
+    ) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @Operation(summary = "Excluir lançamento", description = "Exclui um lançamento manual")

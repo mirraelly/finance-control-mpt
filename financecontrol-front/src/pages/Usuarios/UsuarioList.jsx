@@ -6,7 +6,7 @@ import {
   UserAdd01Icon,
   UserGroupIcon,
   Edit02Icon,
-  UserBlock01Icon,
+  UnavailableIcon,
   UserCheck01Icon,
 } from "../../assets/icons";
 import usuarioService from "../../services/usuarioService";
@@ -203,7 +203,13 @@ function UsuarioList() {
                         title="Editar usuário"
                         aria-label={`Editar ${usuario.nome}`}
                         onClick={() => navigate(`/admin/usuarios/${usuario.id}`)}
-                        icon={<HugeiconsIcon icon={Edit02Icon} size={18} />}
+                        icon={
+                          <HugeiconsIcon
+                            icon={Edit02Icon}
+                            size={18}
+                            color="var(--color-emerald-500)"
+                          />
+                        }
                       />
                       {usuario.id !== usuarioLogadoId && (
                         <Button
@@ -214,7 +220,8 @@ function UsuarioList() {
                           onClick={() => setUsuarioSelecionado(usuario)}
                           icon={
                             <HugeiconsIcon
-                              icon={usuario.ativo ? UserBlock01Icon : UserCheck01Icon}
+                              icon={usuario.ativo ? UnavailableIcon : UserCheck01Icon}
+                              color={usuario.ativo ? '#b91c1c': '#16a34a'}
                               size={18}
                             />
                           }

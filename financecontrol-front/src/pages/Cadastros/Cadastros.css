@@ -1,0 +1,199 @@
+.cadastros-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  padding: var(--space-2) 0 var(--space-6);
+}
+
+.cadastros-toolbar,
+.cadastros-list-card,
+.notificacoes-inbox {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border);
+}
+
+.cadastros-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.cadastros-toolbar--filters {
+  flex-wrap: wrap;
+}
+
+.cadastros-toolbar--filters > .select-field {
+  flex: 1 1 180px;
+}
+
+.cadastros-toolbar .input-field__label,
+.cadastros-toolbar > .input-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.cadastros-list-card {
+  overflow: hidden;
+}
+
+.cadastros-list-card .loading-container {
+  padding: var(--space-6);
+}
+
+.cadastros-mensagem {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--success) 10%, transparent);
+  color: var(--success);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cadastros-ajuda {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-13);
+}
+
+.cadastros-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  transition: opacity 0.15s ease;
+}
+
+.cadastros-table-wrapper--loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cadastros-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cadastros-table th {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cadastros-table td {
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: var(--font-size-14);
+}
+
+.cadastros-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cadastros-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.cadastros-table__muted {
+  color: var(--text-secondary) !important;
+}
+
+.cadastros-table__actions-heading {
+  text-align: right !important;
+}
+
+.cadastros-table__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cadastros-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cadastros-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--font-size-13);
+}
+
+.cadastros-field textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  resize: vertical;
+}
+
+.cadastros-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.cadastros-checkbox input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--primary);
+}
+
+.cadastros-form__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--font-size-13);
+}
+
+.cadastros-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.notificacoes-inbox {
+  display: flex;
+  min-height: 240px;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 768px) {
+  .cadastros-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cadastros-toolbar .input-field__label,
+  .cadastros-toolbar > .input-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cadastros-toolbar--filters > .select-field {
+    width: 100%;
+  }
+
+  .cadastros-table th,
+  .cadastros-table td {
+    padding-right: var(--space-3);
+    padding-left: var(--space-3);
+  }
+}

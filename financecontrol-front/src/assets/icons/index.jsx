@@ -51,6 +51,7 @@ import {
   UserBlock01Icon,
   UserCheck01Icon,
   ContactBookIcon,
+  UnavailableIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -103,4 +104,5 @@ export {
   UserBlock01Icon,
   UserCheck01Icon,
   ContactBookIcon,
+  UnavailableIcon,
 };

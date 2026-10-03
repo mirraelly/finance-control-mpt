@@ -10,6 +10,7 @@ import com.mpt.financecontrol.financeiro.OrigemLancamento;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.lancamentofinanceiro.dtos.LancamentoFinanceiroCreateDto;
 import com.mpt.financecontrol.lancamentofinanceiro.dtos.LancamentoFinanceiroResponseDto;
+import com.mpt.financecontrol.lancamentofinanceiro.dtos.LancamentoFinanceiroUpdateDto;
 import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
 import com.mpt.financecontrol.lancamentofinanceiro.mapper.LancamentoFinanceiroMapper;
 import com.mpt.financecontrol.lancamentofinanceiro.repository.LancamentoFinanceiroRepository;
@@ -127,6 +128,31 @@ public class LancamentoFinanceiroService {
                 dto.valor(),
                 dto.data(),
                 dto.descricao()));
+    }
+
+    @Transactional
+    public LancamentoFinanceiroResponseDto update(UUID id, LancamentoFinanceiroUpdateDto dto) {
+        LancamentoFinanceiro lancamento = findById(id);
+
+        if (lancamento.getOrigem() != OrigemLancamento.MANUAL)
+            throw new BadRequestException("Lançamento gerado automaticamente não pode ser editado por aqui");
+
+        ContaFinanceira contaFinanceira = contaFinanceiraService.findById(dto.contaFinanceiraId());
+        if (!Boolean.TRUE.equals(contaFinanceira.getAtivo()))
+            throw new BadRequestException("Conta financeira inativa");
+
+        Categoria categoria = dto.categoriaId() != null
+                ? categoriaService.findById(dto.categoriaId())
+                : null;
+
+        lancamento.setContaFinanceira(contaFinanceira);
+        lancamento.setCategoria(categoria);
+        lancamento.setTipo(dto.tipo());
+        lancamento.setValor(dto.valor());
+        lancamento.setData(dto.data());
+        lancamento.setDescricao(dto.descricao());
+
+        return LancamentoFinanceiroMapper.toResponseDto(repository.save(lancamento));
     }
 
     @Transactional

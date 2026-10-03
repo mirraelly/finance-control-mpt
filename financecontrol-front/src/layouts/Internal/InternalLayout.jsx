@@ -19,6 +19,11 @@ function InternalLayout() {
     "/admin/usuarios": "Usuários",
     "/admin/logs-login": "Logs de login",
     "/cadastros/pessoas": "Pessoas",
+    "/cadastros/categorias": "Categorias",
+    "/cadastros/contas-financeiras": "Contas financeiras",
+    "/cadastros/contas-pagar": "Contas a pagar",
+    "/cadastros/contas-receber": "Contas a receber",
+    "/cadastros/notificacoes": "Notificações",
   };
   const currentPath = Object.keys(pageTitles).find(
     (path) =>
