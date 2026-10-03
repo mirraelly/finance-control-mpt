@@ -12,6 +12,8 @@ import ComponentesTeste from "../pages/ComponentesTeste/ComponentesTeste";
 import UsuarioList from "../pages/Usuarios/UsuarioList";
 import UsuarioForm from "../pages/Usuarios/UsuarioForm";
 import LogLoginList from "../pages/LogsLogin/LogLoginList";
+import PessoaList from "../pages/Pessoas/PessoaList";
+import PessoaForm from "../pages/Pessoas/PessoaForm";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
 
@@ -51,6 +53,12 @@ function AppRoutes() {
               <Route path="/admin/usuarios/novo" element={<UsuarioForm />} />
               <Route path="/admin/usuarios/:id" element={<UsuarioForm />} />
               <Route path="/admin/logs-login" element={<LogLoginList />} />
+            </Route>
+
+            <Route element={<ProtectedRoute roles={["USER", "SUPERADMIN"]} />}>
+              <Route path="/cadastros/pessoas" element={<PessoaList />} />
+              <Route path="/cadastros/pessoas/nova" element={<PessoaForm />} />
+              <Route path="/cadastros/pessoas/:id" element={<PessoaForm />} />
             </Route>
           </Route>
         </Route>

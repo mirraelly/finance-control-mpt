@@ -19,15 +19,32 @@ public interface PessoaRepository extends JpaRepository<Pessoa, UUID> {
             WHERE p.tenant_id = :tenantId
                 AND (CAST(:nome AS text) IS NULL
                     OR unaccent(lower(p.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
+                AND (CAST(:documento AS text) IS NULL
+                    OR p.cpf  LIKE '%' || CAST(:documento AS text) || '%'
+                    OR p.cnpj LIKE '%' || CAST(:documento AS text) || '%')
+                AND (CAST(:tipoPessoa AS text) IS NULL OR p.tipo_pessoa = CAST(:tipoPessoa AS text))
+                AND (CAST(:ativo AS boolean) IS NULL OR p.ativo = CAST(:ativo AS boolean))
     """,
     countQuery = """
         SELECT count(*) FROM pessoa p
             WHERE p.tenant_id = :tenantId
                 AND (CAST(:nome AS text) IS NULL
                     OR unaccent(lower(p.nome)) LIKE unaccent(lower('%' || CAST(:nome AS text) || '%')))
+                AND (CAST(:documento AS text) IS NULL
+                    OR p.cpf  LIKE '%' || CAST(:documento AS text) || '%'
+                    OR p.cnpj LIKE '%' || CAST(:documento AS text) || '%')
+                AND (CAST(:tipoPessoa AS text) IS NULL OR p.tipo_pessoa = CAST(:tipoPessoa AS text))
+                AND (CAST(:ativo AS boolean) IS NULL OR p.ativo = CAST(:ativo AS boolean))
     """,
     nativeQuery = true)
-    Page<Pessoa> findAllWithFilters(Pageable pageable, @Param("tenantId") UUID tenantId, @Param("nome") String nome);
+    Page<Pessoa> findAllWithFilters(
+            Pageable pageable,
+            @Param("tenantId")   UUID    tenantId,
+            @Param("nome")       String  nome,
+            @Param("documento")  String  documento,
+            @Param("tipoPessoa") String  tipoPessoa,
+            @Param("ativo")      Boolean ativo
+    );
 
     @Query("SELECT p FROM Pessoa p "
     +      "    WHERE p.tenant.id = :tenantId AND p.ativo = true "

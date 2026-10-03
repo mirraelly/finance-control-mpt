@@ -50,6 +50,7 @@ import {
   Edit02Icon,
   UserBlock01Icon,
   UserCheck01Icon,
+  ContactBookIcon,
 } from "@hugeicons/core-free-icons";
 
 export {
@@ -101,4 +102,5 @@ export {
   Edit02Icon,
   UserBlock01Icon,
   UserCheck01Icon,
+  ContactBookIcon,
 };
