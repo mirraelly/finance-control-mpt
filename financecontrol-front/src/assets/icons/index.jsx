@@ -4,6 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 
 import {
   SaveMoneyDollarIcon,
+  SaveIcon,
   WavingHand02Icon,
   Home01Icon,
   Wallet01Icon,
@@ -52,11 +53,14 @@ import {
   UserCheck01Icon,
   ContactBookIcon,
   UnavailableIcon,
+  Undo03Icon,
+  RealEstate01Icon
 } from "@hugeicons/core-free-icons";
 
 export {
   HugeiconsIcon,
   SaveMoneyDollarIcon,
+  SaveIcon,
   WavingHand02Icon,
   Home01Icon,
   Wallet01Icon,
@@ -105,4 +109,6 @@ export {
   UserCheck01Icon,
   ContactBookIcon,
   UnavailableIcon,
+  Undo03Icon,
+  RealEstate01Icon
 };

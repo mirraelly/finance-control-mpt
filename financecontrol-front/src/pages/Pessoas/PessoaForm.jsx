@@ -2,10 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   HugeiconsIcon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   Calendar03Icon,
+  Call02Icon,
   ContactBookIcon,
   Delete02Icon,
+  InformationCircleIcon,
+  Mail01Icon,
+  Undo03Icon,
   PlusIcon,
+  RealEstate01Icon,
+  SaveIcon,
 } from "../../assets/icons";
 import pessoaService from "../../services/pessoaService";
 import {
@@ -19,6 +27,7 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
+import ToggleSwitch from "../../components/common/ToggleSwitch";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import "./Pessoas.css";
@@ -26,11 +35,6 @@ import "./Pessoas.css";
 const TIPO_PESSOA_OPTIONS = [
   { value: "PESSOA_FISICA", label: "Pessoa física" },
   { value: "PESSOA_JURIDICA", label: "Pessoa jurídica" },
-];
-
-const SITUACAO_OPTIONS = [
-  { value: "true", label: "Ativa" },
-  { value: "false", label: "Inativa" },
 ];
 
 const CATEGORIA_CNH_OPTIONS = [
@@ -45,6 +49,24 @@ const CATEGORIA_CNH_OPTIONS = [
   "AD",
   "AE",
 ];
+
+const ETAPAS_FORMULARIO = [
+  { label: "Dados principais", icon: ContactBookIcon },
+  { label: "Telefones", icon: Call02Icon },
+  { label: "E-mails", icon: Mail01Icon },
+  { label: "Endereços", icon: RealEstate01Icon },
+];
+
+function LabelObrigatorio({ children }) {
+  return (
+    <span>
+      {children}{" "}
+      <span className="pessoa-form__obrigatorio" aria-hidden="true">
+        *
+      </span>
+    </span>
+  );
+}
 
 function PessoaForm() {
   const { id } = useParams();
@@ -78,6 +100,7 @@ function PessoaForm() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const [erroCarregamento, setErroCarregamento] = useState(false);
+  const [etapaAtiva, setEtapaAtiva] = useState(0);
 
   const isFisica = tipoPessoa === "PESSOA_FISICA";
 
@@ -155,9 +178,8 @@ function PessoaForm() {
             bairro: endereco.bairro || "",
             complemento: endereco.complemento || "",
             cidadeId: endereco.cidadeId,
-            cidadeNome: endereco.cidadeNome
-              ? `${endereco.cidadeNome}/${endereco.estadoSigla}`
-              : "",
+            cidadeNome: endereco.cidadeNome || "",
+            estadoSigla: endereco.estadoSigla || "",
             erroCep: "",
             principal: endereco.principal,
           })),
@@ -203,6 +225,7 @@ function PessoaForm() {
       cep: cepFormatado,
       cidadeId: null,
       cidadeNome: "",
+      estadoSigla: "",
       erroCep: "",
     });
 
@@ -218,9 +241,8 @@ function PessoaForm() {
                 rua: endereco.rua || item.rua,
                 bairro: endereco.bairro || item.bairro,
                 cidadeId: endereco.cidadeId,
-                cidadeNome: endereco.cidadeNome
-                  ? `${endereco.cidadeNome}/${endereco.estadoSigla}`
-                  : "",
+                cidadeNome: endereco.cidadeNome || "",
+                estadoSigla: endereco.estadoSigla || "",
               }
             : item,
         ),
@@ -237,31 +259,37 @@ function PessoaForm() {
     setErro("");
 
     if (nome.trim().length < 3) {
+      setEtapaAtiva(0);
       setErro("Informe um nome válido com pelo menos 3 caracteres.");
       return;
     }
 
     if (isFisica && cpf && somenteDigitos(cpf)?.length !== 11) {
+      setEtapaAtiva(0);
       setErro("Informe um CPF válido com 11 dígitos.");
       return;
     }
 
     if (!isFisica && cnpj && somenteDigitos(cnpj)?.length !== 14) {
+      setEtapaAtiva(0);
       setErro("Informe um CNPJ válido com 14 dígitos.");
       return;
     }
 
     if (telefones.some((telefone) => !telefone.tipoTelefoneId || (somenteDigitos(telefone.numero)?.length || 0) < 10)) {
+      setEtapaAtiva(1);
       setErro("Informe o tipo e um número válido em todos os telefones.");
       return;
     }
 
     if (emails.some((email) => !email.tipoEmailId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.email.trim()))) {
+      setEtapaAtiva(2);
       setErro("Informe o tipo e um e-mail válido em todos os e-mails.");
       return;
     }
 
     if (enderecos.some((endereco) => !endereco.tipoEnderecoId)) {
+      setEtapaAtiva(3);
       setErro("Informe o tipo de todos os endereços.");
       return;
     }
@@ -366,28 +394,99 @@ function PessoaForm() {
         className="pessoa-form"
         onSubmit={handleSubmit}
         onChange={() => erro && setErro("")}
+        noValidate
       >
-        <Card className="pessoa-form-card" padding="lg" radius="lg" shadow={false}>
-          <div className="pessoa-form__cabecalho">
+        <div className="pessoa-form__cabecalho">
+          <div>
             <h2>{isEdicao ? "Editar pessoa" : "Nova pessoa"}</h2>
             <p>
               Cadastre clientes, fornecedores e demais pessoas usadas nas contas a
               pagar e a receber.
             </p>
           </div>
+          <button
+            className="pessoa-form__voltar"
+            type="button"
+            aria-label="Voltar à tela anterior"
+            title="Voltar à tela anterior"
+            onClick={() => navigate("/cadastros/pessoas")}
+            disabled={salvando}
+          >
+            <HugeiconsIcon icon={Undo03Icon} size={20} />
+          </button>
+        </div>
 
-          <div className="pessoa-form__grid">
+        <div
+          className="pessoa-form__abas"
+          role="tablist"
+          aria-label="Etapas do cadastro de pessoa"
+        >
+          {ETAPAS_FORMULARIO.map((etapa, indice) => (
+            <button
+              key={etapa.label}
+              id={`pessoa-etapa-tab-${indice}`}
+              className={`pessoa-form__aba ${etapaAtiva === indice ? "pessoa-form__aba--ativa" : ""}`}
+              type="button"
+              role="tab"
+              aria-selected={etapaAtiva === indice}
+              aria-controls={`pessoa-etapa-panel-${indice}`}
+              onClick={() => setEtapaAtiva(indice)}
+            >
+              <HugeiconsIcon
+                className="pessoa-form__aba-icone"
+                icon={etapa.icon}
+                size={20}
+                stroke={etapaAtiva === indice ? "2.5" : "2"}
+              />
+              <span>{etapa.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <Card
+          className="pessoa-form-card"
+          padding="md"
+          radius="md"
+          shadow={false}
+          hidden={etapaAtiva !== 0}
+        >
+          <section
+            id="pessoa-etapa-panel-0"
+            className="pessoa-form__etapa"
+            role="tabpanel"
+            aria-labelledby="pessoa-etapa-tab-0"
+          >
+            <p className="pessoa-form__dica">
+              <HugeiconsIcon
+                className="pessoa-form__dica-icone"
+                icon={InformationCircleIcon}
+                size={18}
+                stroke="2"
+                aria-hidden="true"
+              />
+              <span>
+                Os campos marcados com * são obrigatórios. Os demais são opcionais e podem ser preenchidos em outro momento.
+              </span>
+            </p>
+          <div
+            className={`pessoa-form__grid ${isEdicao ? "pessoa-form__grid--edicao" : ""}`}
+          >
             <Select
               id="pessoa-tipo"
-              label="TIPO DE PESSOA"
+              label={<LabelObrigatorio>TIPO DE PESSOA</LabelObrigatorio>}
               options={TIPO_PESSOA_OPTIONS}
               value={tipoPessoa}
               onChange={(event) => setTipoPessoa(event.target.value)}
+              required
               fullWidth
             />
             <Input
               id="pessoa-nome"
-              label={isFisica ? "NOME COMPLETO" : "NOME"}
+              label={
+                <LabelObrigatorio>
+                  {isFisica ? "NOME COMPLETO" : "NOME"}
+                </LabelObrigatorio>
+              }
               value={nome}
               onChange={(event) => setNome(event.target.value)}
               maxLength={255}
@@ -395,14 +494,17 @@ function PessoaForm() {
               required
             />
             {isEdicao && (
-              <Select
-                id="pessoa-situacao"
-                label="SITUAÇÃO"
-                options={SITUACAO_OPTIONS}
-                value={String(ativo)}
-                onChange={(event) => setAtivo(event.target.value === "true")}
-                fullWidth
-              />
+              <div className="pessoa-form__situacao">
+                <span className="pessoa-form__situacao-label">SITUAÇÃO</span>
+                <div className="pessoa-form__situacao-controle">
+                  <ToggleSwitch
+                    checked={ativo}
+                    onChange={setAtivo}
+                    title={ativo ? "Inativar" : "Ativar"}
+                    className="pessoa-form__toggle"
+                  />
+                </div>
+              </div>
             )}
           </div>
 
@@ -509,15 +611,33 @@ function PessoaForm() {
               />
             </div>
           )}
+          </section>
         </Card>
 
-        <Card className="pessoa-form-card" padding="lg" radius="lg" shadow={false}>
+        <Card
+          className="pessoa-form-card"
+          padding="lg"
+          radius="lg"
+          shadow={false}
+          hidden={etapaAtiva !== 1}
+        >
+          <section
+            id="pessoa-etapa-panel-1"
+            className="pessoa-form__etapa"
+            role="tabpanel"
+            aria-labelledby="pessoa-etapa-tab-1"
+          >
           <div className="pessoa-form__secao-cabecalho">
             <h3>Telefones</h3>
             <Button
               variant="outline"
               size="sm"
-              icon={<HugeiconsIcon icon={PlusIcon} size={16} />}
+              className="pessoa-form__adicionar"
+              icon={
+                <span className="pessoa-form__adicionar-icone">
+                  <HugeiconsIcon icon={PlusIcon} size={10} stroke="2.5" />
+                </span>
+              }
               onClick={() =>
                 setTelefones((lista) => [
                   ...lista,
@@ -532,7 +652,7 @@ function PessoaForm() {
                 ])
               }
             >
-              Adicionar
+              Adicionar telefone
             </Button>
           </div>
 
@@ -544,9 +664,10 @@ function PessoaForm() {
                 <div key={telefone.chave} className="pessoa-form__item">
                   <Select
                     id={`telefone-tipo-${indice}`}
-                    label="TIPO"
+                    label={<LabelObrigatorio>TIPO</LabelObrigatorio>}
                     options={tiposTelefone}
                     value={telefone.tipoTelefoneId}
+                    required
                     onChange={(event) =>
                       alterarItem(setTelefones, indice, {
                         tipoTelefoneId: event.target.value,
@@ -556,10 +677,11 @@ function PessoaForm() {
                   />
                   <Input
                     id={`telefone-numero-${indice}`}
-                    label="NÚMERO"
+                    label={<LabelObrigatorio>NÚMERO</LabelObrigatorio>}
                     type="tel"
                     placeholder="(00)00000-0000"
                     value={telefone.numero}
+                    required
                     onChange={(event) =>
                       alterarItem(setTelefones, indice, {
                         numero: formatarTelefone(event.target.value),
@@ -592,6 +714,7 @@ function PessoaForm() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="pessoa-form__remover"
                       title="Remover telefone"
                       aria-label="Remover telefone"
                       onClick={() => removerItem(setTelefones, indice)}
@@ -602,15 +725,33 @@ function PessoaForm() {
               ))}
             </div>
           )}
+          </section>
         </Card>
 
-        <Card className="pessoa-form-card" padding="lg" radius="lg" shadow={false}>
+        <Card
+          className="pessoa-form-card"
+          padding="lg"
+          radius="lg"
+          shadow={false}
+          hidden={etapaAtiva !== 2}
+        >
+          <section
+            id="pessoa-etapa-panel-2"
+            className="pessoa-form__etapa"
+            role="tabpanel"
+            aria-labelledby="pessoa-etapa-tab-2"
+          >
           <div className="pessoa-form__secao-cabecalho">
             <h3>E-mails</h3>
             <Button
               variant="outline"
               size="sm"
-              icon={<HugeiconsIcon icon={PlusIcon} size={16} />}
+              className="pessoa-form__adicionar"
+              icon={
+                <span className="pessoa-form__adicionar-icone">
+                  <HugeiconsIcon icon={PlusIcon} size={10} stroke="2.5" />
+                </span>
+              }
               onClick={() =>
                 setEmails((lista) => [
                   ...lista,
@@ -625,7 +766,7 @@ function PessoaForm() {
                 ])
               }
             >
-              Adicionar
+              Adicionar e-mail
             </Button>
           </div>
 
@@ -637,9 +778,10 @@ function PessoaForm() {
                 <div key={email.chave} className="pessoa-form__item">
                   <Select
                     id={`email-tipo-${indice}`}
-                    label="TIPO"
+                    label={<LabelObrigatorio>TIPO</LabelObrigatorio>}
                     options={tiposEmail}
                     value={email.tipoEmailId}
+                    required
                     onChange={(event) =>
                       alterarItem(setEmails, indice, {
                         tipoEmailId: event.target.value,
@@ -649,10 +791,11 @@ function PessoaForm() {
                   />
                   <Input
                     id={`email-endereco-${indice}`}
-                    label="E-MAIL"
+                    label={<LabelObrigatorio>E-MAIL</LabelObrigatorio>}
                     type="email"
                     placeholder="email@email.com"
                     value={email.email}
+                    required
                     onChange={(event) =>
                       alterarItem(setEmails, indice, {
                         email: event.target.value,
@@ -686,6 +829,7 @@ function PessoaForm() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="pessoa-form__remover"
                       title="Remover e-mail"
                       aria-label="Remover e-mail"
                       onClick={() => removerItem(setEmails, indice)}
@@ -696,15 +840,33 @@ function PessoaForm() {
               ))}
             </div>
           )}
+          </section>
         </Card>
 
-        <Card className="pessoa-form-card" padding="lg" radius="lg" shadow={false}>
+        <Card
+          className="pessoa-form-card"
+          padding="lg"
+          radius="lg"
+          shadow={false}
+          hidden={etapaAtiva !== 3}
+        >
+          <section
+            id="pessoa-etapa-panel-3"
+            className="pessoa-form__etapa"
+            role="tabpanel"
+            aria-labelledby="pessoa-etapa-tab-3"
+          >
           <div className="pessoa-form__secao-cabecalho">
             <h3>Endereços</h3>
             <Button
               variant="outline"
               size="sm"
-              icon={<HugeiconsIcon icon={PlusIcon} size={16} />}
+              className="pessoa-form__adicionar"
+              icon={
+                <span className="pessoa-form__adicionar-icone">
+                  <HugeiconsIcon icon={PlusIcon} size={10} stroke="2.5" />
+                </span>
+              }
               onClick={() =>
                 setEnderecos((lista) => [
                   ...lista,
@@ -719,13 +881,14 @@ function PessoaForm() {
                     complemento: "",
                     cidadeId: null,
                     cidadeNome: "",
+                    estadoSigla: "",
                     erroCep: "",
                     principal: lista.length === 0,
                   },
                 ])
               }
             >
-              Adicionar
+              Adicionar endereço
             </Button>
           </div>
 
@@ -748,6 +911,7 @@ function PessoaForm() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="pessoa-form__remover"
                       title="Remover endereço"
                       aria-label="Remover endereço"
                       onClick={() => removerItem(setEnderecos, indice)}
@@ -758,9 +922,10 @@ function PessoaForm() {
                   <div className="pessoa-form__grid">
                     <Select
                       id={`endereco-tipo-${indice}`}
-                      label="TIPO"
+                      label={<LabelObrigatorio>TIPO</LabelObrigatorio>}
                       options={tiposEndereco}
                       value={endereco.tipoEnderecoId}
+                      required
                       onChange={(event) =>
                         alterarItem(setEnderecos, indice, {
                           tipoEnderecoId: event.target.value,
@@ -786,14 +951,6 @@ function PessoaForm() {
                         </span>
                       )}
                     </div>
-                    <Input
-                      id={`endereco-cidade-${indice}`}
-                      label="CIDADE"
-                      value={endereco.cidadeNome}
-                      placeholder="Preenchida pelo CEP"
-                      readOnly
-                      fullWidth
-                    />
                     <div className="pessoa-form__campo pessoa-form__campo--largo">
                       <Input
                         id={`endereco-rua-${indice}`}
@@ -846,11 +1003,28 @@ function PessoaForm() {
                         fullWidth
                       />
                     </div>
+                    <Input
+                      id={`endereco-cidade-${indice}`}
+                      label="CIDADE"
+                      value={endereco.cidadeNome}
+                      placeholder="Preenchida pelo CEP"
+                      readOnly
+                      fullWidth
+                    />
+                    <Input
+                      id={`endereco-estado-${indice}`}
+                      label="ESTADO"
+                      value={endereco.estadoSigla}
+                      placeholder="Preenchido pelo CEP"
+                      readOnly
+                      fullWidth
+                    />
                   </div>
                 </div>
               ))}
             </div>
           )}
+          </section>
         </Card>
 
         {erro && (
@@ -859,7 +1033,7 @@ function PessoaForm() {
           </p>
         )}
 
-        <div className="pessoa-form__botoes">
+        <div className="pessoa-form__rodape">
           <Button
             variant="outline"
             onClick={() => navigate("/cadastros/pessoas")}
@@ -867,9 +1041,39 @@ function PessoaForm() {
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar"}
-          </Button>
+          <div className="pessoa-form__navegacao">
+            <span className="pessoa-form__contador" aria-live="polite">
+              {etapaAtiva + 1} de {ETAPAS_FORMULARIO.length}
+            </span>
+            {etapaAtiva > 0 && (
+              <Button
+                variant="outline"
+                icon={<HugeiconsIcon icon={ArrowLeft01Icon} size={16} />}
+                onClick={() => setEtapaAtiva((etapa) => etapa - 1)}
+                disabled={salvando}
+              >
+                Anterior
+              </Button>
+            )}
+            {etapaAtiva < ETAPAS_FORMULARIO.length - 1 && (
+              <Button
+                variant="outline"
+                icon={<HugeiconsIcon icon={ArrowRight01Icon} size={16} />}
+                iconPosition="right"
+                onClick={() => setEtapaAtiva((etapa) => etapa + 1)}
+                disabled={salvando}
+              >
+                Próximo
+              </Button>
+            )}
+            <Button
+              type="submit"
+              icon={<HugeiconsIcon icon={SaveIcon} size={16} />}
+              disabled={salvando}
+            >
+              {salvando ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
         </div>
       </form>
     </div>
