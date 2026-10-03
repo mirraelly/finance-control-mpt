@@ -24,6 +24,7 @@
 }
 
 .sidebar__brand-button {
+  flex: 0 0 2rem;
   background: var(--color-emerald-500);
   height: 2rem;
   width: 2rem;
@@ -33,6 +34,11 @@
   justify-content: center;
   background: var(--color-gradient-emerald-cyan);
   cursor: pointer;
+}
+
+.sidebar__brand-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 .sidebar__brand-name {

@@ -179,6 +179,10 @@
   .header-title {
     font-size: var(--font-size-16);
   }
+
+  .app-layout__sidebar-toggle {
+    top: 56px;
+  }
 }
 
 @media (max-width: 640px) {

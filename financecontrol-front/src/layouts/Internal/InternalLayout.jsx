@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import { HugeiconsIcon, Menu01Icon } from "../../assets/icons";
+import {
+  HugeiconsIcon,
+  Menu01Icon,
+  PanelRightOpenIcon,
+} from "../../assets/icons";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
 
 import "./InternalLayout.css";
@@ -55,6 +59,18 @@ function InternalLayout() {
         onToggle={handleToggleSidebar}
         onCloseMobile={handleCloseMobileMenu}
       />
+
+      {!sidebarCollapsed && (
+        <button
+          type="button"
+          className="app-layout__sidebar-toggle"
+          onClick={handleToggleSidebar}
+          aria-label="Recolher menu"
+          title="Recolher menu"
+        >
+          <HugeiconsIcon icon={PanelRightOpenIcon} size={18} stroke="3" strokeWidth="2.2" />
+        </button>
+      )}
 
       {mobileMenuOpen && (
         <div

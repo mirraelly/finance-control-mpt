@@ -139,25 +139,39 @@ function Sidebar({
       `}
     >
       <div className="sidebar__brand">
-        <button
-          type="button"
-          className="sidebar__brand-button"
-          onClick={onToggle}
-          aria-label={isCompact ? "Expandir menu" : "Recolher menu"}
-        >
-          <HugeiconsIcon
-            icon={TradeUpIcon}
-            stroke="2"
-            size={24}
-            color="var(--color-midnight-blue)"
-          />
-        </button>
+        {isCompact ? (
+          <button
+            type="button"
+            className="sidebar__brand-button"
+            onClick={onToggle}
+            aria-label="Expandir menu"
+            title="Expandir menu"
+          >
+            <HugeiconsIcon
+              icon={TradeUpIcon}
+              stroke="2"
+              size={24}
+              color="var(--color-midnight-blue)"
+            />
+          </button>
+        ) : (
+          <span className="sidebar__brand-button" aria-hidden="true">
+            <HugeiconsIcon
+              icon={TradeUpIcon}
+              stroke="2"
+              size={24}
+              color="var(--color-midnight-blue)"
+            />
+          </span>
+        )}
 
         {!isCompact && (
-          <div className="sidebar__brand-name">
-            <span className="brand-name">Finance Control</span>
-            <span className="brand-tag">MPT</span>
-          </div>
+          <>
+            <div className="sidebar__brand-name">
+              <span className="brand-name">Finance Control</span>
+              <span className="brand-tag">MPT</span>
+            </div>
+          </>
         )}
       </div>
 
