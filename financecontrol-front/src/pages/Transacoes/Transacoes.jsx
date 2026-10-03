@@ -124,7 +124,7 @@ function Transacoes() {
           value={searchTerm}
           onChange={(event) => {
             setSearchTerm(event.target.value);
-            setCurrentPage(1);
+            setCurrentPage(0);
           }}
           fullWidth
           className="transacoes-toolbar__search"
@@ -147,7 +147,7 @@ function Transacoes() {
                 }`}
                 onClick={() => {
                   setActiveTab(tab.value);
-                  setCurrentPage(1);
+                  setCurrentPage(0);
                 }}
               >
                 {tab.label}
@@ -161,7 +161,7 @@ function Transacoes() {
             value={category}
             onChange={(event) => {
               setCategory(event.target.value);
-              setCurrentPage(1);
+              setCurrentPage(0);
             }}
             width="180px"
             className="transacoes-toolbar__category"
@@ -254,11 +254,11 @@ function Transacoes() {
             page={currentPage}
             pageSize={pageSize}
             totalElements={filteredTransactions.length}
-            totalPages={Math.ceil(transactions.length / pageSize)}
+            totalPages={Math.ceil(filteredTransactions.length / pageSize)}
             onChange={setCurrentPage}
             onPageSizeChange={(size) => {
               setPageSize(size);
-              setCurrentPage(1);
+              setCurrentPage(0);
             }}
           />
         )}

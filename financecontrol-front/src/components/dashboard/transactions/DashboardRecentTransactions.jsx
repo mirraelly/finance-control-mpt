@@ -47,7 +47,7 @@ function DashboardRecentTransactions() {
       title="Últimas transações"
       action={
         <Link
-          to="/home"
+          to="/transacoes"
           aria-label="Ver todas as transações"
           className="container-see-all"
         >
@@ -121,7 +121,7 @@ function DashboardRecentTransactions() {
         onChange={setCurrentPage}
         onPageSizeChange={(size) => {
           setPageSize(size);
-          setCurrentPage(1);
+          setCurrentPage(0);
         }}
       />
     </DashboardChartPanel>

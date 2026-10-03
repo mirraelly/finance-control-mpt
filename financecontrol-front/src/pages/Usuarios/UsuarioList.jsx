@@ -44,6 +44,7 @@ function UsuarioList() {
 
   const [usuarios, setUsuarios] = useState([]);
   const [pagina, setPagina] = useState(0);
+  const [tamanhoPagina, setTamanhoPagina] = useState(15);
   const [totalPaginas, setTotalPaginas] = useState(0);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [carregando, setCarregando] = useState(true);
@@ -74,6 +75,7 @@ function UsuarioList() {
         setErro("");
         const resposta = await usuarioService.listarUsuarios({
           page: pagina,
+          size: tamanhoPagina,
           nome: nomeFiltro || undefined,
           ativo: situacao || undefined,
           role: perfil || undefined,
@@ -90,7 +92,7 @@ function UsuarioList() {
     }
 
     carregarUsuarios();
-  }, [pagina, nomeFiltro, situacao, perfil, recarregar]);
+}, [pagina, tamanhoPagina, nomeFiltro, situacao, perfil, recarregar]);
 
   const handleConfirmarSituacao = async () => {
     try {
@@ -231,6 +233,11 @@ function UsuarioList() {
           totalPages={totalPaginas}
           totalElements={totalRegistros}
           onChange={setPagina}
+          pageSize={tamanhoPagina}
+          onPageSizeChange={(tamanho) => {
+            setTamanhoPagina(tamanho);
+            setPagina(0);
+          }}
         />
       </>
     );

@@ -37,6 +37,7 @@ function formatarDataHora(dataISO) {
 function LogLoginList() {
   const [logs, setLogs] = useState([]);
   const [pagina, setPagina] = useState(0);
+  const [tamanhoPagina, setTamanhoPagina] = useState(15);
   const [totalPaginas, setTotalPaginas] = useState(0);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [carregando, setCarregando] = useState(true);
@@ -64,6 +65,7 @@ function LogLoginList() {
         setErro("");
         const resposta = await loginLogService.listarLogs({
           page: pagina,
+          size: tamanhoPagina,
           email: emailFiltro || undefined,
           sucesso: resultado || undefined,
           dataInicio: dataInicio || undefined,
@@ -80,8 +82,8 @@ function LogLoginList() {
       }
     }
 
-    carregarLogs();
-  }, [pagina, emailFiltro, resultado, dataInicio, dataFim]);
+      carregarLogs();
+  }, [pagina, tamanhoPagina, emailFiltro, resultado, dataInicio, dataFim]);
 
   const renderConteudo = () => {
     if (carregando) {
@@ -155,6 +157,11 @@ function LogLoginList() {
           totalPages={totalPaginas}
           totalElements={totalRegistros}
           onChange={setPagina}
+          pageSize={tamanhoPagina}
+          onPageSizeChange={(tamanho) => {
+            setTamanhoPagina(tamanho);
+            setPagina(0);
+          }}
         />
       </>
     );

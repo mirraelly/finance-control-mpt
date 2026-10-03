@@ -2,8 +2,10 @@ package com.mpt.financecontrol.pessoa.service;
 
 import com.mpt.financecontrol.email.service.EmailService;
 import com.mpt.financecontrol.endereco.service.EnderecoService;
+import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.exceptions.ConflictException;
 import com.mpt.financecontrol.exceptions.NotFoundException;
+import com.mpt.financecontrol.pessoa.TipoPessoa;
 import com.mpt.financecontrol.pessoa.dtos.PessoaCreateDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaResponseDto;
 import com.mpt.financecontrol.pessoa.dtos.PessoaUpdateDto;
@@ -14,16 +16,34 @@ import com.mpt.financecontrol.telefone.service.TelefoneService;
 import com.mpt.financecontrol.tenant.entity.Tenant;
 import com.mpt.financecontrol.usuario.entity.Usuario;
 import com.mpt.financecontrol.usuario.service.UsuarioService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class PessoaService {
+
+    private static final Map<String, String> COLUNAS_ORDENACAO = Map.of(
+            "nome",       "nome",
+            "tipoPessoa", "tipo_pessoa",
+            "cpf",        "cpf",
+            "cnpj",       "cnpj",
+            "ativo",      "ativo",
+            "createdAt",  "created_at",
+            "updatedAt",  "updated_at"
+    );
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private final PessoaRepository pessoaRepository;
     private final UsuarioService   usuarioService;
@@ -64,9 +84,16 @@ public class PessoaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PessoaResponseDto> getAll(Pageable pageable, String nome) {
+    public Page<PessoaResponseDto> getAll(Pageable pageable, String nome, String documento, TipoPessoa tipoPessoa, Boolean ativo) {
         Tenant tenant = usuarioService.getTenantLogado();
-        return pessoaRepository.findAllWithFilters(pageable, tenant.getId(), nome)
+        String nomeFiltro = textoOuNulo(nome);
+        return pessoaRepository.findAllWithFilters(
+                        ordenacaoNativa(pageable),
+                        tenant.getId(),
+                        nomeFiltro != null ? escaparLike(nomeFiltro) : null,
+                        somenteDigitos(documento),
+                        tipoPessoa != null ? tipoPessoa.name() : null,
+                        ativo)
                 .map(PessoaMapper::toResponseDto);
     }
 
@@ -84,23 +111,32 @@ public class PessoaService {
         Usuario usuario = usuarioService.getUsuarioAutenticado();
         Tenant tenant   = usuario.getTenant();
 
-        validarDuplicidade(tenant.getId(), null, dto.cpf(), dto.cnpj(), dto.rg(), dto.cnh(),
-                dto.inscricaoEstadual(), dto.inscricaoMunicipal(), dto.razaoSocial());
+        String cpf                = somenteDigitos(dto.cpf());
+        String cnpj               = somenteDigitos(dto.cnpj());
+        String rg                 = textoOuNulo(dto.rg());
+        String cnh                = textoOuNulo(dto.cnh());
+        String inscricaoEstadual  = textoOuNulo(dto.inscricaoEstadual());
+        String inscricaoMunicipal = textoOuNulo(dto.inscricaoMunicipal());
+        String razaoSocial        = textoOuNulo(dto.razaoSocial());
+
+        validarDocumentos(cpf, cnpj);
+        validarDuplicidade(tenant.getId(), null, cpf, cnpj, rg, cnh,
+                inscricaoEstadual, inscricaoMunicipal, razaoSocial);
 
         Pessoa pessoa = new Pessoa();
-        pessoa.setNome(dto.nome());
+        pessoa.setNome(dto.nome().trim());
         pessoa.setTipoPessoa(dto.tipoPessoa());
         pessoa.setDataNascimento(dto.dataNascimento());
-        pessoa.setCpf(dto.cpf());
-        pessoa.setRg(dto.rg());
-        pessoa.setCnh(dto.cnh());
-        pessoa.setCnhCategoria(dto.cnhCategoria());
+        pessoa.setCpf(cpf);
+        pessoa.setRg(rg);
+        pessoa.setCnh(cnh);
+        pessoa.setCnhCategoria(textoOuNulo(dto.cnhCategoria()));
         pessoa.setCnhValidade(dto.cnhValidade());
-        pessoa.setCnpj(dto.cnpj());
-        pessoa.setInscricaoEstadual(dto.inscricaoEstadual());
-        pessoa.setInscricaoMunicipal(dto.inscricaoMunicipal());
-        pessoa.setNomeFantasia(dto.nomeFantasia());
-        pessoa.setRazaoSocial(dto.razaoSocial());
+        pessoa.setCnpj(cnpj);
+        pessoa.setInscricaoEstadual(inscricaoEstadual);
+        pessoa.setInscricaoMunicipal(inscricaoMunicipal);
+        pessoa.setNomeFantasia(textoOuNulo(dto.nomeFantasia()));
+        pessoa.setRazaoSocial(razaoSocial);
         if (dto.ativo() != null)
             pessoa.setAtivo(dto.ativo());
         pessoa.setTenant(tenant);
@@ -112,6 +148,8 @@ public class PessoaService {
         enderecoService.sincronizarEnderecos(pessoa, tenant, dto.enderecos());
         emailService.sincronizarEmails(pessoa, tenant, dto.emails());
 
+        entityManager.flush();
+        entityManager.refresh(pessoa);
         return PessoaMapper.toResponseDto(pessoa);
     }
 
@@ -121,22 +159,31 @@ public class PessoaService {
         Pessoa pessoa   = findById(id);
         Tenant tenant   = pessoa.getTenant();
 
-        validarDuplicidade(tenant.getId(), id, dto.cpf(), dto.cnpj(), dto.rg(), dto.cnh(),
-                dto.inscricaoEstadual(), dto.inscricaoMunicipal(), dto.razaoSocial());
+        String cpf                = somenteDigitos(dto.cpf());
+        String cnpj               = somenteDigitos(dto.cnpj());
+        String rg                 = textoOuNulo(dto.rg());
+        String cnh                = textoOuNulo(dto.cnh());
+        String inscricaoEstadual  = textoOuNulo(dto.inscricaoEstadual());
+        String inscricaoMunicipal = textoOuNulo(dto.inscricaoMunicipal());
+        String razaoSocial        = textoOuNulo(dto.razaoSocial());
 
-        pessoa.setNome(dto.nome());
+        validarDocumentos(cpf, cnpj);
+        validarDuplicidade(tenant.getId(), id, cpf, cnpj, rg, cnh,
+                inscricaoEstadual, inscricaoMunicipal, razaoSocial);
+
+        pessoa.setNome(dto.nome().trim());
         pessoa.setTipoPessoa(dto.tipoPessoa());
         pessoa.setDataNascimento(dto.dataNascimento());
-        pessoa.setCpf(dto.cpf());
-        pessoa.setRg(dto.rg());
-        pessoa.setCnh(dto.cnh());
-        pessoa.setCnhCategoria(dto.cnhCategoria());
+        pessoa.setCpf(cpf);
+        pessoa.setRg(rg);
+        pessoa.setCnh(cnh);
+        pessoa.setCnhCategoria(textoOuNulo(dto.cnhCategoria()));
         pessoa.setCnhValidade(dto.cnhValidade());
-        pessoa.setCnpj(dto.cnpj());
-        pessoa.setInscricaoEstadual(dto.inscricaoEstadual());
-        pessoa.setInscricaoMunicipal(dto.inscricaoMunicipal());
-        pessoa.setNomeFantasia(dto.nomeFantasia());
-        pessoa.setRazaoSocial(dto.razaoSocial());
+        pessoa.setCnpj(cnpj);
+        pessoa.setInscricaoEstadual(inscricaoEstadual);
+        pessoa.setInscricaoMunicipal(inscricaoMunicipal);
+        pessoa.setNomeFantasia(textoOuNulo(dto.nomeFantasia()));
+        pessoa.setRazaoSocial(razaoSocial);
         if (dto.ativo() != null)
             pessoa.setAtivo(dto.ativo());
         pessoa.setUpdatedBy(usuario);
@@ -146,7 +193,58 @@ public class PessoaService {
         enderecoService.sincronizarEnderecos(pessoa, tenant, dto.enderecos());
         emailService.sincronizarEmails(pessoa, tenant, dto.emails());
 
+        entityManager.flush();
+        entityManager.refresh(pessoa);
         return PessoaMapper.toResponseDto(pessoa);
+    }
+
+    @Transactional
+    public void alterarAtivo(UUID id, Boolean ativo) {
+        Usuario usuario = usuarioService.getUsuarioAutenticado();
+        Pessoa  pessoa  = findById(id);
+
+        pessoa.setAtivo(ativo);
+        pessoa.setUpdatedBy(usuario);
+        pessoaRepository.save(pessoa);
+    }
+
+    private String textoOuNulo(String valor) {
+        if (valor == null || valor.isBlank())
+            return null;
+        return valor.trim();
+    }
+
+    private String somenteDigitos(String valor) {
+        if (valor == null)
+            return null;
+        return textoOuNulo(valor.replaceAll("\\D", ""));
+    }
+
+    private String escaparLike(String valor) {
+        return valor.replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+    }
+
+    private Pageable ordenacaoNativa(Pageable pageable) {
+        List<Sort.Order> ordens = pageable.getSort().stream()
+                .map(ordem -> {
+                    String coluna = COLUNAS_ORDENACAO.get(ordem.getProperty());
+                    if (coluna == null)
+                        throw new BadRequestException("Campo de ordenação inválido: " + ordem.getProperty());
+                    return new Sort.Order(ordem.getDirection(), coluna);
+                })
+                .toList();
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(ordens));
+    }
+
+    private void validarDocumentos(String cpf, String cnpj) {
+        if (cpf != null && cpf.length() != 11)
+            throw new BadRequestException("CPF deve conter 11 dígitos");
+
+        if (cnpj != null && cnpj.length() != 14)
+            throw new BadRequestException("CNPJ deve conter 14 dígitos");
     }
 
     private void validarDuplicidade(
