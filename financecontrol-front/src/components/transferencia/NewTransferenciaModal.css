@@ -1,0 +1,79 @@
+.new-transferencia-modal {
+  max-width: 420px;
+}
+
+.new-transferencia-modal label {
+  font-family: var(--font-form);
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-form-muted);
+}
+
+.new-transferencia-modal input,
+.new-transferencia-modal select {
+  font-family: var(--font-form);
+  font-size: var(--font-size-11);
+  color: var(--color-form-muted);
+}
+
+.new-transferencia-modal__body {
+  padding-top: 0.5rem;
+}
+
+.transferencia-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* Conta de origem / conta de destino */
+.transferencia-accounts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.transferencia-accounts-row > * {
+  min-width: 0;
+}
+
+/* Data / valor */
+.transferencia-value-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  width: 100%;
+}
+
+.transferencia-value-row > * {
+  min-width: 0;
+  flex: 1;
+}
+
+.transferencia-form__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.transferencia-form__actions > * {
+  width: 100%;
+}
+
+.transferencia-form__error {
+  margin: 0;
+  color: var(--color-red-600);
+  font-size: var(--font-size-12);
+}
+
+@media (max-width: 640px) {
+  .transferencia-accounts-row {
+    grid-template-columns: 1fr;
+  }
+
+  .transferencia-value-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+}

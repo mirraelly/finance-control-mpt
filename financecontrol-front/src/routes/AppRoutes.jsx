@@ -21,6 +21,7 @@ import ContasReceberList from "../pages/ContasPagarReceber/ContasReceberList";
 import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
+import Transferencias from "../pages/Transferencias/Transferencias";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
@@ -77,6 +78,9 @@ function AppRoutes() {
                 path="/cadastros/contas-receber"
                 element={<ContasReceberList />}
               />
+
+              <Route path="/transferencias" element={<Transferencias />} />
+              
               <Route path="/cadastros/notificacoes" element={<Notificacoes />} />
             </Route>
           </Route>

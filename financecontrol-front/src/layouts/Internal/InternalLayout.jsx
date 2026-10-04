@@ -23,6 +23,7 @@ function InternalLayout() {
     "/cadastros/contas-financeiras": "Contas financeiras",
     "/cadastros/contas-pagar": "Contas a pagar",
     "/cadastros/contas-receber": "Contas a receber",
+    "/transferencias": "Transferências",
     "/cadastros/notificacoes": "Notificações",
   };
   const currentPath = Object.keys(pageTitles).find(
