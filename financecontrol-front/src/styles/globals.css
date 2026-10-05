@@ -11,6 +11,7 @@ body {
 
 #root {
   min-height: 100vh;
+  height: 100%;
 }
 
 .theme-transition *,
@@ -30,4 +31,22 @@ a {
 
 svg {
   transform: translateZ(0);
+}
+
+textarea {
+  height: 114px;
+  resize: none;
+  overflow-y: auto;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg)
+}
+
+textarea:focus-within {
+  border-color: var(--color-emerald-500);
+  box-shadow: var(--shadow-focus-emerald);
 }

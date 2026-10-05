@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
   Chart01Icon,
   Edit02Icon,
-  PlusIcon,
+  Tag01Icon,
   Search01Icon,
+  UnavailableIcon,
+  UserCheck01Icon,
 } from "../../assets/icons";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
@@ -14,13 +17,14 @@ import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
+import Select from "../../components/common/Select";
 import categoriaService from "../../services/categoriaService";
 import "../Cadastros/Cadastros.css";
 
 const PAGE_SIZE = 15;
-const FORM_INICIAL = { nome: "", descricao: "", ativo: true };
-
 function CategoriaList() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [categorias, setCategorias] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
@@ -28,15 +32,24 @@ function CategoriaList() {
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("");
+  const [situacaoFiltro, setSituacaoFiltro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [modalAberto, setModalAberto] = useState(false);
-  const [categoriaEditada, setCategoriaEditada] = useState(null);
-  const [formulario, setFormulario] = useState(FORM_INICIAL);
-  const [erroFormulario, setErroFormulario] = useState("");
-  const [salvando, setSalvando] = useState(false);
-  const [mensagem, setMensagem] = useState("");
+  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
+
+  useEffect(() => {
+    if (!location.state?.mensagem) return;
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!mensagem) return;
+    const timeout = setTimeout(() => setMensagem(""), 4000);
+    return () => clearTimeout(timeout);
+  }, [mensagem]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -58,6 +71,7 @@ function CategoriaList() {
           page: pagina,
           size: tamanhoPagina,
           nome: filtro || undefined,
+          ativo: situacaoFiltro === "" ? undefined : situacaoFiltro,
         });
         if (!ativo) return;
         setCategorias(resposta.content);
@@ -75,73 +89,32 @@ function CategoriaList() {
     return () => {
       ativo = false;
     };
-  }, [pagina, tamanhoPagina, filtro, recarregar]);
+  }, [pagina, tamanhoPagina, filtro, situacaoFiltro, recarregar]);
 
-  const abrirNovaCategoria = () => {
-    setCategoriaEditada(null);
-    setFormulario(FORM_INICIAL);
-    setErroFormulario("");
-    setModalAberto(true);
-  };
-
-  const abrirEdicao = (categoria) => {
-    setCategoriaEditada(categoria);
-    setFormulario({
-      nome: categoria.nome,
-      descricao: categoria.descricao || "",
-      ativo: categoria.ativo,
-    });
-    setErroFormulario("");
-    setModalAberto(true);
-  };
-
-  const fecharModal = () => {
-    if (salvando) return;
-    setModalAberto(false);
-    setErroFormulario("");
-  };
-
-  const salvarCategoria = async (event) => {
-    event.preventDefault();
-    setErroFormulario("");
-    setSalvando(true);
-
+  const confirmarAlteracaoSituacao = async () => {
     try {
-      const dados = {
-        nome: formulario.nome.trim(),
-        descricao: formulario.descricao.trim() || null,
-        ativo: formulario.ativo,
-      };
-
-      if (categoriaEditada) {
-        await categoriaService.atualizar(categoriaEditada.id, dados);
-        setMensagem("Categoria atualizada com sucesso.");
-      } else {
-        await categoriaService.criar(dados);
-        setMensagem("Categoria criada com sucesso.");
-        setPagina(0);
-      }
-
-      setModalAberto(false);
+      setAlterandoSituacao(true);
+      await categoriaService.atualizar(categoriaSelecionada.id, {
+        nome: categoriaSelecionada.nome,
+        descricao: categoriaSelecionada.descricao,
+        ativo: !categoriaSelecionada.ativo,
+      });
+      setMensagem(
+        categoriaSelecionada.ativo
+          ? "Categoria inativada com sucesso."
+          : "Categoria ativada com sucesso.",
+      );
+      setCategoriaSelecionada(null);
       setRecarregar((valor) => valor + 1);
-    } catch (erroSalvamento) {
-      console.error("Erro ao salvar categoria:", erroSalvamento);
-      setErroFormulario(
-        erroSalvamento?.response?.data?.erro ||
-          erroSalvamento?.response?.data?.message ||
-          "Não foi possível salvar a categoria.",
+    } catch (alteracaoError) {
+      console.error("Erro ao alterar situação da categoria:", alteracaoError);
+      alert(
+        alteracaoError?.response?.data?.erro ||
+          "Não foi possível alterar a situação da categoria.",
       );
     } finally {
-      setSalvando(false);
+      setAlterandoSituacao(false);
     }
-  };
-
-  const atualizarCampo = (event) => {
-    const { name, value, checked, type } = event.target;
-    setFormulario((atual) => ({
-      ...atual,
-      [name]: type === "checkbox" ? checked : value,
-    }));
   };
 
   return (
@@ -161,11 +134,25 @@ function CategoriaList() {
           icon={<HugeiconsIcon icon={Search01Icon} size={18} />}
           fullWidth
         />
+        <Select
+          id="categorias-filtro-situacao"
+          aria-label="Filtrar por situação"
+          options={[
+            { value: "", label: "Todas as situações" },
+            { value: "true", label: "Ativas" },
+            { value: "false", label: "Inativas" },
+          ]}
+          value={situacaoFiltro}
+          onChange={(event) => {
+            setSituacaoFiltro(event.target.value);
+            setPagina(0);
+          }}
+        />
         <Button
-          onClick={abrirNovaCategoria}
-          icon={<HugeiconsIcon icon={PlusIcon} size={18} />}
+          onClick={() => navigate("/cadastros/categorias/nova")}
+          icon={<HugeiconsIcon icon={Tag01Icon} size={18} />}
         >
-          Nova categoria
+          Nova Categoria
         </Button>
       </Card>
 
@@ -218,7 +205,9 @@ function CategoriaList() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => abrirEdicao(categoria)}
+                            onClick={() =>
+                              navigate(`/cadastros/categorias/${categoria.id}`)
+                            }
                             aria-label={`Editar categoria ${categoria.nome}`}
                             icon={
                               <HugeiconsIcon
@@ -228,6 +217,20 @@ function CategoriaList() {
                               />
                             }
                           />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title={categoria.ativo ? "Inativar categoria" : "Ativar categoria"}
+                            aria-label={`${categoria.ativo ? "Inativar" : "Ativar"} ${categoria.nome}`}
+                            onClick={() => setCategoriaSelecionada(categoria)}
+                            icon={
+                              <HugeiconsIcon
+                                icon={categoria.ativo ? UnavailableIcon : UserCheck01Icon}
+                                color={categoria.ativo ? '#b91c1c': '#16a34a'}
+                                size={18}
+                              />
+                          }
+                        />
                         </div>
                       </td>
                     </tr>
@@ -251,55 +254,36 @@ function CategoriaList() {
       </Card>
 
       <Modal
-        isOpen={modalAberto}
-        onClose={fecharModal}
-        title={categoriaEditada ? "Editar categoria" : "Nova categoria"}
-      >
-        <form className="cadastros-form" onSubmit={salvarCategoria}>
-          <Input
-            id="categoria-nome"
-            name="nome"
-            label="Nome"
-            value={formulario.nome}
-            onChange={atualizarCampo}
-            maxLength={100}
-            required
-            autoFocus
-          />
-          <label className="cadastros-field" htmlFor="categoria-descricao">
-            <span className="cadastros-field__label">Descrição</span>
-            <textarea
-              id="categoria-descricao"
-              name="descricao"
-              value={formulario.descricao}
-              onChange={atualizarCampo}
-              maxLength={255}
-              rows={3}
-            />
-          </label>
-          <label className="cadastros-checkbox">
-            <input
-              type="checkbox"
-              name="ativo"
-              checked={formulario.ativo}
-              onChange={atualizarCampo}
-            />
-            Categoria ativa
-          </label>
-          {erroFormulario && (
-            <p className="cadastros-form__error" role="alert">
-              {erroFormulario}
-            </p>
-          )}
+        isOpen={Boolean(categoriaSelecionada)}
+        onClose={() => !alterandoSituacao && setCategoriaSelecionada(null)}
+        title={categoriaSelecionada?.ativo ? "Inativar categoria" : "Ativar categoria"}
+        closeOnOverlay={!alterandoSituacao}
+        footer={
           <div className="cadastros-form__actions">
-            <Button variant="ghost" onClick={fecharModal} disabled={salvando}>
+            <Button
+              variant="outline"
+              onClick={() => setCategoriaSelecionada(null)}
+              disabled={alterandoSituacao}
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={salvando}>
-              {salvando ? "Salvando..." : "Salvar"}
+            <Button
+              variant={categoriaSelecionada?.ativo ? "danger" : "primary"}
+              onClick={confirmarAlteracaoSituacao}
+              disabled={alterandoSituacao}
+            >
+              {alterandoSituacao ? "Salvando..." : "Confirmar"}
             </Button>
           </div>
-        </form>
+        }
+      >
+        {categoriaSelecionada && (
+          <p>
+            {categoriaSelecionada.ativo
+              ? `Deseja inativar a categoria ${categoriaSelecionada.nome}?`
+              : `Deseja ativar a categoria ${categoriaSelecionada.nome}?`}
+          </p>
+        )}
       </Modal>
     </div>
   );

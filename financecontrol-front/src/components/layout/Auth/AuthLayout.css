@@ -1,0 +1,68 @@
+.auth-topbar {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.auth-mobile-brand {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .auth-topbar {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .auth-mobile-brand {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .auth-mobile-brand__logo {
+    display: inline-flex;
+    flex: 0 0 36px;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-gradient-emerald-cyan);
+  }
+
+  .auth-mobile-brand__name {
+    overflow: hidden;
+    color: #000;
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-bold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .auth-mobile-brand__tag {
+    color: var(--primary);
+    font-size: var(--font-size-12);
+    font-weight: var(--font-weight-bold);
+  }
+
+  [data-theme="light"] .auth-mobile-brand__logo {
+    color: rgb(217, 255, 243);
+  }
+
+  [data-theme="dark"] .auth-mobile-brand__logo {
+    color: var(--color-midnight-blue);
+  }
+
+  [data-theme="dark"] .auth-mobile-brand__name {
+    color: var(--color-white);
+  }
+}

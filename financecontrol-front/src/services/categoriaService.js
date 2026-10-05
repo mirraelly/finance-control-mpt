@@ -12,6 +12,11 @@ function getAuthConfig() {
 }
 
 const categoriaService = {
+  buscarPorId: async (id) => {
+    const response = await axios.get(`${API_URL}/categorias/${id}`, getAuthConfig());
+    return response.data;
+  },
+
   listarAtivas: async () => {
     const response = await axios.get(
       `${API_URL}/categorias/select`,

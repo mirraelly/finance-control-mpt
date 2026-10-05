@@ -12,6 +12,12 @@ function getAuthConfig() {
 }
 
 const contasPagarReceberService = {
+  buscarPorId: async (tipo, id) => {
+    const endpoint = tipo === "pagar" ? "contas-pagar" : "contas-receber";
+    const response = await axios.get(`${API_URL}/${endpoint}/${id}`, getAuthConfig());
+    return response.data;
+  },
+
   listar: async (tipo, filtros) => {
     const endpoint = tipo === "pagar" ? "contas-pagar" : "contas-receber";
     const response = await axios.get(`${API_URL}/${endpoint}`, {
@@ -25,6 +31,16 @@ const contasPagarReceberService = {
     const endpoint = tipo === "pagar" ? "contas-pagar" : "contas-receber";
     const response = await axios.post(
       `${API_URL}/${endpoint}`,
+      dados,
+      getAuthConfig(),
+    );
+    return response.data;
+  },
+
+  atualizar: async (tipo, id, dados) => {
+    const endpoint = tipo === "pagar" ? "contas-pagar" : "contas-receber";
+    const response = await axios.patch(
+      `${API_URL}/${endpoint}/${id}`,
       dados,
       getAuthConfig(),
     );

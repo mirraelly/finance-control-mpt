@@ -55,7 +55,11 @@ import {
   ContactBookIcon,
   UnavailableIcon,
   Undo03Icon,
-  RealEstate01Icon
+  RealEstate01Icon,
+  Tag01Icon,
+  Invoice03Icon,
+  MoneySendCircleIcon,
+  MoneyReceiveCircleIcon
 } from "@hugeicons/core-free-icons";
 
 function HugeiconsIcon({ className = "", ...props }) {
@@ -118,5 +122,9 @@ export {
   ContactBookIcon,
   UnavailableIcon,
   Undo03Icon,
-  RealEstate01Icon
+  RealEstate01Icon,
+  Tag01Icon,
+  Invoice03Icon,
+  MoneySendCircleIcon,
+  MoneyReceiveCircleIcon
 };

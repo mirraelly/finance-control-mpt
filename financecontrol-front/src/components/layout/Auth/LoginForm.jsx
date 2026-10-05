@@ -41,96 +41,98 @@ function LoginForm() {
   };
 
   return (
-    <>
-      <div className="login-subtitle">
-        Bem-vindo de volta
-        <span className="hello-emoji">👋</span>
-      </div>
-      <span className="login-subtitle2">
-        Entre na sua conta para continuar.
-      </span>
+    <div>
+      <section>
+        <div className="login-subtitle">
+          Bem-vindo de volta
+          <span className="hello-emoji">👋</span>
+        </div>
+        <span className="login-subtitle2">
+          Entre na sua conta para continuar.
+        </span>
 
-      <form className="login-form" onSubmit={handleSubmit}>
-        <Input
-          id="login-email"
-          label="E-MAIL"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="email@email.com"
-          autoComplete="email"
-          fullWidth
-          required
-        />
-
-        <div className="login-senha-campo">
+        <form className="login-form" onSubmit={handleSubmit}>
           <Input
-            id="login-password"
-            label="SENHA"
-            type={mostrarSenha ? "text" : "password"}
-            value={senha}
-            onChange={(event) => setSenha(event.target.value)}
-            placeholder="••••••••"
-            autoComplete="current-password"
+            id="login-email"
+            label="E-MAIL"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="email@email.com"
+            autoComplete="email"
             fullWidth
             required
           />
-          <button
-            className="login-senha-visibilidade"
-            type="button"
-            aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-            onClick={() => setMostrarSenha((visivel) => !visivel)}
-          >
-            <HugeiconsIcon
-              icon={mostrarSenha ? EyeOffIcon : ViewIcon}
-              size={18}
-              color="currentColor"
+
+          <div className="login-senha-campo">
+            <Input
+              id="login-password"
+              label="SENHA"
+              type={mostrarSenha ? "text" : "password"}
+              value={senha}
+              onChange={(event) => setSenha(event.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              fullWidth
+              required
             />
-          </button>
-        </div>
+            <button
+              className="login-senha-visibilidade"
+              type="button"
+              aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+              onClick={() => setMostrarSenha((visivel) => !visivel)}
+            >
+              <HugeiconsIcon
+                icon={mostrarSenha ? EyeOffIcon : ViewIcon}
+                size={18}
+                color="currentColor"
+              />
+            </button>
+          </div>
 
-        <div className="remember-row">
-          <label className="remember-me-label">
-            <input
-              type="checkbox"
-              className="custom-checkbox"
-              checked={rememberMe}
-              onChange={(event) => setRememberMe(event.target.checked)}
-            />
+          <div className="remember-row">
+            <label className="remember-me-label">
+              <input
+                type="checkbox"
+                className="custom-checkbox"
+                checked={rememberMe}
+                onChange={(event) => setRememberMe(event.target.checked)}
+              />
 
-            <span className="checkbox-ui">
-              {rememberMe && (
-                <HugeiconsIcon
-                  icon={CheckIcon}
-                  size={14}
-                  color="var(--color-midnight-blue)"
-                  stroke="2"
-                />
-              )}
-            </span>
+              <span className="checkbox-ui">
+                {rememberMe && (
+                  <HugeiconsIcon
+                    icon={CheckIcon}
+                    size={14}
+                    color="var(--color-midnight-blue)"
+                    stroke="2"
+                  />
+                )}
+              </span>
 
-            <span>Lembrar de mim</span>
-          </label>
+              <span>Lembrar de mim</span>
+            </label>
 
-          <Link to="/recuperar-senha" className="forgot-link">
-            Esqueceu a senha?
-          </Link>
-        </div>
+            <Link to="/recuperar-senha" className="forgot-link">
+              Esqueceu a senha?
+            </Link>
+          </div>
 
-        {error && <div className="login-error">{error}</div>}
+          {error && <div className="login-error">{error}</div>}
 
-        <Button type="submit" fullWidth size="lg" disabled={loading}>
-          {loading ? "Entrando..." : "Entrar"}
-        </Button>
+          <Button type="submit" fullWidth size="lg" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
+          </Button>
 
-        <div className="register-link">
-          <span>Não tem conta?</span>
-          <Link to="/cadastro" className="forgot-link">
-            Cadastre-se
-          </Link>
-        </div>
-      </form>
-    </>
+          <div className="register-link">
+            <span>Não tem conta?</span>
+            <Link to="/cadastro" className="forgot-link">
+              Cadastre-se
+            </Link>
+          </div>
+        </form>
+      </section>
+    </div>
   );
 }
 
