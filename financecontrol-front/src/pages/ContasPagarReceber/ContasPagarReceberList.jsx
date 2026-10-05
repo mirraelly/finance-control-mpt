@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
-  PlusIcon,
+  Edit02Icon,
+  MoneySendCircleIcon,
+  UnavailableIcon,
   Wallet01Icon,
+  MoneyReceiveCircleIcon,
+  UserCheck01Icon,
 } from "../../assets/icons";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import EmptyState from "../../components/common/EmptyState";
-import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
@@ -33,15 +37,6 @@ const STATUS_LABELS = Object.fromEntries(
   ]),
 );
 
-function dataLocalHoje() {
-  const hoje = new Date();
-  return [
-    hoje.getFullYear(),
-    String(hoje.getMonth() + 1).padStart(2, "0"),
-    String(hoje.getDate()).padStart(2, "0"),
-  ].join("-");
-}
-
 function formatarData(data) {
   if (!data) return "—";
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
@@ -63,22 +58,13 @@ function variantStatus(status) {
   return "info";
 }
 
-function criarFormularioInicial() {
-  return {
-    pessoaId: "",
-    categoriaId: "",
-    descricao: "",
-    dataEmissao: dataLocalHoje(),
-    valorTotal: "",
-    observacao: "",
-    dataVencimento: dataLocalHoje(),
-  };
-}
-
 function ContasPagarReceberList({ tipo }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const ehPagar = tipo === "pagar";
-  const titulo = ehPagar ? "Contas a pagar" : "Contas a receber";
+  const titulo = ehPagar ? "Contas a Pagar" : "Contas a Receber";
   const pessoaLabel = ehPagar ? "Fornecedor / credor" : "Cliente / devedor";
+  const iconeTipoConta = ehPagar ? MoneySendCircleIcon: MoneyReceiveCircleIcon;
 
   const [contas, setContas] = useState([]);
   const [pessoas, setPessoas] = useState([]);
@@ -90,15 +76,25 @@ function ContasPagarReceberList({ tipo }) {
   const [pessoaFiltro, setPessoaFiltro] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("");
   const [statusFiltro, setStatusFiltro] = useState("");
+  const [situacaoFiltro, setSituacaoFiltro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [erroOpcoes, setErroOpcoes] = useState("");
-  const [modalAberto, setModalAberto] = useState(false);
-  const [formulario, setFormulario] = useState(criarFormularioInicial);
-  const [erroFormulario, setErroFormulario] = useState("");
-  const [salvando, setSalvando] = useState(false);
-  const [mensagem, setMensagem] = useState("");
+  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
+  const [contaSelecionada, setContaSelecionada] = useState(null);
+  const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
+
+  useEffect(() => {
+    if (!location.state?.mensagem) return;
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!mensagem) return;
+    const timeout = setTimeout(() => setMensagem(""), 4000);
+    return () => clearTimeout(timeout);
+  }, [mensagem]);
 
   useEffect(() => {
     let ativo = true;
@@ -142,6 +138,7 @@ function ContasPagarReceberList({ tipo }) {
           pessoaId: pessoaFiltro || undefined,
           categoriaId: categoriaFiltro || undefined,
           status: statusFiltro || undefined,
+          ativo: situacaoFiltro === "" ? undefined : situacaoFiltro,
         });
         if (!ativo) return;
         setContas(resposta.content);
@@ -167,99 +164,38 @@ function ContasPagarReceberList({ tipo }) {
     pessoaFiltro,
     categoriaFiltro,
     statusFiltro,
+    situacaoFiltro,
     recarregar,
   ]);
 
-  const atualizarCampo = (event) => {
-    const { name, value } = event.target;
-    setFormulario((atual) => ({ ...atual, [name]: value }));
+  const confirmarAlteracaoSituacao = async () => {
+    try {
+      setAlterandoSituacao(true);
+      await contasPagarReceberService.atualizar(tipo, contaSelecionada.id, {
+        ativo: !contaSelecionada.ativo,
+      });
+      setMensagem(
+        contaSelecionada.ativo
+          ? `${ehPagar ? "Conta a pagar" : "Conta a receber"} inativada com sucesso.`
+          : `${ehPagar ? "Conta a pagar" : "Conta a receber"} ativada com sucesso.`,
+      );
+      setContaSelecionada(null);
+      setRecarregar((valor) => valor + 1);
+    } catch (alteracaoError) {
+      console.error(`Erro ao alterar situação de ${titulo.toLowerCase()}:`, alteracaoError);
+      alert(
+        alteracaoError?.response?.data?.erro ||
+          `Não foi possível alterar a situação de ${titulo.toLowerCase()}.`,
+      );
+    } finally {
+      setAlterandoSituacao(false);
+    }
   };
 
   const alterarFiltro = (setter) => (event) => {
     setter(event.target.value);
     setPagina(0);
   };
-
-  const abrirModal = () => {
-    setFormulario(criarFormularioInicial());
-    setErroFormulario("");
-    setModalAberto(true);
-  };
-
-  const fecharModal = () => {
-    if (salvando) return;
-    setModalAberto(false);
-    setErroFormulario("");
-  };
-
-  const salvarConta = async (event) => {
-    event.preventDefault();
-    setErroFormulario("");
-
-    if (!formulario.pessoaId) {
-      setErroFormulario(`Selecione ${ehPagar ? "um fornecedor" : "um cliente"}.`);
-      return;
-    }
-
-    const valorTotal = Number(formulario.valorTotal);
-    if (!Number.isFinite(valorTotal) || valorTotal <= 0) {
-      setErroFormulario("Informe um valor maior que zero.");
-      return;
-    }
-
-    setSalvando(true);
-    const dados = {
-      pessoaId: formulario.pessoaId,
-      categoriaId: formulario.categoriaId || null,
-      descricao: formulario.descricao.trim() || null,
-      dataEmissao: formulario.dataEmissao,
-      valorTotal,
-      observacao: formulario.observacao.trim() || null,
-      ativo: true,
-    };
-
-    if (!ehPagar) {
-      dados.parcelas = [
-        {
-          dataVencimento: formulario.dataVencimento,
-          valor: valorTotal,
-          formaPagamentoId: null,
-          observacao: null,
-        },
-      ];
-    }
-
-    try {
-      await contasPagarReceberService.criar(tipo, dados);
-      setMensagem(
-        `${ehPagar ? "Conta a pagar" : "Conta a receber"} criada com sucesso.`,
-      );
-      setModalAberto(false);
-      setPagina(0);
-      setRecarregar((valor) => valor + 1);
-    } catch (erroSalvamento) {
-      console.error(`Erro ao criar ${titulo.toLowerCase()}:`, erroSalvamento);
-      setErroFormulario(
-        erroSalvamento?.response?.data?.erro ||
-          erroSalvamento?.response?.data?.message ||
-          `Não foi possível criar ${titulo.toLowerCase()}.`,
-      );
-    } finally {
-      setSalvando(false);
-    }
-  };
-
-  const pessoasOptions = [
-    { value: "", label: `Selecione ${ehPagar ? "um fornecedor" : "um cliente"}` },
-    ...pessoas.map((pessoa) => ({ value: pessoa.id, label: pessoa.nome })),
-  ];
-  const categoriasOptions = [
-    { value: "", label: "Sem categoria" },
-    ...categorias.map((categoria) => ({
-      value: categoria.id,
-      label: categoria.nome,
-    })),
-  ];
 
   return (
     <div className="cadastros-page">
@@ -314,10 +250,20 @@ function ContasPagarReceberList({ tipo }) {
           value={statusFiltro}
           onChange={alterarFiltro(setStatusFiltro)}
         />
+        <Select
+          id={`${tipo}-filtro-situacao`}
+          aria-label="Filtrar por situação"
+          options={[
+            { value: "", label: "Todas as situações" },
+            { value: "true", label: "Ativas" },
+            { value: "false", label: "Inativas" },
+          ]}
+          value={situacaoFiltro}
+          onChange={alterarFiltro(setSituacaoFiltro)}
+        />
         <Button
-          onClick={abrirModal}
-          disabled={Boolean(erroOpcoes)}
-          icon={<HugeiconsIcon icon={PlusIcon} size={18} />}
+          onClick={() => navigate(`/cadastros/contas-${tipo}/nova`)}
+          icon={<HugeiconsIcon icon={iconeTipoConta} size={18} />}
         >
           Nova conta
         </Button>
@@ -355,6 +301,8 @@ function ContasPagarReceberList({ tipo }) {
                     {!ehPagar && <th>Vencimento</th>}
                     <th>Valor</th>
                     <th>Status</th>
+                    <th>Situação</th>
+                    <th className="cadastros-table__actions-heading">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -375,6 +323,46 @@ function ContasPagarReceberList({ tipo }) {
                         <Badge variant={variantStatus(conta.status)}>
                           {STATUS_LABELS[conta.status] || conta.status}
                         </Badge>
+                      </td>
+                      <td>
+                        <Badge variant={conta.ativo ? "success" : "danger"}>
+                          {conta.ativo ? "Ativa" : "Inativa"}
+                        </Badge>
+                      </td>
+                      <td>
+                        <div className="cadastros-table__actions">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              navigate(
+                                `/cadastros/contas-${tipo}/${conta.id}`,
+                              )
+                            }
+                            aria-label={`Editar ${ehPagar ? "conta a pagar" : "conta a receber"} ${conta.descricao || conta.pessoaNome}`}
+                            icon={
+                              <HugeiconsIcon
+                                icon={Edit02Icon}
+                                size={18}
+                                color="var(--color-emerald-500)"
+                              />
+                            }
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title={conta.ativo ? `Inativar ${ehPagar ? "conta a pagar" : "conta a receber"}` : `Ativar ${ehPagar ? "conta a pagar" : "conta a receber"}`}
+                            aria-label={`${conta.ativo ? "Inativar" : "Ativar"} ${ehPagar ? "conta a pagar" : "conta a receber"} ${conta.descricao || conta.pessoaNome}`}
+                            onClick={() => setContaSelecionada(conta)}
+                            icon={
+                              <HugeiconsIcon
+                                icon={conta.ativo ? UnavailableIcon : UserCheck01Icon}
+                                color={conta.ativo ? "#b91c1c" : "#16a34a"}
+                                size={18}
+                              />
+                            }
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -397,93 +385,36 @@ function ContasPagarReceberList({ tipo }) {
       </Card>
 
       <Modal
-        isOpen={modalAberto}
-        onClose={fecharModal}
-        title={`Nova ${ehPagar ? "conta a pagar" : "conta a receber"}`}
-        subtitle="Preencha os dados do compromisso financeiro."
-      >
-        <form className="cadastros-form" onSubmit={salvarConta}>
-          <Select
-            id={`${tipo}-pessoa`}
-            name="pessoaId"
-            label={pessoaLabel}
-            options={pessoasOptions}
-            value={formulario.pessoaId}
-            onChange={atualizarCampo}
-            required
-          />
-          <Select
-            id={`${tipo}-categoria`}
-            name="categoriaId"
-            label="Categoria"
-            options={categoriasOptions}
-            value={formulario.categoriaId}
-            onChange={atualizarCampo}
-          />
-          <Input
-            id={`${tipo}-descricao`}
-            name="descricao"
-            label="Descrição"
-            value={formulario.descricao}
-            onChange={atualizarCampo}
-            maxLength={255}
-          />
-          <Input
-            id={`${tipo}-data-emissao`}
-            name="dataEmissao"
-            label="Data de emissão"
-            type="date"
-            value={formulario.dataEmissao}
-            onChange={atualizarCampo}
-            required
-          />
-          {!ehPagar && (
-            <Input
-              id="conta-receber-data-vencimento"
-              name="dataVencimento"
-              label="Vencimento da parcela"
-              type="date"
-              value={formulario.dataVencimento}
-              onChange={atualizarCampo}
-              required
-            />
-          )}
-          <Input
-            id={`${tipo}-valor`}
-            name="valorTotal"
-            label="Valor total"
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={formulario.valorTotal}
-            onChange={atualizarCampo}
-            required
-          />
-          <label className="cadastros-field" htmlFor={`${tipo}-observacao`}>
-            <span className="cadastros-field__label">Observações</span>
-            <textarea
-              id={`${tipo}-observacao`}
-              name="observacao"
-              value={formulario.observacao}
-              onChange={atualizarCampo}
-              maxLength={255}
-              rows={2}
-            />
-          </label>
-          {erroFormulario && (
-            <p className="cadastros-form__error" role="alert">
-              {erroFormulario}
-            </p>
-          )}
+        isOpen={Boolean(contaSelecionada)}
+        onClose={() => !alterandoSituacao && setContaSelecionada(null)}
+        title={`${contaSelecionada?.ativo ? "Inativar" : "Ativar"} ${ehPagar ? "conta a pagar" : "conta a receber"}`}
+        closeOnOverlay={!alterandoSituacao}
+        footer={
           <div className="cadastros-form__actions">
-            <Button variant="ghost" onClick={fecharModal} disabled={salvando}>
+            <Button
+              variant="outline"
+              onClick={() => setContaSelecionada(null)}
+              disabled={alterandoSituacao}
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={salvando}>
-              {salvando ? "Salvando..." : "Salvar"}
+            <Button
+              variant={contaSelecionada?.ativo ? "danger" : "primary"}
+              onClick={confirmarAlteracaoSituacao}
+              disabled={alterandoSituacao}
+            >
+              {alterandoSituacao ? "Salvando..." : "Confirmar"}
             </Button>
           </div>
-        </form>
+        }
+      >
+        {contaSelecionada && (
+          <p>
+            Deseja {contaSelecionada.ativo ? "inativar" : "ativar"}{" "}
+            {ehPagar ? "a conta a pagar" : "a conta a receber"}{" "}
+            {contaSelecionada.descricao || `de ${contaSelecionada.pessoaNome}`}?
+          </p>
+        )}
       </Modal>
     </div>
   );

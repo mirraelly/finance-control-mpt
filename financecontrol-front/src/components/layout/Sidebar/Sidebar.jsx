@@ -32,8 +32,24 @@ const menuGroups = [
       },
       {
         label: "Contas",
-        path: "/contas",
         icon: Wallet01Icon,
+        children: [
+          {
+            label: "Contas financeiras",
+            path: "/cadastros/contas-financeiras",
+            icon: Wallet01Icon,
+          },
+          {
+            label: "Contas a pagar",
+            path: "/cadastros/contas-pagar",
+            icon: Wallet01Icon,
+          },
+          {
+            label: "Contas a receber",
+            path: "/cadastros/contas-receber",
+            icon: Wallet01Icon,
+          },
+        ],
       },
       {
         label: "Orçamento",
@@ -69,21 +85,6 @@ const menuGroups = [
             label: "Categorias",
             path: "/cadastros/categorias",
             icon: Chart01Icon,
-          },
-          {
-            label: "Contas financeiras",
-            path: "/cadastros/contas-financeiras",
-            icon: Wallet01Icon,
-          },
-          {
-            label: "Contas a pagar",
-            path: "/cadastros/contas-pagar",
-            icon: Wallet01Icon,
-          },
-          {
-            label: "Contas a receber",
-            path: "/cadastros/contas-receber",
-            icon: Wallet01Icon,
           },
           // {
           //   label: "Notificações",
@@ -121,9 +122,20 @@ function Sidebar({
 }) {
   const isCompact = collapsed && !mobileOpen;
   const location = useLocation();
-  const cadastrosAtivo = location.pathname.startsWith("/cadastros/");
-  const [cadastrosOpen, setCadastrosOpen] = useState(() =>
-    cadastrosAtivo,
+  const [menusAbertos, setMenusAbertos] = useState(() =>
+    Object.fromEntries(
+      menuGroups
+        .flatMap((group) => group.items)
+        .filter((item) => item.children)
+        .map((item) => [
+          item.label,
+          item.children.some(
+            (child) =>
+              location.pathname === child.path ||
+              location.pathname.startsWith(`${child.path}/`),
+          ),
+        ]),
+    ),
   );
   const role = localStorage.getItem("role");
   const visibleGroups = menuGroups.filter((group) =>
@@ -186,15 +198,30 @@ function Sidebar({
             )}
 
             <div className="sidebar__nav-list">
-              {group.items.map((item) =>
-                item.children ? (
+              {group.items.map((item) => {
+                const itemAtivo = item.children?.some(
+                  (child) =>
+                    location.pathname === child.path ||
+                    location.pathname.startsWith(`${child.path}/`),
+                );
+                const menuAberto = menusAbertos[item.label];
+                const submenuId = `sidebar-${group.key}-${item.label
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}-submenu`;
+
+                return item.children ? (
                   <div className="sidebar__nav-item-group" key={item.label}>
                     <button
                       type="button"
-                      className={`sidebar__nav-item sidebar__nav-toggle${cadastrosOpen || cadastrosAtivo ? " sidebar__nav-item--active" : ""}`}
-                      onClick={() => setCadastrosOpen((open) => !open)}
-                      aria-expanded={cadastrosOpen}
-                      aria-controls="sidebar-cadastros-submenu"
+                      className={`sidebar__nav-item sidebar__nav-toggle${menuAberto || itemAtivo ? " sidebar__nav-item--active" : ""}`}
+                      onClick={() =>
+                        setMenusAbertos((abertos) => ({
+                          ...abertos,
+                          [item.label]: !abertos[item.label],
+                        }))
+                      }
+                      aria-expanded={Boolean(menuAberto)}
+                      aria-controls={submenuId}
                       title={isCompact ? item.label : undefined}
                     >
                       <span className="sidebar__nav-icon">
@@ -213,17 +240,17 @@ function Sidebar({
                             icon={ArrowDown01Icon}
                             size={16}
                             strokeWidth={2}
-                            className={`sidebar__nav-chevron${cadastrosOpen ? " sidebar__nav-chevron--open" : ""}`}
+                            className={`sidebar__nav-chevron${menuAberto ? " sidebar__nav-chevron--open" : ""}`}
                           />
                         </>
                       )}
                     </button>
 
-                    {cadastrosOpen && (
+                    {menuAberto && (
                       <div
                         className="sidebar__nav-sublist"
-                        id="sidebar-cadastros-submenu"
-                        aria-label="Submenus de Cadastros"
+                        id={submenuId}
+                        aria-label={`Submenus de ${item.label}`}
                       >
                         {item.children.map((child) => (
                           <NavLink
@@ -274,8 +301,8 @@ function Sidebar({
                       <span className="sidebar__nav-label">{item.label}</span>
                     )}
                   </NavLink>
-                ),
-              )}
+                );
+              })}
             </div>
           </div>
         ))}

@@ -15,9 +15,12 @@ import LogLoginList from "../pages/LogsLogin/LogLoginList";
 import PessoaList from "../pages/Pessoas/PessoaList";
 import PessoaForm from "../pages/Pessoas/PessoaForm";
 import CategoriaList from "../pages/Categorias/CategoriaList";
+import CategoriaForm from "../pages/Categorias/CategoriaForm";
 import ContaFinanceiraList from "../pages/ContasFinanceiras/ContaFinanceiraList";
+import ContaFinanceiraForm from "../pages/ContasFinanceiras/ContaFinanceiraForm";
 import ContasPagarList from "../pages/ContasPagarReceber/ContasPagarList";
 import ContasReceberList from "../pages/ContasPagarReceber/ContasReceberList";
+import ContaPagarReceberForm from "../pages/ContasPagarReceber/ContaPagarReceberForm";
 import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
@@ -66,16 +69,48 @@ function AppRoutes() {
               <Route path="/cadastros/pessoas/:id" element={<PessoaForm />} />
               <Route path="/cadastros/categorias" element={<CategoriaList />} />
               <Route
+                path="/cadastros/categorias/nova"
+                element={<CategoriaForm />}
+              />
+              <Route
+                path="/cadastros/categorias/:id"
+                element={<CategoriaForm />}
+              />
+              <Route
                 path="/cadastros/contas-financeiras"
                 element={<ContaFinanceiraList />}
+              />
+              <Route
+                path="/cadastros/contas-financeiras/nova"
+                element={<ContaFinanceiraForm />}
+              />
+              <Route
+                path="/cadastros/contas-financeiras/:id"
+                element={<ContaFinanceiraForm />}
               />
               <Route
                 path="/cadastros/contas-pagar"
                 element={<ContasPagarList />}
               />
               <Route
+                path="/cadastros/contas-pagar/nova"
+                element={<ContaPagarReceberForm tipo="pagar" />}
+              />
+              <Route
+                path="/cadastros/contas-pagar/:id"
+                element={<ContaPagarReceberForm tipo="pagar" />}
+              />
+              <Route
                 path="/cadastros/contas-receber"
                 element={<ContasReceberList />}
+              />
+              <Route
+                path="/cadastros/contas-receber/nova"
+                element={<ContaPagarReceberForm tipo="receber" />}
+              />
+              <Route
+                path="/cadastros/contas-receber/:id"
+                element={<ContaPagarReceberForm tipo="receber" />}
               />
               <Route path="/cadastros/notificacoes" element={<Notificacoes />} />
             </Route>

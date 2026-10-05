@@ -4,7 +4,7 @@ import "./Cadastro.css";
 
 function Cadastro() {
     return (
-        <AuthLayout>
+        <AuthLayout className="cadastro-auth-layout">
             <CadastroForm />
         </AuthLayout>
     );
