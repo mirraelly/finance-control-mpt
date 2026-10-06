@@ -23,6 +23,7 @@ function InternalLayout() {
     "/admin/logs-login": "Logs de login",
     "/cadastros/pessoas": "Pessoas",
     "/cadastros/categorias": "Categorias",
+    "/cadastros/formas-pagamento": "Formas de Pagamento",
     "/cadastros/contas-financeiras": "Contas financeiras",
     "/cadastros/contas-pagar": "Contas a pagar",
     "/cadastros/contas-receber": "Contas a receber",

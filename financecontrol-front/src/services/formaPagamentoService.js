@@ -11,34 +11,26 @@ function getAuthConfig() {
   };
 }
 
-const contaFinanceiraService = {
+const formaPagamentoService = {
   buscarPorId: async (id) => {
     const response = await axios.get(
-      `${API_URL}/contas-financeiras/${id}`,
+      `${API_URL}/formas-pagamento/${id}`,
       getAuthConfig(),
     );
     return response.data;
   },
 
   listar: async (filtros) => {
-    const response = await axios.get(`${API_URL}/contas-financeiras`, {
+    const response = await axios.get(`${API_URL}/formas-pagamento`, {
       ...getAuthConfig(),
       params: filtros,
     });
     return response.data;
   },
 
-  listarAtivas: async () => {
-    const response = await axios.get(
-      `${API_URL}/contas-financeiras/select`,
-      getAuthConfig(),
-    );
-    return response.data;
-  },
-
   criar: async (dados) => {
     const response = await axios.post(
-      `${API_URL}/contas-financeiras`,
+      `${API_URL}/formas-pagamento`,
       dados,
       getAuthConfig(),
     );
@@ -47,7 +39,7 @@ const contaFinanceiraService = {
 
   atualizar: async (id, dados) => {
     const response = await axios.put(
-      `${API_URL}/contas-financeiras/${id}`,
+      `${API_URL}/formas-pagamento/${id}`,
       dados,
       getAuthConfig(),
     );
@@ -55,4 +47,4 @@ const contaFinanceiraService = {
   },
 };
 
-export default contaFinanceiraService;
+export default formaPagamentoService;

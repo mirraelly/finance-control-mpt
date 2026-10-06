@@ -177,7 +177,7 @@ button.button__return:disabled {
 .cadastros-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   color: var(--text-secondary);
   font-size: var(--font-size-13);
 }
@@ -264,6 +264,7 @@ button.button__return:disabled {
 
   .cadastros-toolbar--filters > .select-field {
     width: 100%;
+    max-height: min-content;
   }
 
   .cadastros-table th,

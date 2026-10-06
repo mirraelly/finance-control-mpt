@@ -86,6 +86,11 @@ const menuGroups = [
             path: "/cadastros/categorias",
             icon: Chart01Icon,
           },
+          {
+            label: "Formas de Pagamento",
+            path: "/cadastros/formas-pagamento",
+            icon: Wallet01Icon,
+          },
           // {
           //   label: "Notificações",
           //   path: "/cadastros/notificacoes",

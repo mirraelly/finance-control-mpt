@@ -21,6 +21,8 @@ import ContaFinanceiraForm from "../pages/ContasFinanceiras/ContaFinanceiraForm"
 import ContasPagarList from "../pages/ContasPagarReceber/ContasPagarList";
 import ContasReceberList from "../pages/ContasPagarReceber/ContasReceberList";
 import ContaPagarReceberForm from "../pages/ContasPagarReceber/ContaPagarReceberForm";
+import FormaPagamentoList from "../pages/FormasPagamento/FormaPagamentoList";
+import FormaPagamentoForm from "../pages/FormasPagamento/FormaPagamentoForm";
 import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
@@ -87,6 +89,18 @@ function AppRoutes() {
               <Route
                 path="/cadastros/contas-financeiras/:id"
                 element={<ContaFinanceiraForm />}
+              />
+              <Route
+                path="/cadastros/formas-pagamento"
+                element={<FormaPagamentoList />}
+              />
+              <Route
+                path="/cadastros/formas-pagamento/nova"
+                element={<FormaPagamentoForm />}
+              />
+              <Route
+                path="/cadastros/formas-pagamento/:id"
+                element={<FormaPagamentoForm />}
               />
               <Route
                 path="/cadastros/contas-pagar"

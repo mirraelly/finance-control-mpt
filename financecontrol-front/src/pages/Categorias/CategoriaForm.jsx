@@ -123,7 +123,7 @@ function CategoriaForm() {
           <Input
             id="categoria-nome"
             name="nome"
-            label="Nome"
+            label="NOME"
             value={formulario.nome}
             onChange={atualizarCampo}
             maxLength={100}
@@ -131,7 +131,7 @@ function CategoriaForm() {
             autoFocus
           />
           <label className="cadastros-field" htmlFor="categoria-descricao">
-            <span className="cadastros-field__label">Descrição</span>
+            <span className="cadastros-field__label">DESCRIÇÃO</span>
             <textarea
               id="categoria-descricao"
               name="descricao"
