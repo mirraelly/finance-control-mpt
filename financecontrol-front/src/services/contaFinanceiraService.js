@@ -12,11 +12,27 @@ function getAuthConfig() {
 }
 
 const contaFinanceiraService = {
+  buscarPorId: async (id) => {
+    const response = await axios.get(
+      `${API_URL}/contas-financeiras/${id}`,
+      getAuthConfig(),
+    );
+    return response.data;
+  },
+
   listar: async (filtros) => {
     const response = await axios.get(`${API_URL}/contas-financeiras`, {
       ...getAuthConfig(),
       params: filtros,
     });
+    return response.data;
+  },
+
+  listarAtivas: async () => {
+    const response = await axios.get(
+      `${API_URL}/contas-financeiras/select`,
+      getAuthConfig(),
+    );
     return response.data;
   },
 

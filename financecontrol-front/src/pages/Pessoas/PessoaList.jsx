@@ -354,7 +354,7 @@ function PessoaList() {
             icon={<HugeiconsIcon icon={UserAdd01Icon} size={18} stroke="2" />}
             onClick={() => navigate("/cadastros/pessoas/nova")}
           >
-            Nova pessoa
+            Nova Pessoa
           </Button>
         </div>
       </Card>

@@ -241,6 +241,22 @@
     align-items: stretch;
   }
 
+  .transacoes-tabs {
+    width: 100%;
+  }
+
+  .transacoes-tabs > button {
+    flex: 1;
+  }
+
+  .transacoes-toolbar__filters button {
+    width: 100%;
+  }
+
+  .select-field {
+    width: 100% !important;
+  }
+
   .transacoes-toolbar__filters {
     margin-left: 0;
     justify-content: space-between;

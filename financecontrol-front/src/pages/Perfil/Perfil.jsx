@@ -5,8 +5,8 @@ import Card from "../../components/common/Card/Card";
 import Button from "../../components/common/Button/Button";
 import Input from "../../components/common/Input/Input";
 import Modal from "../../components/common/Modal/Modal";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  HugeiconsIcon,
   Calendar03Icon,
   Call02Icon,
   InformationCircleIcon,
