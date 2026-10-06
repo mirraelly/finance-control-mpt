@@ -28,6 +28,14 @@ const contaFinanceiraService = {
     return response.data;
   },
 
+  listarAtivas: async () => {
+    const response = await axios.get(
+      `${API_URL}/contas-financeiras/select`,
+      getAuthConfig(),
+    );
+    return response.data;
+  },
+
   criar: async (dados) => {
     const response = await axios.post(
       `${API_URL}/contas-financeiras`,

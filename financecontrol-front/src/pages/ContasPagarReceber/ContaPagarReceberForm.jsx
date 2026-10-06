@@ -234,7 +234,7 @@ function ContaPagarReceberForm({ tipo }) {
           <Select
             id={`${tipo}-pessoa`}
             name="pessoaId"
-            label={ehPagar ? "Fornecedor / credor" : "Cliente / devedor"}
+            label={ehPagar ? "FORNECEDOR / CREDOR" : "CLIENTE / DEVEDOR"}
             options={pessoasOptions}
             value={formulario.pessoaId}
             onChange={atualizarCampo}
@@ -243,7 +243,7 @@ function ContaPagarReceberForm({ tipo }) {
           <Select
             id={`${tipo}-categoria`}
             name="categoriaId"
-            label="Categoria"
+            label="CATEGORIA"
             options={categoriasOptions}
             value={formulario.categoriaId}
             onChange={atualizarCampo}
@@ -251,7 +251,7 @@ function ContaPagarReceberForm({ tipo }) {
           <Input
             id={`${tipo}-descricao`}
             name="descricao"
-            label="Descrição"
+            label="DESCRIÇÃO"
             value={formulario.descricao}
             onChange={atualizarCampo}
             maxLength={255}
@@ -259,7 +259,7 @@ function ContaPagarReceberForm({ tipo }) {
           <Input
             id={`${tipo}-data-emissao`}
             name="dataEmissao"
-            label="Data de emissão"
+            label="DATA DE EMISSÃO"
             type="date"
             value={formulario.dataEmissao}
             onChange={atualizarCampo}
@@ -271,7 +271,7 @@ function ContaPagarReceberForm({ tipo }) {
                 <Input
                   id="conta-receber-data-vencimento"
                   name="dataVencimento"
-                  label="Vencimento da parcela"
+                  label="VENCIMENTO DA PARCELA"
                   type="date"
                   value={formulario.dataVencimento}
                   onChange={atualizarCampo}
@@ -281,7 +281,7 @@ function ContaPagarReceberForm({ tipo }) {
               <Input
                 id={`${tipo}-valor`}
                 name="valorTotal"
-                label="Valor total"
+                label="VALOR TOTAL"
                 type="number"
                 min="0.01"
                 step="0.01"
@@ -304,7 +304,7 @@ function ContaPagarReceberForm({ tipo }) {
             </p>
           )}
           <label className="cadastros-field" htmlFor={`${tipo}-observacao`}>
-            <span className="cadastros-field__label">Observações</span>
+            <span className="cadastros-field__label">OBSERVAÇÃO</span>
             <textarea
               id={`${tipo}-observacao`}
               name="observacao"

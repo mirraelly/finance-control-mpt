@@ -116,7 +116,7 @@ function ContaFinanceiraForm() {
         <div className="cadastros-form-page__heading">
           <div>
             <h2>{id ? "Editar Conta Financeira" : "Nova Conta Financeira"}</h2>
-            <p>Informe os dados da conta.</p>
+            <p>{id ? "Altere os dados da conta conforme necessário." : "Preencha os campos abaixo para cadastrar uma nova conta."}</p>
           </div>
           <Button
             variant="ghost"
@@ -130,7 +130,7 @@ function ContaFinanceiraForm() {
           <Input
             id="conta-financeira-nome"
             name="nome"
-            label="Nome"
+            label="NOME"
             value={formulario.nome}
             onChange={atualizarCampo}
             maxLength={150}
@@ -140,7 +140,7 @@ function ContaFinanceiraForm() {
           <Select
             id="conta-financeira-tipo"
             name="tipo"
-            label="Tipo de conta"
+            label="TIPO DE CONTA"
             options={TIPOS_CONTA}
             value={formulario.tipo}
             onChange={atualizarCampo}
