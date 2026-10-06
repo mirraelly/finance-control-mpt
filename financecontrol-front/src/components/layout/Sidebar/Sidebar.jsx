@@ -36,6 +36,11 @@ const menuGroups = [
         icon: Wallet01Icon,
       },
       {
+        label: "Transferências",
+        path: "/transferencias",
+        icon: TradeUpIcon, 
+      },
+      {
         label: "Orçamento",
         path: "/orcamento",
         icon: Chart01Icon,
