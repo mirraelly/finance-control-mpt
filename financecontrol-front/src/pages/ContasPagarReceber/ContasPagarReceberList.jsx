@@ -262,7 +262,7 @@ function ContasPagarReceberList({ tipo }) {
           onChange={alterarFiltro(setSituacaoFiltro)}
         />
         <Button
-          onClick={() => navigate(`/cadastros/contas-${tipo}/nova`)}
+          onClick={() => navigate(`/contas/contas-${tipo}/nova`)}
           icon={<HugeiconsIcon icon={iconeTipoConta} size={18} />}
         >
           Nova conta
@@ -336,7 +336,7 @@ function ContasPagarReceberList({ tipo }) {
                             size="sm"
                             onClick={() =>
                               navigate(
-                                `/cadastros/contas-${tipo}/${conta.id}`,
+                                `/contas/contas-${tipo}/${conta.id}`,
                               )
                             }
                             aria-label={`Editar ${ehPagar ? "conta a pagar" : "conta a receber"} ${conta.descricao || conta.pessoaNome}`}

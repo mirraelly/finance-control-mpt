@@ -2,11 +2,20 @@ import { useState } from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import {
   HugeiconsIcon,
-  Home07Icon,
-  Wallet01Icon,
+  PaymentSuccess02Icon,
+  UserAccountIcon,
+  Tag01Icon,
+  CreditCardPosIcon,
+  MoneyReceiveCircleIcon,
+  MoneySendCircleIcon,
+  BankIcon,
+  PiggyBankIcon,
   Chart01Icon,
   TradeUpIcon,
   Target01Icon,
+  ArrowReloadHorizontalIcon,
+  ArrowRight01Icon,
+  SaveMoneyDollarIcon,
   UserGroupIcon,
   Clock01Icon,
   ContactBookIcon,
@@ -26,40 +35,63 @@ const menuGroups = [
         icon: Chart01Icon,
       },
       {
-        label: "Transações",
-        path: "/transacoes",
-        icon: Home07Icon,
-      },
-      {
-        label: "Contas",
-        icon: Wallet01Icon,
+        label: "Movimentações",
+        icon: ArrowReloadHorizontalIcon,
         children: [
           {
-            label: "Contas financeiras",
-            path: "/cadastros/contas-financeiras",
-            icon: Wallet01Icon,
+            label: "Transações",
+            path: "/movimentacoes/transacoes",
+            icon: SaveMoneyDollarIcon,
+            end: true,
           },
           {
-            label: "Contas a pagar",
-            path: "/cadastros/contas-pagar",
-            icon: Wallet01Icon,
+            label: "Transferências",
+            path: "/movimentacoes/transferencias",
+            icon: ArrowRight01Icon,
           },
           {
-            label: "Contas a receber",
-            path: "/cadastros/contas-receber",
-            icon: Wallet01Icon,
+            label: "Pagar e Receber",
+            path: "/movimentacoes/pagar-e-receber",
+            icon: PaymentSuccess02Icon,
           },
         ],
       },
       {
-        label: "Orçamento",
-        path: "/orcamento",
-        icon: Chart01Icon,
+        label: "Contas",
+        icon: PiggyBankIcon,
+        children: [
+          {
+            label: "Contas Financeiras",
+            path: "/contas/contas-financeiras",
+            icon: BankIcon,
+          },
+          {
+            label: "Contas a Pagar",
+            path: "/contas/contas-pagar",
+            icon: MoneySendCircleIcon,
+          },
+          {
+            label: "Contas a Receber",
+            path: "/contas/contas-receber",
+            icon: MoneyReceiveCircleIcon,
+          },
+        ],
       },
       {
-        label: "Metas",
-        path: "/metas",
-        icon: Target01Icon,
+        label: "Planejamento",
+        icon: Chart01Icon,
+        children: [
+          {
+            label: "Orçamento",
+            path: "/planejamento/orcamento",
+            icon: Chart01Icon,
+          },
+          {
+            label: "Metas",
+            path: "/planejamento/metas",
+            icon: Target01Icon,
+          },
+        ],
       },
       // {
       //   label: "Configurações",
@@ -74,7 +106,7 @@ const menuGroups = [
     items: [
       {
         label: "Cadastros",
-        icon: ContactBookIcon,
+        icon: UserAccountIcon,
         children: [
           {
             label: "Pessoas",
@@ -84,12 +116,12 @@ const menuGroups = [
           {
             label: "Categorias",
             path: "/cadastros/categorias",
-            icon: Chart01Icon,
+            icon: Tag01Icon,
           },
           {
             label: "Formas de Pagamento",
             path: "/cadastros/formas-pagamento",
-            icon: Wallet01Icon,
+            icon: CreditCardPosIcon,
           },
           // {
           //   label: "Notificações",
@@ -261,6 +293,7 @@ function Sidebar({
                           <NavLink
                             key={child.path}
                             to={child.path}
+                            end={child.end}
                             onClick={onCloseMobile}
                             className={({ isActive }) =>
                               `sidebar__nav-item sidebar__nav-subitem${isActive ? " sidebar__nav-item--active" : ""}`
@@ -288,6 +321,7 @@ function Sidebar({
                   <NavLink
                     key={item.path}
                     to={item.path}
+                    end={item.end}
                     onClick={onCloseMobile}
                     className={({ isActive }) =>
                       `sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`

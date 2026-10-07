@@ -40,7 +40,7 @@ function ContaPagarReceberForm({ tipo }) {
   const navigate = useNavigate();
   const ehPagar = tipo === "pagar";
   const titulo = ehPagar ? "conta a pagar" : "conta a receber";
-  const basePath = `/cadastros/contas-${tipo}`;
+  const basePath = `/contas/contas-${tipo}`;
   const [formulario, setFormulario] = useState(criarFormularioInicial);
   const [pessoas, setPessoas] = useState([]);
   const [categorias, setCategorias] = useState([]);

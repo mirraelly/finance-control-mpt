@@ -1,0 +1,77 @@
+.pagar-contas-page {
+  gap: var(--space-4);
+}
+
+.pagar-contas-form-card {
+  padding: var(--space-5);
+}
+
+.pagar-contas-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pagar-contas-form__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.pagar-contas-filtros {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.5fr)
+    repeat(3, minmax(150px, 1fr))
+    minmax(320px, 2fr);
+}
+
+.pagar-contas-filtros__periodo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.pagar-contas-filtros__ate {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.pagar-contas-aviso {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+@media (max-width: 1000px) {
+  .pagar-contas-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pagar-contas-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pagar-contas-filtros__periodo {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .pagar-contas-form-card {
+    padding: var(--space-4);
+  }
+
+  .pagar-contas-form__grid,
+  .pagar-contas-filtros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pagar-contas-filtros__periodo {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+}

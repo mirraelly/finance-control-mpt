@@ -176,7 +176,7 @@ function ContaFinanceiraList() {
           }}
         />
         <Button
-          onClick={() => navigate("/cadastros/contas-financeiras/nova")}
+          onClick={() => navigate("/contas/contas-financeiras/nova")}
           icon={<HugeiconsIcon icon={Invoice03Icon} size={18} />}
         >
           Nova Conta
@@ -233,7 +233,7 @@ function ContaFinanceiraList() {
                             variant="ghost"
                             size="sm"
                             onClick={() =>
-                              navigate(`/cadastros/contas-financeiras/${conta.id}`)
+                              navigate(`/contas/contas-financeiras/${conta.id}`)
                             }
                             aria-label={`Editar conta financeira ${conta.nome}`}
                             icon={
