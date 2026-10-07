@@ -27,6 +27,7 @@ import FormaPagamentoForm from "../pages/FormasPagamento/FormaPagamentoForm";
 import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
+import EmConstrucao from "../pages/EmConstrucao/EmConstrucao";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
@@ -63,6 +64,15 @@ function AppRoutes() {
                 path="/movimentacoes/pagar-e-receber"
                 element={<PagarEReceber />}
               />
+              <Route
+                path="/movimentacoes/transferencias"
+                element={<EmConstrucao />}
+              />
+              <Route
+                path="/planejamento/orcamento"
+                element={<EmConstrucao />}
+              />
+              <Route path="/planejamento/metas" element={<EmConstrucao />} />
               <Route path="/componentes-teste" element={<ComponentesTeste />} />
             </Route>
 

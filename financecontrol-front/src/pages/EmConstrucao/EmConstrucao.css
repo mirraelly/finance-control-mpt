@@ -1,0 +1,87 @@
+.em-construcao {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: clamp(16px, 4vw, 40px);
+  background: var(--main-background);
+  text-align: center;
+}
+
+.em-construcao__imagem {
+  display: block;
+  width: 100%;
+  max-height: 20rem;
+  margin-bottom: var(--space-3);
+  object-fit: contain;
+}
+
+.em-construcao__mensagem h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.5;
+}
+
+.em-construcao__mensagem p {
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+  line-height: 1.5;
+}
+
+.em-construcao__voltar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 30px;
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--success);
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.em-construcao__voltar:hover {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 6%, var(--bg-secondary));
+}
+
+.em-construcao__voltar:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .em-construcao {
+    padding: 24px var(--space-4);
+  }
+
+  .em-construcao__imagem {
+    width: min(68vw, 220px);
+    max-height: 135px;
+  }
+
+  .em-construcao__mensagem h2 {
+    max-width: 340px;
+    font-size: var(--font-size-14);
+  }
+
+  .em-construcao__mensagem p {
+    max-width: 300px;
+  }
+}
