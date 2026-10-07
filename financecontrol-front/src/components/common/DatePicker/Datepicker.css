@@ -130,10 +130,6 @@
   bottom: 46;
 }
 
-.date-picker--dropdown-left .date-picker__dropdown {
-  right: 0;
-}
-
 .date-picker__header {
   display: flex;
   align-items: center;

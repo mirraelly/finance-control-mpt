@@ -27,6 +27,7 @@ import FormaPagamentoForm from "../pages/FormasPagamento/FormaPagamentoForm";
 import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
+import Transferencias from "../pages/Transferencias/Transferencias";
 import EmConstrucao from "../pages/EmConstrucao/EmConstrucao";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
@@ -136,6 +137,9 @@ function AppRoutes() {
                 path="/contas/contas-receber"
                 element={<ContasReceberList />}
               />
+
+              <Route path="/transferencias" element={<Transferencias />} />
+              
               <Route
                 path="/contas/contas-receber/nova"
                 element={<ContaPagarReceberForm tipo="receber" />}
