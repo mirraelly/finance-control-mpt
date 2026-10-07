@@ -4,7 +4,9 @@ import com.mpt.financecontrol.contapagar.dtos.ContaPagarCreateDto;
 import com.mpt.financecontrol.contapagar.dtos.ContaPagarResponseDto;
 import com.mpt.financecontrol.contapagar.dtos.ContaPagarUpdateDto;
 import com.mpt.financecontrol.contapagar.service.ContaPagarService;
+import com.mpt.financecontrol.contapagarparcela.dtos.ContaPagarParcelaBaixaDto;
 import com.mpt.financecontrol.financeiro.StatusConta;
+import com.mpt.financecontrol.pagamento.dtos.PagamentoCreateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +69,31 @@ public class ContaPagarController {
         return service.select();
     }
 
+    @Operation(summary = "Listar parcelas", description = "Retorna lista paginada de parcelas a pagar para a tela de pagamentos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    @GetMapping("/parcelas")
+    @PreAuthorize("isAuthenticated()")
+    public Page<ContaPagarParcelaBaixaDto> getParcelas(
+            @Parameter(description = "Paginação e ordenação")
+            @PageableDefault(size = 15, sort = "data_vencimento") Pageable pageable,
+
+            @Parameter(description = "Filtro por pessoa")
+            @RequestParam(required = false) UUID pessoaId,
+
+            @Parameter(description = "Filtro por status (sem filtro, oculta as canceladas)")
+            @RequestParam(required = false) StatusConta status,
+
+            @Parameter(description = "Data de vencimento inicial")
+            @RequestParam(required = false) LocalDate dataVencimentoInicio,
+
+            @Parameter(description = "Data de vencimento final")
+            @RequestParam(required = false) LocalDate dataVencimentoFim
+    ) {
+        return service.getParcelas(pageable, pessoaId, status, dataVencimentoInicio, dataVencimentoFim);
+    }
+
     @Operation(summary = "Buscar por ID", description = "Retorna uma conta a pagar pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Encontrada com sucesso"),
@@ -83,7 +111,8 @@ public class ContaPagarController {
     @Operation(summary = "Criar conta a pagar", description = "Cria uma nova conta a pagar")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Criada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Pessoa ou categoria não encontrada")
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "404", description = "Pessoa, categoria ou forma de pagamento não encontrada")
     })
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -96,6 +125,7 @@ public class ContaPagarController {
     @Operation(summary = "Atualizar conta a pagar", description = "Atualiza parcialmente uma conta a pagar")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou alteração não permitida"),
             @ApiResponse(responseCode = "404", description = "Não encontrada")
     })
     @PatchMapping("/{id}")
@@ -107,5 +137,37 @@ public class ContaPagarController {
             @RequestBody @Valid ContaPagarUpdateDto dto
     ) {
         return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @Operation(summary = "Pagar parcela", description = "Registra um pagamento para a parcela e atualiza o status da parcela e da conta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pagamento registrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou parcela não pode ser paga"),
+            @ApiResponse(responseCode = "404", description = "Parcela, forma de pagamento ou conta financeira não encontrada")
+    })
+    @PatchMapping("/parcelas/{parcelaId}/pagar")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ContaPagarResponseDto> pagarParcela(
+            @Parameter(description = "ID da parcela")
+            @PathVariable UUID parcelaId,
+
+            @RequestBody @Valid PagamentoCreateDto dto
+    ) {
+        return ResponseEntity.ok(service.pagarParcela(parcelaId, dto));
+    }
+
+    @Operation(summary = "Estornar pagamento", description = "Exclui o pagamento e atualiza o status da parcela e da conta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pagamento estornado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Pagamento não pode ser estornado"),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado")
+    })
+    @DeleteMapping("/pagamentos/{pagamentoId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ContaPagarResponseDto> estornarPagamento(
+            @Parameter(description = "ID do pagamento")
+            @PathVariable UUID pagamentoId
+    ) {
+        return ResponseEntity.ok(service.estornarPagamento(pagamentoId));
     }
 }

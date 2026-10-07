@@ -160,6 +160,9 @@ public class ContaReceberService {
             if (!categoria.getTenant().getId().equals(tenant.getId()))
                 throw new NotFoundException("Categoria não encontrada");
 
+            if (!Boolean.TRUE.equals(categoria.getAtivo()))
+                throw new BadRequestException("Categoria inativa");
+
             contaReceber.setCategoria(categoria);
         }
 
@@ -224,6 +227,9 @@ public class ContaReceberService {
 
             if (!categoria.getTenant().getId().equals(tenant.getId()))
                 throw new NotFoundException("Categoria não encontrada");
+
+            if (!Boolean.TRUE.equals(categoria.getAtivo()))
+                throw new BadRequestException("Categoria inativa");
 
             contaReceber.setCategoria(categoria);
         }

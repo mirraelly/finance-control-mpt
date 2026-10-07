@@ -2,6 +2,7 @@ package com.mpt.financecontrol.contapagar.mapper;
 
 import com.mpt.financecontrol.contapagar.dtos.ContaPagarResponseDto;
 import com.mpt.financecontrol.contapagar.entity.ContaPagar;
+import com.mpt.financecontrol.contapagarparcela.mapper.ContaPagarParcelaMapper;
 
 public class ContaPagarMapper {
 
@@ -20,6 +21,7 @@ public class ContaPagarMapper {
                 contaPagar.getStatus(),
                 contaPagar.getObservacao(),
                 contaPagar.getAtivo(),
+                ContaPagarParcelaMapper.toResponseDtoList(contaPagar.getParcelas()),
                 contaPagar.getCreatedAt(),
                 contaPagar.getUpdatedAt()
         );

@@ -1,14 +1,17 @@
 package com.mpt.financecontrol.contapagar.repository;
 
 import com.mpt.financecontrol.contapagar.entity.ContaPagar;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -47,4 +50,8 @@ public interface ContaPagarRepository extends JpaRepository<ContaPagar, UUID> {
             ORDER BY c.data_emissao DESC
     """, nativeQuery = true)
     List<ContaPagar> findForSelect(@Param("tenantId") UUID tenantId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM ContaPagar c WHERE c.id = :id")
+    Optional<ContaPagar> findByIdForUpdate(@Param("id") UUID id);
 }
