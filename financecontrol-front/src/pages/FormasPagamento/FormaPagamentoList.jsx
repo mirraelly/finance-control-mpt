@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
   Edit02Icon,
- Invoice03Icon,
+  Invoice03Icon,
   Search01Icon,
   UnavailableIcon,
   UserCheck01Icon,
@@ -18,36 +18,26 @@ import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
-import contaFinanceiraService from "../../services/contaFinanceiraService";
+import formaPagamentoService from "../../services/formaPagamentoService";
 import "../Cadastros/Cadastros.css";
 
 const PAGE_SIZE = 15;
-const TIPOS_CONTA = [
-  { value: "CORRENTE", label: "Conta corrente" },
-  { value: "POUPANCA", label: "Poupança" },
-  { value: "CAIXA", label: "Caixa" },
-  { value: "CARTEIRA", label: "Carteira" },
-];
-const NOMES_TIPO = Object.fromEntries(
-  TIPOS_CONTA.map(({ value, label }) => [value, label]),
-);
 
-function ContaFinanceiraList() {
+function FormaPagamentoList() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [contas, setContas] = useState([]);
+  const [formasPagamento, setFormasPagamento] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
   const [totalPaginas, setTotalPaginas] = useState(0);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("");
-  const [tipoFiltro, setTipoFiltro] = useState("");
   const [situacaoFiltro, setSituacaoFiltro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
-  const [contaSelecionada, setContaSelecionada] = useState(null);
+  const [selecionada, setSelecionada] = useState(null);
   const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
 
@@ -57,7 +47,7 @@ function ContaFinanceiraList() {
   }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
-    if (!mensagem) return;
+    if (!mensagem) return undefined;
     const timeout = setTimeout(() => setMensagem(""), 4000);
     return () => clearTimeout(timeout);
   }, [mensagem]);
@@ -67,64 +57,60 @@ function ContaFinanceiraList() {
       setFiltro(busca.trim());
       setPagina(0);
     }, 400);
-
     return () => clearTimeout(timeout);
   }, [busca]);
 
   useEffect(() => {
     let ativo = true;
 
-    async function carregarContas() {
+    async function carregarFormasPagamento() {
       try {
         setCarregando(true);
         setErro("");
-        const resposta = await contaFinanceiraService.listar({
+        const resposta = await formaPagamentoService.listar({
           page: pagina,
           size: tamanhoPagina,
           nome: filtro || undefined,
-          tipo: tipoFiltro || undefined,
           ativo: situacaoFiltro === "" ? undefined : situacaoFiltro,
         });
         if (!ativo) return;
-        setContas(resposta.content);
+        setFormasPagamento(resposta.content);
         setTotalPaginas(resposta.totalPages);
         setTotalRegistros(resposta.totalElements);
-      } catch (erroCarregamento) {
-        console.error("Erro ao carregar contas financeiras:", erroCarregamento);
-        if (ativo) {
-          setErro("Não foi possível carregar as contas financeiras.");
-        }
+      } catch (loadError) {
+        console.error("Erro ao carregar formas de pagamento:", loadError);
+        if (ativo) setErro("Não foi possível carregar as formas de pagamento.");
       } finally {
         if (ativo) setCarregando(false);
       }
     }
 
-    carregarContas();
+    carregarFormasPagamento();
     return () => {
       ativo = false;
     };
-  }, [pagina, tamanhoPagina, filtro, tipoFiltro, situacaoFiltro, recarregar]);
+  }, [pagina, tamanhoPagina, filtro, situacaoFiltro, recarregar]);
 
   const confirmarAlteracaoSituacao = async () => {
     try {
       setAlterandoSituacao(true);
-      await contaFinanceiraService.atualizar(contaSelecionada.id, {
-        nome: contaSelecionada.nome,
-        tipo: contaSelecionada.tipo,
-        ativo: !contaSelecionada.ativo,
+      await formaPagamentoService.atualizar(selecionada.id, {
+        nome: selecionada.nome,
+        contaFinanceiraId: selecionada.contaFinanceiraId,
+        ativo: !selecionada.ativo,
       });
       setMensagem(
-        contaSelecionada.ativo
-          ? "Conta financeira inativada com sucesso."
-          : "Conta financeira ativada com sucesso.",
+        selecionada.ativo
+          ? "Forma de pagamento inativada com sucesso."
+          : "Forma de pagamento ativada com sucesso.",
       );
-      setContaSelecionada(null);
+      setSelecionada(null);
       setRecarregar((valor) => valor + 1);
-    } catch (alteracaoError) {
-      console.error("Erro ao alterar situação da conta financeira:", alteracaoError);
+    } catch (updateError) {
+      console.error("Erro ao alterar situação da forma de pagamento:", updateError);
       alert(
-        alteracaoError?.response?.data?.erro ||
-          "Não foi possível alterar a situação da conta financeira.",
+        updateError?.response?.data?.erro ||
+          "Não foi possível alterar a situação da forma de pagamento.",
       );
     } finally {
       setAlterandoSituacao(false);
@@ -141,7 +127,7 @@ function ContaFinanceiraList() {
 
       <Card className="cadastros-toolbar">
         <Input
-          aria-label="Buscar contas financeiras"
+          aria-label="Buscar formas de pagamento"
           placeholder="Buscar por nome..."
           value={busca}
           onChange={(event) => setBusca(event.target.value)}
@@ -149,20 +135,7 @@ function ContaFinanceiraList() {
           fullWidth
         />
         <Select
-          id="contas-financeiras-filtro-tipo"
-          aria-label="Filtrar por tipo de conta"
-          options={[
-            { value: "", label: "Todos os tipos" },
-            ...TIPOS_CONTA,
-          ]}
-          value={tipoFiltro}
-          onChange={(event) => {
-            setTipoFiltro(event.target.value);
-            setPagina(0);
-          }}
-        />
-        <Select
-          id="contas-financeiras-filtro-situacao"
+          id="formas-pagamento-filtro-situacao"
           aria-label="Filtrar por situação"
           options={[
             { value: "", label: "Todas as situações" },
@@ -176,16 +149,16 @@ function ContaFinanceiraList() {
           }}
         />
         <Button
-          onClick={() => navigate("/cadastros/contas-financeiras/nova")}
+          onClick={() => navigate("/cadastros/formas-pagamento/nova")}
           icon={<HugeiconsIcon icon={Invoice03Icon} size={18} />}
         >
-          Nova Conta
+          Nova Forma de Pagamento
         </Button>
       </Card>
 
       <Card className="cadastros-list-card">
-        {carregando && contas.length === 0 ? (
-          <Loading message="Carregando contas financeiras..." />
+        {carregando && formasPagamento.length === 0 ? (
+          <Loading message="Carregando formas de pagamento..." />
         ) : erro ? (
           <EmptyState
             icon={<HugeiconsIcon icon={Wallet01Icon} size={32} />}
@@ -193,11 +166,11 @@ function ContaFinanceiraList() {
             description={erro}
             fullWidth
           />
-        ) : contas.length === 0 ? (
+        ) : formasPagamento.length === 0 ? (
           <EmptyState
             icon={<HugeiconsIcon icon={Wallet01Icon} size={32} />}
-            title="Nenhuma conta financeira encontrada"
-            description="Adicione uma conta ou ajuste a busca."
+            title="Nenhuma forma de pagamento encontrada"
+            description="Adicione uma forma de pagamento ou ajuste a busca."
             fullWidth
           />
         ) : (
@@ -210,21 +183,23 @@ function ContaFinanceiraList() {
                 <thead>
                   <tr>
                     <th>Nome</th>
-                    <th>Tipo</th>
+                    <th>Conta financeira</th>
                     <th>Situação</th>
                     <th className="cadastros-table__actions-heading">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {contas.map((conta) => (
-                    <tr key={conta.id}>
-                      <td>{conta.nome}</td>
+                  {formasPagamento.map((formaPagamento) => (
+                    <tr key={formaPagamento.id}>
+                      <td>{formaPagamento.nome}</td>
                       <td className="cadastros-table__muted">
-                        {NOMES_TIPO[conta.tipo] || conta.tipo}
+                        {formaPagamento.contaFinanceiraNome}
                       </td>
                       <td>
-                        <Badge variant={conta.ativo ? "success" : "danger"}>
-                          {conta.ativo ? "Ativa" : "Inativa"}
+                        <Badge
+                          variant={formaPagamento.ativo ? "success" : "danger"}
+                        >
+                          {formaPagamento.ativo ? "Ativa" : "Inativa"}
                         </Badge>
                       </td>
                       <td>
@@ -233,9 +208,11 @@ function ContaFinanceiraList() {
                             variant="ghost"
                             size="sm"
                             onClick={() =>
-                              navigate(`/cadastros/contas-financeiras/${conta.id}`)
+                              navigate(
+                                `/cadastros/formas-pagamento/${formaPagamento.id}`,
+                              )
                             }
-                            aria-label={`Editar conta financeira ${conta.nome}`}
+                            aria-label={`Editar forma de pagamento ${formaPagamento.nome}`}
                             icon={
                               <HugeiconsIcon
                                 icon={Edit02Icon}
@@ -247,13 +224,23 @@ function ContaFinanceiraList() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            title={conta.ativo ? "Inativar conta financeira" : "Ativar conta financeira"}
-                            aria-label={`${conta.ativo ? "Inativar" : "Ativar"} conta financeira ${conta.nome}`}
-                            onClick={() => setContaSelecionada(conta)}
+                            title={
+                              formaPagamento.ativo
+                                ? "Inativar forma de pagamento"
+                                : "Ativar forma de pagamento"
+                            }
+                            aria-label={`${formaPagamento.ativo ? "Inativar" : "Ativar"} forma de pagamento ${formaPagamento.nome}`}
+                            onClick={() => setSelecionada(formaPagamento)}
                             icon={
                               <HugeiconsIcon
-                                icon={conta.ativo ? UnavailableIcon : UserCheck01Icon}
-                                color={conta.ativo ? "#b91c1c" : "#16a34a"}
+                                icon={
+                                  formaPagamento.ativo
+                                    ? UnavailableIcon
+                                    : UserCheck01Icon
+                                }
+                                color={
+                                  formaPagamento.ativo ? "#b91c1c" : "#16a34a"
+                                }
                                 size={18}
                               />
                             }
@@ -281,21 +268,25 @@ function ContaFinanceiraList() {
       </Card>
 
       <Modal
-        isOpen={Boolean(contaSelecionada)}
-        onClose={() => !alterandoSituacao && setContaSelecionada(null)}
-        title={contaSelecionada?.ativo ? "Inativar conta financeira" : "Ativar conta financeira"}
+        isOpen={Boolean(selecionada)}
+        onClose={() => !alterandoSituacao && setSelecionada(null)}
+        title={
+          selecionada?.ativo
+            ? "Inativar forma de pagamento"
+            : "Ativar forma de pagamento"
+        }
         closeOnOverlay={!alterandoSituacao}
         footer={
           <div className="cadastros-form__actions">
             <Button
               variant="outline"
-              onClick={() => setContaSelecionada(null)}
+              onClick={() => setSelecionada(null)}
               disabled={alterandoSituacao}
             >
               Cancelar
             </Button>
             <Button
-              variant={contaSelecionada?.ativo ? "danger" : "primary"}
+              variant={selecionada?.ativo ? "danger" : "primary"}
               onClick={confirmarAlteracaoSituacao}
               disabled={alterandoSituacao}
             >
@@ -304,11 +295,11 @@ function ContaFinanceiraList() {
           </div>
         }
       >
-        {contaSelecionada && (
+        {selecionada && (
           <p>
-            {contaSelecionada.ativo
-              ? `Deseja inativar a conta financeira ${contaSelecionada.nome}?`
-              : `Deseja ativar a conta financeira ${contaSelecionada.nome}?`}
+            {selecionada.ativo
+              ? `Deseja inativar a forma de pagamento ${selecionada.nome}?`
+              : `Deseja ativar a forma de pagamento ${selecionada.nome}?`}
           </p>
         )}
       </Modal>
@@ -316,4 +307,4 @@ function ContaFinanceiraList() {
   );
 }
 
-export default ContaFinanceiraList;
+export default FormaPagamentoList;

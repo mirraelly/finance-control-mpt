@@ -319,33 +319,83 @@ h2.aside-content-text {
 }
 
 @media (max-width: 992px) {
-  .container-cadastro {
+  .cadastro-auth-layout .container-login {
+    height: 100vh;
+    height: 100dvh;
     grid-template-columns: 1fr;
-    min-height: auto;
+    grid-template-rows: minmax(0, 20%) minmax(0, 80%);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
-  .cadastro-aside,
-  .cadastro-card {
-    padding: 36px;
+  .cadastro-auth-layout .login-aside,
+  .cadastro-auth-layout .login-card {
+    box-sizing: border-box;
+    min-height: 0;
+  }
+
+  .cadastro-auth-layout .login-aside {
+    display: flex;
+    overflow: hidden;
+    padding: clamp(12px, 2vh, 24px) clamp(20px, 4vw, 36px);
+  }
+
+  .cadastro-auth-layout .login-card {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 24px clamp(20px, 5vw, 36px);
+    box-shadow: var(--shadow-auth-card);
+  }
+
+  .cadastro-auth-layout .login-card > div {
+    width: min(100%, 560px);
   }
 }
 
 @media (max-width: 640px) {
-  .cadastro-page {
-    padding: 20px;
+  .cadastro-auth-layout .container-login {
+    height: auto;
+    grid-template-rows: minmax(100vh, max-content);
+    grid-template-rows: minmax(100dvh, max-content);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
-  .auth-theme-toggle {
-    top: 2rem;
-    right: 2rem;
+  .cadastro-auth-layout .login-aside {
+    display: none;
   }
 
-  .cadastro-aside {
-    border-radius: 28px;
+  .cadastro-auth-layout .login-card {
+    min-height: 100vh;
+    min-height: 100dvh;
+    justify-content: flex-start;
+    overflow-y: visible;
+    padding: 72px 20px 24px;
   }
 
-  .cadastro-card {
-    border-radius: 28px;
+  .cadastro-auth-layout .login-card > div {
+    width: 100%;
+  }
+
+  .container-forms-cadastro {
+    gap: 1.25rem;
+  }
+
+  .cadastro-form {
+    gap: 14px;
+  }
+
+  .cadastro-title {
+    font-size: var(--font-size-20);
+  }
+
+  .cadastro-descricao {
+    text-align: left;
+    line-height: 20px;
   }
 
   .cadastro-nome-row {

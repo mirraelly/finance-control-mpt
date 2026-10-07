@@ -1,6 +1,6 @@
 // exemplo de importação de ícones da biblioteca Hugeicons
 
-import { HugeiconsIcon } from "@hugeicons/react";
+import { HugeiconsIcon as BaseHugeiconsIcon } from "@hugeicons/react";
 
 import {
   SaveMoneyDollarIcon,
@@ -41,6 +41,7 @@ import {
   ArrowRight01Icon,
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
+  PanelRightOpenIcon,
   SecurityIcon,
   SquareLock02Icon,
   EyeOffIcon,
@@ -54,8 +55,18 @@ import {
   ContactBookIcon,
   UnavailableIcon,
   Undo03Icon,
-  RealEstate01Icon
+  RealEstate01Icon,
+  Tag01Icon,
+  Invoice03Icon,
+  MoneySendCircleIcon,
+  MoneyReceiveCircleIcon
 } from "@hugeicons/core-free-icons";
+
+function HugeiconsIcon({ className = "", ...props }) {
+  const classNames = ["hugeicons-icon", className].filter(Boolean).join(" ");
+
+  return <BaseHugeiconsIcon {...props} className={classNames} />;
+}
 
 export {
   HugeiconsIcon,
@@ -97,6 +108,7 @@ export {
   ArrowRight01Icon,
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
+  PanelRightOpenIcon,
   SecurityIcon,
   SquareLock02Icon,
   EyeOffIcon,
@@ -110,5 +122,9 @@ export {
   ContactBookIcon,
   UnavailableIcon,
   Undo03Icon,
-  RealEstate01Icon
+  RealEstate01Icon,
+  Tag01Icon,
+  Invoice03Icon,
+  MoneySendCircleIcon,
+  MoneyReceiveCircleIcon
 };

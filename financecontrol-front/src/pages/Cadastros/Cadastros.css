@@ -120,23 +120,66 @@
   gap: var(--space-4);
 }
 
-.cadastros-field {
+.cadastros-form-page {
+  width: 100%;
+  align-self: center;
+  padding: var(--space-6);
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border);
+}
+
+.cadastros-form-page__heading {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+
+.cadastros-form-page__heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-bold);
+}
+
+.cadastros-form-page__heading p {
+  margin: var(--space-1) 0 0;
   color: var(--text-secondary);
   font-size: var(--font-size-13);
 }
 
-.cadastros-field textarea {
-  width: 100%;
+.cadastros-form-page__note {
+  margin: 0;
   padding: var(--space-3);
-  border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background-color: var(--bg-primary);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: var(--font-size-13);
+}
+
+button.button__return:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
   color: var(--text-primary);
-  font: inherit;
-  resize: vertical;
+}
+
+button.button__return:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button.button__return:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cadastros-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-13);
 }
 
 .cadastros-checkbox {
@@ -154,6 +197,27 @@
   accent-color: var(--primary);
 }
 
+.cadastros-situacao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.cadastros-situacao__controle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+}
+
+.cadastros-situacao__status {
+  color: var(--text-primary);
+  font-size: var(--font-size-14);
+}
+
 .cadastros-form__error {
   margin: 0;
   color: var(--danger);
@@ -162,8 +226,11 @@
 
 .cadastros-form__actions {
   display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
 }
 
 .notificacoes-inbox {
@@ -176,6 +243,14 @@
 }
 
 @media (max-width: 768px) {
+  .cadastros-form-page {
+    padding: var(--space-4);
+  }
+
+  .cadastros-form-page__heading {
+    align-items: center;
+  }
+
   .cadastros-toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -189,6 +264,7 @@
 
   .cadastros-toolbar--filters > .select-field {
     width: 100%;
+    max-height: min-content;
   }
 
   .cadastros-table th,

@@ -1,10 +1,23 @@
 import { HugeiconsIcon, TradeUpIcon } from "../../../assets/icons";
 import ThemeToggle from "../../common/ThemeToggle/ThemeToggle";
+import "./AuthLayout.css";
 
-function AuthLayout({ children }) {
+function AuthLayout({ children, className = "" }) {
   return (
-    <main className="login-page">
-      <div className="auth-theme-toggle">
+    <main className={`login-page ${className}`.trim()}>
+      <div className="auth-topbar">
+        <div className="auth-mobile-brand" aria-label="Finance Control MPT">
+          <span className="auth-mobile-brand__logo">
+            <HugeiconsIcon
+              icon={TradeUpIcon}
+              stroke="2"
+              size={24}
+              color="currentColor"
+            />
+          </span>
+          <span className="auth-mobile-brand__name">Finance Control</span>
+          <span className="auth-mobile-brand__tag">MPT</span>
+        </div>
         <ThemeToggle />
       </div>
 

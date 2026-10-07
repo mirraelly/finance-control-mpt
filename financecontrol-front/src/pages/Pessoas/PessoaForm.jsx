@@ -398,7 +398,7 @@ function PessoaForm() {
       >
         <div className="pessoa-form__cabecalho">
           <div>
-            <h2>{isEdicao ? "Editar pessoa" : "Nova pessoa"}</h2>
+            <h2>{isEdicao ? "Editar Pessoa" : "Nova Pessoa"}</h2>
             <p>
               Cadastre clientes, fornecedores e demais pessoas usadas nas contas a
               pagar e a receber.
