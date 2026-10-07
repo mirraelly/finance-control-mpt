@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import InternalLayout from "../layouts/Internal/InternalLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import Home from "../pages/Home/Home";
@@ -64,10 +64,6 @@ function AppRoutes() {
               <Route
                 path="/movimentacoes/pagar-e-receber"
                 element={<PagarEReceber />}
-              />
-              <Route
-                path="/movimentacoes/transferencias"
-                element={<EmConstrucao />}
               />
               <Route
                 path="/planejamento/orcamento"
@@ -138,7 +134,16 @@ function AppRoutes() {
                 element={<ContasReceberList />}
               />
 
-              <Route path="/transferencias" element={<Transferencias />} />
+              <Route
+                path="/movimentacoes/transferencias"
+                element={<Transferencias />}
+              />
+              <Route
+                path="/transferencias"
+                element={
+                  <Navigate to="/movimentacoes/transferencias" replace />
+                }
+              />
               
               <Route
                 path="/contas/contas-receber/nova"

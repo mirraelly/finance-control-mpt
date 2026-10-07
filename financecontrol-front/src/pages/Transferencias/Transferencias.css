@@ -13,10 +13,50 @@
   font-weight: var(--font-weight-bold);
 }
 
+.transferencias-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.transferencias-page__header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-bold);
+}
+
 .transferencias-page__header p {
   margin: var(--space-1) 0 0;
   color: var(--text-secondary);
   font-size: var(--font-size-14);
+}
+
+.transferencias-page__back {
+  display: inline-flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.transferencias-page__back:hover {
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--text-primary);
+}
+
+.transferencias-page__back:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 
@@ -159,9 +199,9 @@
 }
 
 .form-field label {
-  color: var(--text-primary);
-  font-size: var(--font-size-14);
-  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+  font-family: var(--font-form);
 }
 
 .form-field label span {

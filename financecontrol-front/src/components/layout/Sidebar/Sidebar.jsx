@@ -14,7 +14,6 @@ import {
   TradeUpIcon,
   Target01Icon,
   ArrowReloadHorizontalIcon,
-  ArrowRight01Icon,
   SaveMoneyDollarIcon,
   UserGroupIcon,
   Clock01Icon,
@@ -47,7 +46,7 @@ const menuGroups = [
           {
             label: "Transferências",
             path: "/movimentacoes/transferencias",
-            icon: ArrowRight01Icon,
+            icon: TradeUpIcon,
           },
           {
             label: "Pagar e Receber",

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { Add01Icon, Delete02Icon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { useEffect, useMemo, useState } from "react";
+import { Add01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import {
   HugeiconsIcon,
   Wallet01Icon,
   Search01Icon,
+  Undo03Icon,
 } from "../../assets/icons";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
@@ -16,6 +17,28 @@ import transferenciaService from "../../services/transferenciaService";
 import "./Transferencias.css";
 
 const PAGE_SIZE_DEFAULT = 15;
+const API_PAGE_SIZE = 100;
+
+async function listarTodasTransferencias() {
+  const primeiraPagina = await transferenciaService.listar({
+    page: 0,
+    size: API_PAGE_SIZE,
+  });
+  const totalPaginas = primeiraPagina.totalPages || 1;
+  const paginasRestantes = await Promise.all(
+    Array.from({ length: Math.max(0, totalPaginas - 1) }, (_, index) =>
+      transferenciaService.listar({
+        page: index + 1,
+        size: API_PAGE_SIZE,
+      }),
+    ),
+  );
+
+  return [
+    ...(primeiraPagina.content || []),
+    ...paginasRestantes.flatMap((pagina) => pagina.content || []),
+  ];
+}
 
 function formatCurrency(value) {
   return Number(value).toLocaleString("pt-BR", {
@@ -28,6 +51,13 @@ function formatDate(isoDate) {
   if (!isoDate) return "—";
   const [year, month, day] = isoDate.split("-");
   return `${day}/${month}/${year}`;
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR");
 }
 
 function getTodayIsoDate() {
@@ -111,7 +141,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
       <div className="form-transferencia__grid">
         <div className="form-field">
           <label htmlFor="contaOrigemId">
-            Conta Origem <span>*</span>
+            CONTA ORIGEM <span> *</span>
           </label>
           <Select
             id="contaOrigemId"
@@ -133,7 +163,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
 
         <div className="form-field">
           <label htmlFor="contaDestinoId">
-            Conta Destino <span>*</span>
+            CONTA DESTINO<span> *</span>
           </label>
           <Select
             id="contaDestinoId"
@@ -147,7 +177,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
 
         <div className="form-field">
           <label htmlFor="data">
-            Data <span>*</span>
+            DATA <span>*</span>
           </label>
           <Input
             id="data"
@@ -161,7 +191,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
 
         <div className="form-field">
           <label htmlFor="valor">
-            Valor <span>*</span>
+            VALOR <span>*</span>
           </label>
           <Input
             id="valor"
@@ -176,7 +206,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
         </div>
 
         <div className="form-field" style={{ gridColumn: "1 / -1" }}>
-          <label htmlFor="descricao">Descrição</label>
+          <label htmlFor="descricao">DESCRIÇÃO</label>
           <Input
             id="descricao"
             type="text"
@@ -204,21 +234,13 @@ function Transferencias() {
   const [transferencias, setTransferencias] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [accountId, setAccountId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_DEFAULT);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
-    return () => clearTimeout(timeout);
-  }, [searchTerm]);
 
   useEffect(() => {
     transferenciaService
@@ -228,30 +250,66 @@ function Transferencias() {
   }, []);
 
   useEffect(() => {
+    let isCurrent = true;
+
     async function loadTransferencias() {
       try {
         setIsLoading(true);
         setError("");
-        const response = await transferenciaService.listar({
-          page: currentPage,
-          size: pageSize,
-          contaFinanceiraId: accountId || undefined,
-          descricao: debouncedSearch || undefined,
-        });
-
-        setTransferencias(response.content || []);
-        setTotalPages(response.totalPages || 0);
-        setTotalElements(response.totalElements || 0);
+        const response = await listarTodasTransferencias();
+        if (isCurrent) setTransferencias(response);
       } catch (err) {
         console.error("Erro ao carregar transferências:", err);
-        setError("Não foi possível carregar as transferências.");
+        if (isCurrent) {
+          setError("Não foi possível carregar as transferências.");
+          setTransferencias([]);
+        }
       } finally {
-        setIsLoading(false);
+        if (isCurrent) setIsLoading(false);
       }
     }
 
     loadTransferencias();
-  }, [currentPage, pageSize, accountId, debouncedSearch, refreshKey]);
+    return () => {
+      isCurrent = false;
+    };
+  }, [refreshKey]);
+
+  const transferenciasFiltradas = useMemo(() => {
+    const search = normalizeSearchText(searchTerm.trim());
+
+    return transferencias.filter((item) => {
+      const correspondeConta =
+        !accountId ||
+        String(item.contaOrigemId) === accountId ||
+        String(item.contaDestinoId) === accountId;
+      if (!correspondeConta) return false;
+      if (!search) return true;
+
+      const searchableValues = [
+        item.descricao,
+        item.contaOrigemNome,
+        item.contaOrigemId,
+        item.contaDestinoNome,
+        item.contaDestinoId,
+        item.data,
+        formatDate(item.data),
+        item.valor,
+        formatCurrency(item.valor),
+      ];
+
+      return searchableValues.some((value) =>
+        normalizeSearchText(value).includes(search),
+      );
+    });
+  }, [transferencias, accountId, searchTerm]);
+
+  const totalElements = transferenciasFiltradas.length;
+  const totalPages = Math.ceil(totalElements / pageSize);
+  const transferenciasDaPagina = transferenciasFiltradas.slice(
+    currentPage * pageSize,
+    (currentPage + 1) * pageSize,
+  );
 
   const handleSaveTransferencia = async (payload) => {
     await transferenciaService.criar(payload);
@@ -265,6 +323,7 @@ function Transferencias() {
 
     try {
       await transferenciaService.deletar(id);
+      setCurrentPage(0);
       setRefreshKey((current) => current + 1);
     } catch (err) {
       console.error("Erro ao excluir transferência:", err);
@@ -275,16 +334,19 @@ function Transferencias() {
   if (isCreating) {
     return (
       <div className="transferencias-page">
-        <div className="transferencias-page__header" style={{ marginBottom: "var(--space-3)" }}>
-          <Button
-            variant="ghost"
-            icon={<HugeiconsIcon icon={ArrowLeft01Icon} size={18} />}
-            onClick={() => setIsCreating(false)}
-          >
-            Voltar
-          </Button>
-        </div>
         <Card className="transferencias-table-card" padding="lg" radius="lg" shadow={false}>
+          <div className="transferencias-page__header">
+            <h2>Nova Transferência</h2>
+            <button
+              className="transferencias-page__back"
+              type="button"
+              aria-label="Voltar à lista de transferências"
+              title="Voltar à lista de transferências"
+              onClick={() => setIsCreating(false)}
+            >
+              <HugeiconsIcon icon={Undo03Icon} size={20} />
+            </button>
+          </div>
           <FormTransferencia
             accounts={accounts}
             onSubmit={handleSaveTransferencia}
@@ -302,7 +364,7 @@ function Transferencias() {
           id="transferencias-search"
           type="search"
           icon={<HugeiconsIcon icon={Search01Icon} size={18} stroke="2" />}
-          placeholder="Buscar descrição..."
+          placeholder="Buscar transferências..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -366,7 +428,7 @@ function Transferencias() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transferencias.map((item) => (
+                  {transferenciasDaPagina.map((item) => (
                     <tr key={item.id}>
                       <td className="transferencias-table__muted">{formatDate(item.data)}</td>
                       <td className="transferencias-table__muted">

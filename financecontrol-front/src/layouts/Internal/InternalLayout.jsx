@@ -29,7 +29,6 @@ function InternalLayout() {
     "/contas/contas-financeiras": "Contas financeiras",
     "/contas/contas-pagar": "Contas a pagar",
     "/contas/contas-receber": "Contas a receber",
-    "/transferencias": "Transferências",
     "/cadastros/notificacoes": "Notificações",
   };
   const currentPath = Object.keys(pageTitles).find(
