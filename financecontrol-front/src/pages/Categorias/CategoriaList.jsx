@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -20,16 +20,40 @@ import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
 import categoriaService from "../../services/categoriaService";
 import "../Cadastros/Cadastros.css";
+import "./CategoriaList.css";
 
 const PAGE_SIZE = 15;
+const API_PAGE_SIZE = 100;
+
+async function listarTodasAsCategorias(nome) {
+  const primeiraPagina = await categoriaService.listar({
+    page: 0,
+    size: API_PAGE_SIZE,
+    nome: nome || undefined,
+  });
+  const totalPaginas = primeiraPagina.totalPages || 1;
+  const paginasRestantes = await Promise.all(
+    Array.from({ length: Math.max(0, totalPaginas - 1) }, (_, index) =>
+      categoriaService.listar({
+        page: index + 1,
+        size: API_PAGE_SIZE,
+        nome: nome || undefined,
+      }),
+    ),
+  );
+
+  return [
+    ...(primeiraPagina.content || []),
+    ...paginasRestantes.flatMap((pagina) => pagina.content || []),
+  ];
+}
+
 function CategoriaList() {
   const navigate = useNavigate();
   const location = useLocation();
   const [categorias, setCategorias] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
-  const [totalPaginas, setTotalPaginas] = useState(0);
-  const [totalRegistros, setTotalRegistros] = useState(0);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("");
   const [situacaoFiltro, setSituacaoFiltro] = useState("");
@@ -67,16 +91,9 @@ function CategoriaList() {
       try {
         setCarregando(true);
         setErro("");
-        const resposta = await categoriaService.listar({
-          page: pagina,
-          size: tamanhoPagina,
-          nome: filtro || undefined,
-          ativo: situacaoFiltro === "" ? undefined : situacaoFiltro,
-        });
+        const resposta = await listarTodasAsCategorias(filtro);
         if (!ativo) return;
-        setCategorias(resposta.content);
-        setTotalPaginas(resposta.totalPages);
-        setTotalRegistros(resposta.totalElements);
+        setCategorias(resposta);
       } catch (erroCarregamento) {
         console.error("Erro ao carregar categorias:", erroCarregamento);
         if (ativo) setErro("Não foi possível carregar as categorias.");
@@ -89,7 +106,22 @@ function CategoriaList() {
     return () => {
       ativo = false;
     };
-  }, [pagina, tamanhoPagina, filtro, situacaoFiltro, recarregar]);
+  }, [filtro, recarregar]);
+
+  const categoriasFiltradas = useMemo(
+    () =>
+      categorias.filter(
+        (categoria) =>
+          situacaoFiltro === "" ||
+          String(categoria.ativo) === situacaoFiltro,
+      ),
+    [categorias, situacaoFiltro],
+  );
+  const totalPaginas = Math.ceil(categoriasFiltradas.length / tamanhoPagina);
+  const categoriasDaPagina = categoriasFiltradas.slice(
+    pagina * tamanhoPagina,
+    (pagina + 1) * tamanhoPagina,
+  );
 
   const confirmarAlteracaoSituacao = async () => {
     try {
@@ -125,7 +157,7 @@ function CategoriaList() {
         </p>
       )}
 
-      <Card className="cadastros-toolbar">
+      <Card className="cadastros-toolbar categorias-toolbar">
         <Input
           aria-label="Buscar categorias"
           placeholder="Buscar por nome..."
@@ -166,11 +198,11 @@ function CategoriaList() {
             description={erro}
             fullWidth
           />
-        ) : categorias.length === 0 ? (
+        ) : categoriasFiltradas.length === 0 ? (
           <EmptyState
             icon={<HugeiconsIcon icon={Chart01Icon} size={32} />}
             title="Nenhuma categoria encontrada"
-            description="Adicione uma categoria ou ajuste a busca."
+            description="Adicione uma categoria ou ajuste os filtros."
             fullWidth
           />
         ) : (
@@ -189,7 +221,7 @@ function CategoriaList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {categorias.map((categoria) => (
+                  {categoriasDaPagina.map((categoria) => (
                     <tr key={categoria.id}>
                       <td>{categoria.nome}</td>
                       <td className="cadastros-table__muted">
@@ -241,7 +273,7 @@ function CategoriaList() {
             <Pagination
               page={pagina}
               totalPages={totalPaginas}
-              totalElements={totalRegistros}
+              totalElements={categoriasFiltradas.length}
               pageSize={tamanhoPagina}
               onChange={setPagina}
               onPageSizeChange={(tamanho) => {

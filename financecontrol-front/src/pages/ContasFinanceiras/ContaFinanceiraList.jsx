@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -20,8 +20,10 @@ import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
 import "../Cadastros/Cadastros.css";
+import "./ContaFinanceiraList.css";
 
 const PAGE_SIZE = 15;
+const API_PAGE_SIZE = 100;
 const TIPOS_CONTA = [
   { value: "CORRENTE", label: "Conta corrente" },
   { value: "POUPANCA", label: "Poupança" },
@@ -32,14 +34,35 @@ const NOMES_TIPO = Object.fromEntries(
   TIPOS_CONTA.map(({ value, label }) => [value, label]),
 );
 
+async function listarContasFinanceiras(nome) {
+  const primeiraPagina = await contaFinanceiraService.listar({
+    page: 0,
+    size: API_PAGE_SIZE,
+    nome: nome || undefined,
+  });
+  const totalPaginas = primeiraPagina.totalPages || 1;
+  const paginasRestantes = await Promise.all(
+    Array.from({ length: Math.max(0, totalPaginas - 1) }, (_, index) =>
+      contaFinanceiraService.listar({
+        page: index + 1,
+        size: API_PAGE_SIZE,
+        nome: nome || undefined,
+      }),
+    ),
+  );
+
+  return [
+    ...(primeiraPagina.content || []),
+    ...paginasRestantes.flatMap((pagina) => pagina.content || []),
+  ];
+}
+
 function ContaFinanceiraList() {
   const navigate = useNavigate();
   const location = useLocation();
   const [contas, setContas] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
-  const [totalPaginas, setTotalPaginas] = useState(0);
-  const [totalRegistros, setTotalRegistros] = useState(0);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("");
   const [tipoFiltro, setTipoFiltro] = useState("");
@@ -78,17 +101,9 @@ function ContaFinanceiraList() {
       try {
         setCarregando(true);
         setErro("");
-        const resposta = await contaFinanceiraService.listar({
-          page: pagina,
-          size: tamanhoPagina,
-          nome: filtro || undefined,
-          tipo: tipoFiltro || undefined,
-          ativo: situacaoFiltro === "" ? undefined : situacaoFiltro,
-        });
+        const resposta = await listarContasFinanceiras(filtro);
         if (!ativo) return;
-        setContas(resposta.content);
-        setTotalPaginas(resposta.totalPages);
-        setTotalRegistros(resposta.totalElements);
+        setContas(resposta);
       } catch (erroCarregamento) {
         console.error("Erro ao carregar contas financeiras:", erroCarregamento);
         if (ativo) {
@@ -103,7 +118,23 @@ function ContaFinanceiraList() {
     return () => {
       ativo = false;
     };
-  }, [pagina, tamanhoPagina, filtro, tipoFiltro, situacaoFiltro, recarregar]);
+  }, [filtro, recarregar]);
+
+  const contasFiltradas = useMemo(
+    () =>
+      contas.filter(
+        (conta) =>
+          (!tipoFiltro || conta.tipo === tipoFiltro) &&
+          (situacaoFiltro === "" ||
+            String(conta.ativo) === situacaoFiltro),
+      ),
+    [contas, situacaoFiltro, tipoFiltro],
+  );
+  const totalPaginas = Math.ceil(contasFiltradas.length / tamanhoPagina);
+  const contasDaPagina = contasFiltradas.slice(
+    pagina * tamanhoPagina,
+    (pagina + 1) * tamanhoPagina,
+  );
 
   const confirmarAlteracaoSituacao = async () => {
     try {
@@ -139,7 +170,7 @@ function ContaFinanceiraList() {
         </p>
       )}
 
-      <Card className="cadastros-toolbar">
+      <Card className="cadastros-toolbar contas-financeiras-toolbar">
         <Input
           aria-label="Buscar contas financeiras"
           placeholder="Buscar por nome..."
@@ -193,11 +224,11 @@ function ContaFinanceiraList() {
             description={erro}
             fullWidth
           />
-        ) : contas.length === 0 ? (
+        ) : contasFiltradas.length === 0 ? (
           <EmptyState
             icon={<HugeiconsIcon icon={Wallet01Icon} size={32} />}
             title="Nenhuma conta financeira encontrada"
-            description="Adicione uma conta ou ajuste a busca."
+            description="Adicione uma conta ou ajuste os filtros."
             fullWidth
           />
         ) : (
@@ -216,7 +247,7 @@ function ContaFinanceiraList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {contas.map((conta) => (
+                  {contasDaPagina.map((conta) => (
                     <tr key={conta.id}>
                       <td>{conta.nome}</td>
                       <td className="cadastros-table__muted">
@@ -268,7 +299,7 @@ function ContaFinanceiraList() {
             <Pagination
               page={pagina}
               totalPages={totalPaginas}
-              totalElements={totalRegistros}
+              totalElements={contasFiltradas.length}
               pageSize={tamanhoPagina}
               onChange={setPagina}
               onPageSizeChange={(tamanho) => {
