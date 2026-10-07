@@ -1,12 +1,17 @@
 package com.mpt.financecontrol.contapagar.dtos;
 
+import com.mpt.financecontrol.contapagarparcela.dtos.ContaPagarParcelaItemDto;
 import com.mpt.financecontrol.financeiro.StatusConta;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record ContaPagarUpdateDto(
@@ -26,9 +31,10 @@ public record ContaPagarUpdateDto(
 
         @Schema(description = "Valor total da conta", example = "1500.00")
         @Positive(message = "Valor total deve ser maior que zero")
+        @Digits(integer = 13, fraction = 2, message = "Valor total deve ter no máximo 2 casas decimais")
         BigDecimal valorTotal,
 
-        @Schema(description = "Status da conta", example = "PAGO")
+        @Schema(description = "Cancelar ou reabrir a conta", example = "CANCELADO")
         StatusConta status,
 
         @Schema(description = "Observações da conta")
@@ -36,5 +42,8 @@ public record ContaPagarUpdateDto(
         String observacao,
 
         @Schema(description = "Definir se a conta está ativa", example = "true")
-        Boolean ativo
+        Boolean ativo,
+
+        @Schema(description = "Parcelas da conta")
+        List<@NotNull(message = "Parcela não pode ser nula") @Valid ContaPagarParcelaItemDto> parcelas
 ) {}
