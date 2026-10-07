@@ -12,7 +12,6 @@ import {
   PiggyBankIcon,
   Chart01Icon,
   TradeUpIcon,
-  Target01Icon,
   ArrowReloadHorizontalIcon,
   SaveMoneyDollarIcon,
   UserGroupIcon,
@@ -76,27 +75,6 @@ const menuGroups = [
           },
         ],
       },
-      {
-        label: "Planejamento",
-        icon: Chart01Icon,
-        children: [
-          {
-            label: "Orçamento",
-            path: "/planejamento/orcamento",
-            icon: Chart01Icon,
-          },
-          {
-            label: "Metas",
-            path: "/planejamento/metas",
-            icon: Target01Icon,
-          },
-        ],
-      },
-      // {
-      //   label: "Configurações",
-      //   path: "/configuracoes",
-      //   icon: Settings01Icon,
-      // },
     ],
   },
   {
@@ -122,11 +100,6 @@ const menuGroups = [
             path: "/cadastros/formas-pagamento",
             icon: CreditCardPosIcon,
           },
-          // {
-          //   label: "Notificações",
-          //   path: "/cadastros/notificacoes",
-          //   icon: Notification01Icon,
-          // },
         ],
       },
     ],

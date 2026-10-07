@@ -4,7 +4,6 @@ import {
   HugeiconsIcon,
   PlusIcon,
   Search01Icon,
-  Notification01Icon,
   Settings01Icon,
   Logout05Icon,
   TradeUpIcon,
@@ -141,11 +140,6 @@ function Header({ title = "Início", onOpenMobileMenu }) {
     await lancamentoFinanceiroService.criar(transaction);
   };
 
-  const handleNotifications = () => {
-    setMenuPerfilAberto(false);
-    console.log("Abrir painel de notificações");
-  };
-
   const handleEditarPerfil = () => {
     setMenuPerfilAberto(false);
     navigate("/perfil");
@@ -255,19 +249,6 @@ function Header({ title = "Início", onOpenMobileMenu }) {
             <ThemeToggle />
           </div>
 
-          <div className="header-desktop-control">
-            <Button
-              className="btn-icon"
-              size="md"
-              onClick={handleNotifications}
-              aria-label="Notificações"
-              title="Notificações"
-            >
-              <HugeiconsIcon icon={Notification01Icon} size={20} />
-              <span className="notification-badge"></span>
-            </Button>
-          </div>
-
           <div className="avatar-menu" ref={menuPerfilRef}>
             <button
               type="button"
@@ -296,15 +277,6 @@ function Header({ title = "Início", onOpenMobileMenu }) {
                 >
                   <HugeiconsIcon icon={Moon02Icon} size={18} />
                   {temaAtual === "dark" ? "Tema Claro" : "Tema Escuro"}
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="avatar-menu__mobile-only"
-                  onClick={handleNotifications}
-                >
-                  <HugeiconsIcon icon={Notification01Icon} size={18} />
-                  Notificações
                 </button>
                 <button
                   type="button"

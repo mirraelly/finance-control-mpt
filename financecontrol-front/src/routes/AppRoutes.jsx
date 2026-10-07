@@ -24,11 +24,9 @@ import ContaPagarReceberForm from "../pages/ContasPagarReceber/ContaPagarReceber
 import PagarEReceber from "../pages/ContasPagarReceber/PagarEReceber";
 import FormaPagamentoList from "../pages/FormasPagamento/FormaPagamentoList";
 import FormaPagamentoForm from "../pages/FormasPagamento/FormaPagamentoForm";
-import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
 import Transferencias from "../pages/Transferencias/Transferencias";
-import EmConstrucao from "../pages/EmConstrucao/EmConstrucao";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
@@ -65,11 +63,6 @@ function AppRoutes() {
                 path="/movimentacoes/pagar-e-receber"
                 element={<PagarEReceber />}
               />
-              <Route
-                path="/planejamento/orcamento"
-                element={<EmConstrucao />}
-              />
-              <Route path="/planejamento/metas" element={<EmConstrucao />} />
               <Route path="/componentes-teste" element={<ComponentesTeste />} />
             </Route>
 
@@ -153,7 +146,6 @@ function AppRoutes() {
                 path="/contas/contas-receber/:id"
                 element={<ContaPagarReceberForm tipo="receber" />}
               />
-              <Route path="/cadastros/notificacoes" element={<Notificacoes />} />
             </Route>
           </Route>
         </Route>

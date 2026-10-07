@@ -36,11 +36,6 @@ const PAGE_RESULTS = [
     path: "/contas/contas-receber",
     roles: ["USER", "SUPERADMIN"],
   },
-  {
-    label: "Notificações",
-    path: "/cadastros/notificacoes",
-    roles: ["USER", "SUPERADMIN"],
-  },
   { label: "Usuários", path: "/admin/usuarios", roles: ["SUPERADMIN"] },
   { label: "Logs de login", path: "/admin/logs-login", roles: ["SUPERADMIN"] },
 ];

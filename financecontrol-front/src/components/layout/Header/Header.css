@@ -220,31 +220,6 @@
   flex-shrink: 0;
 }
 
-.btn-icon.button {
-  position: relative;
-  width: var(--space-8);
-  height: var(--space-8);
-  min-height: var(--space-8);
-  padding: 0;
-  border-radius: 50%;
-  flex-shrink: 0;
-
-  --button-background: rgba(16, 185, 129, 0.15);
-  --button-border: rgba(16, 185, 129, 0.3);
-  --button-color: var(--color-emerald-500);
-}
-
-.notification-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 9px;
-  height: 9px;
-  background-color: var(--color-emerald-500);
-  border-radius: 50%;
-  border: 2px solid var(--header-background);
-}
-
 .avatar-menu {
   position: relative;
 }
@@ -330,18 +305,6 @@
 .avatar-menu__dropdown .avatar-menu__logout:focus-visible {
   background: color-mix(in srgb, var(--danger) 10%, transparent);
   color: var(--danger);
-}
-
-[data-theme="light"] .btn-icon.button {
-  --button-background: var(--color-emerald-surface);
-  --button-border: rgba(16, 185, 129, 0.3);
-  --button-color: var(--color-emerald-600);
-}
-
-[data-theme="light"] .btn-icon.button:hover {
-  --button-background: var(--color-emerald-surface);
-  --button-border: var(--color-emerald-600);
-  --button-color: var(--color-emerald-600);
 }
 
 [data-theme="light"] .avatar {
