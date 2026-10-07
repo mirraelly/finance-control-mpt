@@ -288,7 +288,6 @@ function Transacoes() {
               setCategoryId(event.target.value);
               setCurrentPage(0);
             }}
-            width="180px"
             className="transacoes-toolbar__category"
           />
 
@@ -349,7 +348,7 @@ function Transacoes() {
                     return (
                       <tr key={transaction.id}>
                         {activeTab === "todas" && (
-                          <td>
+                          <td data-label="Tipo">
                             <span
                               className={`transacoes-avatar transacoes-avatar--${transaction.tipo}`}
                               aria-label={
@@ -367,23 +366,32 @@ function Transacoes() {
                             </span>
                           </td>
                         )}
-                        <td>
+                        <td data-label="Descrição">
                           <div className="transacoes-table__description">
                             <span>{transaction.descricao || "—"}</span>
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Categoria">
                           <Badge variant={categoryVariant} size="sm">
                             {transaction.categoriaLabel}
                           </Badge>
                         </td>
-                        <td className="transacoes-table__muted">
+                        <td
+                          className="transacoes-table__muted"
+                          data-label="Data"
+                        >
                           {formatDate(transaction.data)}
                         </td>
-                        <td className="transacoes-table__muted">
+                        <td
+                          className="transacoes-table__muted"
+                          data-label="Conta financeira"
+                        >
                           {transaction.contaFinanceiraNome}
                         </td>
-                        <td className="transacoes-table__muted">
+                        <td
+                          className="transacoes-table__muted"
+                          data-label="Origem"
+                        >
                           {transaction.metodo}
                         </td>
                         <td
@@ -392,11 +400,12 @@ function Transacoes() {
                               ? "transacoes-table__value--positive"
                               : "transacoes-table__value--negative"
                           }`}
+                          data-label="Valor"
                         >
                           {transaction.tipo === "receita" ? "+ " : "- "}
                           {formatCurrency(transaction.valor)}
                         </td>
-                        <td>
+                        <td data-label="Ações">
                           {isManual ? (
                             <Button
                               variant="ghost"
