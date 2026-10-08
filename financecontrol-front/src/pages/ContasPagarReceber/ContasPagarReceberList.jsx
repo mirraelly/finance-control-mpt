@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -17,9 +17,11 @@ import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
+import useToast from "../../components/common/Toast/useToast";
 import categoriaService from "../../services/categoriaService";
 import contasPagarReceberService from "../../services/contasPagarReceberService";
 import pessoaService from "../../services/pessoaService";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "../Cadastros/Cadastros.css";
 
 const PAGE_SIZE = 15;
@@ -61,6 +63,8 @@ function variantStatus(status) {
 function ContasPagarReceberList({ tipo }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const showToast = useToast();
+  const ultimoToastConsumido = useRef(null);
   const ehPagar = tipo === "pagar";
   const titulo = ehPagar ? "Contas a Pagar" : "Contas a Receber";
   const pessoaLabel = ehPagar ? "Fornecedor / credor" : "Cliente / devedor";
@@ -80,21 +84,25 @@ function ContasPagarReceberList({ tipo }) {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [erroOpcoes, setErroOpcoes] = useState("");
-  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [contaSelecionada, setContaSelecionada] = useState(null);
   const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
 
   useEffect(() => {
-    if (!location.state?.mensagem) return;
+    if (
+      !location.state?.mensagem ||
+      ultimoToastConsumido.current === location.key
+    ) {
+      return;
+    }
+    ultimoToastConsumido.current = location.key;
+    showToast({
+      type: "success",
+      title: "Operação concluída",
+      message: location.state.mensagem,
+    });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.pathname, location.state, navigate]);
-
-  useEffect(() => {
-    if (!mensagem) return;
-    const timeout = setTimeout(() => setMensagem(""), 4000);
-    return () => clearTimeout(timeout);
-  }, [mensagem]);
+  }, [location.key, location.pathname, location.state, navigate, showToast]);
 
   useEffect(() => {
     let ativo = true;
@@ -115,6 +123,11 @@ function ContasPagarReceberList({ tipo }) {
           setErroOpcoes(
             "Não foi possível carregar pessoas e categorias. Recarregue a página e tente novamente.",
           );
+          showApiErrorToast(
+            showToast,
+            erroCarregamento,
+            "Não foi possível carregar pessoas e categorias.",
+          );
         }
       }
     }
@@ -123,7 +136,7 @@ function ContasPagarReceberList({ tipo }) {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     let ativo = true;
@@ -146,7 +159,14 @@ function ContasPagarReceberList({ tipo }) {
         setTotalRegistros(resposta.totalElements);
       } catch (erroCarregamento) {
         console.error(`Erro ao carregar ${titulo.toLowerCase()}:`, erroCarregamento);
-        if (ativo) setErro(`Não foi possível carregar ${titulo.toLowerCase()}.`);
+        if (ativo) {
+          setErro(`Não foi possível carregar ${titulo.toLowerCase()}.`);
+          showApiErrorToast(
+            showToast,
+            erroCarregamento,
+            `Não foi possível carregar ${titulo.toLowerCase()}.`,
+          );
+        }
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -166,6 +186,7 @@ function ContasPagarReceberList({ tipo }) {
     statusFiltro,
     situacaoFiltro,
     recarregar,
+    showToast,
   ]);
 
   const confirmarAlteracaoSituacao = async () => {
@@ -174,18 +195,21 @@ function ContasPagarReceberList({ tipo }) {
       await contasPagarReceberService.atualizar(tipo, contaSelecionada.id, {
         ativo: !contaSelecionada.ativo,
       });
-      setMensagem(
-        contaSelecionada.ativo
+      showToast({
+        type: "success",
+        title: "Situação atualizada",
+        message: contaSelecionada.ativo
           ? `${ehPagar ? "Conta a pagar" : "Conta a receber"} inativada com sucesso.`
           : `${ehPagar ? "Conta a pagar" : "Conta a receber"} ativada com sucesso.`,
-      );
+      });
       setContaSelecionada(null);
       setRecarregar((valor) => valor + 1);
     } catch (alteracaoError) {
       console.error(`Erro ao alterar situação de ${titulo.toLowerCase()}:`, alteracaoError);
-      alert(
-        alteracaoError?.response?.data?.erro ||
-          `Não foi possível alterar a situação de ${titulo.toLowerCase()}.`,
+      showApiErrorToast(
+        showToast,
+        alteracaoError,
+        `Não foi possível alterar a situação de ${titulo.toLowerCase()}.`,
       );
     } finally {
       setAlterandoSituacao(false);
@@ -199,12 +223,6 @@ function ContasPagarReceberList({ tipo }) {
 
   return (
     <div className="cadastros-page">
-      {mensagem && (
-        <p className="cadastros-mensagem" role="status">
-          {mensagem}
-        </p>
-      )}
-
       {erroOpcoes && (
         <p className="cadastros-form__error" role="alert">
           {erroOpcoes}

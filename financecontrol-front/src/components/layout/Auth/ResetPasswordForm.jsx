@@ -9,6 +9,8 @@ import {
 } from "../../../assets/icons";
 import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
+import useToast from "../../common/Toast/useToast";
+import { showApiErrorToast } from "../../../utils/toastErrors";
 
 function ResetPasswordForm() {
   const [searchParams] = useSearchParams();
@@ -16,10 +18,10 @@ function ResetPasswordForm() {
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [senhaFocada, setSenhaFocada] = useState(false);
-  const [error, setError] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const showToast = useToast();
   const requisitosSenha = [
     { texto: "Mínimo de 8 caracteres", atendido: novaSenha.length >= 8 },
     { texto: "Incluir uma letra maiúscula", atendido: /[A-Z]/.test(novaSenha) },
@@ -30,16 +32,21 @@ function ResetPasswordForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
-
     if (requisitosSenha.some(({ atendido }) => !atendido)) {
-      setError(
-        "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.",
-      );
+      showToast({
+        type: "error",
+        title: "Senha inválida",
+        message:
+          "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.",
+      });
       return;
     }
     if (novaSenha !== confirmarSenha) {
-      setError("As senhas não correspondem.");
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "As senhas não correspondem.",
+      });
       return;
     }
 
@@ -47,14 +54,23 @@ function ResetPasswordForm() {
 
     try {
       await authService.redefinirSenha({ token, novaSenha });
-      setSucesso("Senha redefinida com sucesso! Redirecionando...");
+      const mensagemSucesso = "Senha redefinida com sucesso! Redirecionando...";
+      setSucesso(mensagemSucesso);
+      showToast({
+        type: "success",
+        title: "Senha redefinida",
+        message: mensagemSucesso,
+      });
 
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (err) {
-      const message = err?.response?.data?.erro;
-      setError(message || "Não foi possível redefinir a senha. Tente novamente.");
+      showApiErrorToast(
+        showToast,
+        err,
+        "Não foi possível redefinir a senha. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }
@@ -142,9 +158,6 @@ function ResetPasswordForm() {
           fullWidth
           required
         />
-
-        {error && <div className="login-error">{error}</div>}
-        {sucesso && <div className="login-success">{sucesso}</div>}
 
         <Button
           type="submit"

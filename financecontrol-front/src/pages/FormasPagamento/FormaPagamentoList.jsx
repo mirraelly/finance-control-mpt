@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -18,7 +18,9 @@ import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
+import useToast from "../../components/common/Toast/useToast";
 import formaPagamentoService from "../../services/formaPagamentoService";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "../Cadastros/Cadastros.css";
 
 const PAGE_SIZE = 15;
@@ -26,6 +28,8 @@ const PAGE_SIZE = 15;
 function FormaPagamentoList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const showToast = useToast();
+  const ultimoToastConsumido = useRef(null);
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
@@ -36,21 +40,25 @@ function FormaPagamentoList() {
   const [situacaoFiltro, setSituacaoFiltro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [selecionada, setSelecionada] = useState(null);
   const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
 
   useEffect(() => {
-    if (!location.state?.mensagem) return;
+    if (
+      !location.state?.mensagem ||
+      ultimoToastConsumido.current === location.key
+    ) {
+      return;
+    }
+    ultimoToastConsumido.current = location.key;
+    showToast({
+      type: "success",
+      title: "Operação concluída",
+      message: location.state.mensagem,
+    });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.pathname, location.state, navigate]);
-
-  useEffect(() => {
-    if (!mensagem) return undefined;
-    const timeout = setTimeout(() => setMensagem(""), 4000);
-    return () => clearTimeout(timeout);
-  }, [mensagem]);
+  }, [location.key, location.pathname, location.state, navigate, showToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -79,7 +87,14 @@ function FormaPagamentoList() {
         setTotalRegistros(resposta.totalElements);
       } catch (loadError) {
         console.error("Erro ao carregar formas de pagamento:", loadError);
-        if (ativo) setErro("Não foi possível carregar as formas de pagamento.");
+        if (ativo) {
+          setErro("Não foi possível carregar as formas de pagamento.");
+          showApiErrorToast(
+            showToast,
+            loadError,
+            "Não foi possível carregar as formas de pagamento.",
+          );
+        }
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -89,7 +104,7 @@ function FormaPagamentoList() {
     return () => {
       ativo = false;
     };
-  }, [pagina, tamanhoPagina, filtro, situacaoFiltro, recarregar]);
+  }, [pagina, tamanhoPagina, filtro, situacaoFiltro, recarregar, showToast]);
 
   const confirmarAlteracaoSituacao = async () => {
     try {
@@ -99,18 +114,21 @@ function FormaPagamentoList() {
         contaFinanceiraId: selecionada.contaFinanceiraId,
         ativo: !selecionada.ativo,
       });
-      setMensagem(
-        selecionada.ativo
+      showToast({
+        type: "success",
+        title: "Situação atualizada",
+        message: selecionada.ativo
           ? "Forma de pagamento inativada com sucesso."
           : "Forma de pagamento ativada com sucesso.",
-      );
+      });
       setSelecionada(null);
       setRecarregar((valor) => valor + 1);
     } catch (updateError) {
       console.error("Erro ao alterar situação da forma de pagamento:", updateError);
-      alert(
-        updateError?.response?.data?.erro ||
-          "Não foi possível alterar a situação da forma de pagamento.",
+      showApiErrorToast(
+        showToast,
+        updateError,
+        "Não foi possível alterar a situação da forma de pagamento.",
       );
     } finally {
       setAlterandoSituacao(false);
@@ -119,12 +137,6 @@ function FormaPagamentoList() {
 
   return (
     <div className="cadastros-page">
-      {mensagem && (
-        <p className="cadastros-mensagem" role="status">
-          {mensagem}
-        </p>
-      )}
-
       <Card className="cadastros-toolbar">
         <Input
           aria-label="Buscar formas de pagamento"

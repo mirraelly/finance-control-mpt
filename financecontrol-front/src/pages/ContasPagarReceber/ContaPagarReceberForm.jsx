@@ -8,11 +8,14 @@ import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Select from "../../components/common/Select";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
+import useToast from "../../components/common/Toast/useToast";
 import categoriaService from "../../services/categoriaService";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
 import contasPagarReceberService from "../../services/contasPagarReceberService";
 import formaPagamentoService from "../../services/formaPagamentoService";
 import pessoaService from "../../services/pessoaService";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "../Cadastros/Cadastros.css";
 import "./ContaPagarReceberForm.css";
 
@@ -101,6 +104,7 @@ function criarFormularioInicial() {
 function ContaPagarReceberForm({ tipo }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
   const ehPagar = tipo === "pagar";
   const titulo = ehPagar ? "conta a pagar" : "conta a receber";
   const basePath = `/contas/contas-${tipo}`;
@@ -148,6 +152,12 @@ function ContaPagarReceberForm({ tipo }) {
             setErroFormasPagamento(
               "Não foi possível carregar as opções de formas de pagamento.",
             );
+            showToast({
+              type: "warning",
+              title: "Formas de pagamento indisponíveis",
+              message:
+                "Não foi possível carregar as opções de formas de pagamento.",
+            });
           }
         }
         if (conta) {
@@ -189,6 +199,12 @@ function ContaPagarReceberForm({ tipo }) {
                   setErroFormasPagamento(
                     "Não foi possível carregar a forma de pagamento atual.",
                   );
+                  showToast({
+                    type: "warning",
+                    title: "Forma de pagamento indisponível",
+                    message:
+                      "Não foi possível carregar a forma de pagamento atual.",
+                  });
                 }
                 formasDisponiveis = [
                   ...listaFormasPagamento,
@@ -245,6 +261,11 @@ function ContaPagarReceberForm({ tipo }) {
         console.error(`Erro ao carregar formulário de ${titulo}:`, loadError);
         if (ativo) {
           setErro(`Não foi possível carregar os dados de ${titulo}.`);
+          showApiErrorToast(
+            showToast,
+            loadError,
+            `Não foi possível carregar os dados de ${titulo}.`,
+          );
         }
       } finally {
         if (ativo) setCarregando(false);
@@ -255,7 +276,7 @@ function ContaPagarReceberForm({ tipo }) {
     return () => {
       ativo = false;
     };
-  }, [ehPagar, id, tipo, titulo]);
+  }, [ehPagar, id, tipo, titulo, showToast]);
 
   const atualizarCampo = (event) => {
     const { name, value } = event.target;
@@ -341,17 +362,22 @@ function ContaPagarReceberForm({ tipo }) {
 
   const salvarConta = async (event) => {
     event.preventDefault();
+    if (!validateRequiredFields(event, showToast)) return;
     setErro("");
+    const notificarErro = (message) => {
+      setErro(message);
+      showToast({ type: "error", title: "Verifique os dados", message });
+    };
 
     if (!formulario.pessoaId) {
-      setErro(`Selecione ${ehPagar ? "um fornecedor" : "um cliente"}.`);
+      notificarErro(`Selecione ${ehPagar ? "um fornecedor" : "um cliente"}.`);
       return;
     }
 
     setSalvando(true);
     try {
       if (ehPagar && paraCentavos(formulario.valorTotal) <= 0) {
-        setErro("Informe um valor total maior que zero.");
+        notificarErro("Informe um valor total maior que zero.");
         return;
       }
       if (!ehPagar && (!id || parcelasAlteradas)) {
@@ -360,11 +386,11 @@ function ContaPagarReceberForm({ tipo }) {
         const valorParcelaCentavos = paraCentavos(formulario.valorParcela);
 
         if (!Number.isInteger(quantidadeParcelas) || quantidadeParcelas < 1) {
-          setErro("Informe uma quantidade de parcelas válida.");
+          notificarErro("Informe uma quantidade de parcelas válida.");
           return;
         }
         if (valorTotalCentavos <= 0 || valorParcelaCentavos <= 0) {
-          setErro("Informe o valor total e o valor da parcela.");
+          notificarErro("Informe o valor total e o valor da parcela.");
           return;
         }
         if (
@@ -372,23 +398,23 @@ function ContaPagarReceberForm({ tipo }) {
           valorTotalCentavos - valorParcelaCentavos * quantidadeParcelas >=
             quantidadeParcelas
         ) {
-          setErro(
+          notificarErro(
             "O valor total deve corresponder às parcelas; o ajuste de arredondamento não pode exceder R$ 0,01 por parcela.",
           );
           return;
         }
         if (!formulario.dataVencimento) {
-          setErro("Informe o vencimento da primeira parcela.");
+          notificarErro("Informe o vencimento da primeira parcela.");
           return;
         }
         if (formulario.dataVencimento < formulario.dataEmissao) {
-          setErro(
+          notificarErro(
             "O vencimento da primeira parcela não pode ser anterior à data de emissão.",
           );
           return;
         }
         if (!formulario.contaFinanceiraId || !formulario.formaPagamentoId) {
-          setErro("Selecione a conta financeira e a forma de pagamento.");
+          notificarErro("Selecione a conta financeira e a forma de pagamento.");
           return;
         }
       }
@@ -397,7 +423,7 @@ function ContaPagarReceberForm({ tipo }) {
         !erroFormasPagamento &&
         (!formulario.contaFinanceiraId || !formulario.formaPagamentoId)
       ) {
-        setErro("Selecione a conta financeira e a forma de pagamento.");
+        notificarErro("Selecione a conta financeira e a forma de pagamento.");
         return;
       }
 
@@ -453,7 +479,7 @@ function ContaPagarReceberForm({ tipo }) {
       } else {
         const valorTotal = Number(formulario.valorTotal);
         if (!Number.isFinite(valorTotal) || valorTotal <= 0) {
-          setErro("Informe um valor maior que zero.");
+          notificarErro("Informe um valor maior que zero.");
           setSalvando(false);
           return;
         }
@@ -483,10 +509,15 @@ function ContaPagarReceberForm({ tipo }) {
       });
     } catch (saveError) {
       console.error(`Erro ao salvar ${titulo}:`, saveError);
-      setErro(
+      const mensagemErro =
         saveError?.response?.data?.erro ||
-          saveError?.response?.data?.message ||
-          `Não foi possível salvar ${titulo}.`,
+        saveError?.response?.data?.message ||
+        `Não foi possível salvar ${titulo}.`;
+      setErro(mensagemErro);
+      showApiErrorToast(
+        showToast,
+        saveError,
+        `Não foi possível salvar ${titulo}.`,
       );
     } finally {
       setSalvando(false);
@@ -617,7 +648,7 @@ function ContaPagarReceberForm({ tipo }) {
           >
           </Button>
         </div>
-        <form className="cadastros-form" onSubmit={salvarConta}>
+        <form className="cadastros-form" onSubmit={salvarConta} noValidate>
           <Select
             id={`${tipo}-pessoa`}
             name="pessoaId"
@@ -787,11 +818,6 @@ function ContaPagarReceberForm({ tipo }) {
                 </span>
               </div>
             </div>
-          )}
-          {erro && (
-            <p className="cadastros-form__error" role="alert">
-              {erro}
-            </p>
           )}
           <div className="cadastros-form__actions">
             <Button

@@ -14,9 +14,11 @@ import Select from "../../components/common/Select";
 import EmptyState from "../../components/common/EmptyState";
 import Loading from "../../components/common/Loading";
 import Pagination from "../../components/common/Pagination/Pagination";
+import useToast from "../../components/common/Toast/useToast";
 import NewTransactionModal from "../../components/transaction/NewTransactionModal";
 import categoriaService from "../../services/categoriaService";
 import lancamentoFinanceiroService from "../../services/lancamentoFinanceiroService";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "./Transacoes.css";
 
 const TABS = [
@@ -83,6 +85,7 @@ function getCategoryVariant(transaction) {
 }
 
 function Transacoes() {
+  const showToast = useToast();
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,13 +120,18 @@ function Transacoes() {
         console.error("Erro ao carregar categorias das transações:", loadError);
         if (isCurrent) {
           setCategoriesError("Não foi possível carregar as categorias.");
+          showApiErrorToast(
+            showToast,
+            loadError,
+            "Não foi possível carregar as categorias.",
+          );
         }
       });
 
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -167,6 +175,11 @@ function Transacoes() {
         console.error("Erro ao carregar transações:", loadError);
         if (isCurrent) {
           setError("Não foi possível carregar as transações.");
+          showApiErrorToast(
+            showToast,
+            loadError,
+            "Não foi possível carregar as transações.",
+          );
           setTransactions([]);
           setTotalPages(0);
           setTotalElements(0);
@@ -187,6 +200,7 @@ function Transacoes() {
     categoryId,
     debouncedSearch,
     refreshKey,
+    showToast,
   ]);
 
   const handleSaveTransaction = async (values) => {

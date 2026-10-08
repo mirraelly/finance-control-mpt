@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -18,7 +18,9 @@ import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
+import useToast from "../../components/common/Toast/useToast";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "../Cadastros/Cadastros.css";
 import "./ContaFinanceiraList.css";
 
@@ -60,6 +62,8 @@ async function listarContasFinanceiras(nome) {
 function ContaFinanceiraList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const showToast = useToast();
+  const ultimoToastConsumido = useRef(null);
   const [contas, setContas] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
@@ -69,21 +73,25 @@ function ContaFinanceiraList() {
   const [situacaoFiltro, setSituacaoFiltro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [contaSelecionada, setContaSelecionada] = useState(null);
   const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
 
   useEffect(() => {
-    if (!location.state?.mensagem) return;
+    if (
+      !location.state?.mensagem ||
+      ultimoToastConsumido.current === location.key
+    ) {
+      return;
+    }
+    ultimoToastConsumido.current = location.key;
+    showToast({
+      type: "success",
+      title: "Operação concluída",
+      message: location.state.mensagem,
+    });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.pathname, location.state, navigate]);
-
-  useEffect(() => {
-    if (!mensagem) return;
-    const timeout = setTimeout(() => setMensagem(""), 4000);
-    return () => clearTimeout(timeout);
-  }, [mensagem]);
+  }, [location.key, location.pathname, location.state, navigate, showToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -108,6 +116,11 @@ function ContaFinanceiraList() {
         console.error("Erro ao carregar contas financeiras:", erroCarregamento);
         if (ativo) {
           setErro("Não foi possível carregar as contas financeiras.");
+          showApiErrorToast(
+            showToast,
+            erroCarregamento,
+            "Não foi possível carregar as contas financeiras.",
+          );
         }
       } finally {
         if (ativo) setCarregando(false);
@@ -118,7 +131,7 @@ function ContaFinanceiraList() {
     return () => {
       ativo = false;
     };
-  }, [filtro, recarregar]);
+  }, [filtro, recarregar, showToast]);
 
   const contasFiltradas = useMemo(
     () =>
@@ -144,18 +157,21 @@ function ContaFinanceiraList() {
         tipo: contaSelecionada.tipo,
         ativo: !contaSelecionada.ativo,
       });
-      setMensagem(
-        contaSelecionada.ativo
+      showToast({
+        type: "success",
+        title: "Situação atualizada",
+        message: contaSelecionada.ativo
           ? "Conta financeira inativada com sucesso."
           : "Conta financeira ativada com sucesso.",
-      );
+      });
       setContaSelecionada(null);
       setRecarregar((valor) => valor + 1);
     } catch (alteracaoError) {
       console.error("Erro ao alterar situação da conta financeira:", alteracaoError);
-      alert(
-        alteracaoError?.response?.data?.erro ||
-          "Não foi possível alterar a situação da conta financeira.",
+      showApiErrorToast(
+        showToast,
+        alteracaoError,
+        "Não foi possível alterar a situação da conta financeira.",
       );
     } finally {
       setAlterandoSituacao(false);
@@ -164,12 +180,6 @@ function ContaFinanceiraList() {
 
   return (
     <div className="cadastros-page">
-      {mensagem && (
-        <p className="cadastros-mensagem" role="status">
-          {mensagem}
-        </p>
-      )}
-
       <Card className="cadastros-toolbar contas-financeiras-toolbar">
         <Input
           aria-label="Buscar contas financeiras"

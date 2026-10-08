@@ -16,6 +16,9 @@ import TermosServico from "../../common/Legal/TermosServico";
 import PoliticaPrivacidade from "../../common/Legal/PoliticaPrivacidade";
 import Input from "../../common/Input/Input";
 import Button from "../../common/Button/Button";
+import useToast from "../../common/Toast/useToast";
+import { showApiErrorToast } from "../../../utils/toastErrors";
+import validateRequiredFields from "../../../utils/validateRequiredFields";
 
 function CadastroForm() {
   const [nome, setNome] = useState("");
@@ -32,9 +35,9 @@ function CadastroForm() {
   const [termosAberto, setTermosAberto] = useState(false);
   const [privacidadeAberta, setPrivacidadeAberta] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [sucesso, setSucesso] = useState("");
   const navigate = useNavigate();
+  const showToast = useToast();
   const requisitosSenha = [
     { texto: "Mínimo de 8 caracteres", atendido: senha.length >= 8 },
     { texto: "Incluir uma letra maiúscula", atendido: /[A-Z]/.test(senha) },
@@ -45,27 +48,51 @@ function CadastroForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
+    if (!validateRequiredFields(event, showToast)) return;
 
     const nomeCompleto = `${nome} ${sobrenome}`.trim();
 
     if (nomeCompleto.length > 255) {
-      setError("Nome e sobrenome juntos devem ter no máximo 255 caracteres.");
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Nome e sobrenome juntos devem ter no máximo 255 caracteres.",
+      });
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Informe um endereço de e-mail válido.",
+      });
       return;
     }
 
     if (senha !== confirmarSenha) {
-      setError("As senhas não correspondem.");
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "As senhas não correspondem.",
+      });
       return;
     }
     if (requisitosSenha.some(({ atendido }) => !atendido)) {
-      setError(
-        "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.",
-      );
+      showToast({
+        type: "error",
+        title: "Senha inválida",
+        message:
+          "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.",
+      });
       return;
     }
     if (!aceitouTermos) {
-      setError("Você precisa concordar com os termos para continuar.");
+      showToast({
+        type: "warning",
+        title: "Termos de serviço",
+        message: "Você precisa concordar com os termos para continuar.",
+      });
       return;
     }
 
@@ -81,14 +108,19 @@ function CadastroForm() {
 
     try {
       await authService.register(dadosCadastro);
-      setSucesso("Cadastro realizado com sucesso! Redirecionando...");
+      const mensagemSucesso = "Cadastro realizado com sucesso! Redirecionando...";
+      setSucesso(mensagemSucesso);
+      showToast({
+        type: "success",
+        title: "Cadastro realizado",
+        message: mensagemSucesso,
+      });
 
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (err) {
-      const message = err?.response?.data?.erro || err?.message;
-      setError(message || "Erro ao realizar cadastro. Tente novamente.");
+      showApiErrorToast(showToast, err, "Erro ao realizar cadastro. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -105,7 +137,7 @@ function CadastroForm() {
         </p>
       </div>
 
-      <form className="cadastro-form" onSubmit={handleSubmit}>
+      <form className="cadastro-form" onSubmit={handleSubmit} noValidate>
         <div className="cadastro-nome-row">
           <Input
             label={
@@ -340,10 +372,12 @@ function CadastroForm() {
           </span>
         </div>
 
-        {error && <div className="cadastro-error">{error}</div>}
-        {sucesso && <div className="cadastro-success">{sucesso}</div>}
-
-        <Button type="submit" variant="primary" fullWidth disabled={loading}>
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          disabled={loading || Boolean(sucesso)}
+        >
           {loading ? "Cadastrando.." : "Cadastrar"}
         </Button>
       </form>

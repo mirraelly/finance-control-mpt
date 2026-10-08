@@ -13,6 +13,9 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import Loading from "../../components/common/Loading";
+import useToast from "../../components/common/Toast/useToast";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "./Usuarios.css";
 
 const PERFIL_OPTIONS = [
@@ -23,6 +26,7 @@ const PERFIL_OPTIONS = [
 function UsuarioForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
   const isEdicao = Boolean(id);
 
   const [nome, setNome] = useState("");
@@ -37,7 +41,6 @@ function UsuarioForm() {
 
   const [carregando, setCarregando] = useState(isEdicao);
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState("");
 
   const requisitosSenha = [
     { texto: "Mínimo de 8 caracteres", atendido: senha.length >= 8 },
@@ -62,34 +65,40 @@ function UsuarioForm() {
         setAtivo(usuario.ativo);
       } catch (erro) {
         console.error("Erro ao carregar usuário:", erro);
-        setErro("Não foi possível carregar os dados do usuário.");
+        showApiErrorToast(
+          showToast,
+          erro,
+          "Não foi possível carregar os dados do usuário.",
+        );
       } finally {
         setCarregando(false);
       }
     }
 
     carregarUsuario();
-  }, [id, isEdicao]);
+  }, [id, isEdicao, showToast]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setErro("");
+    if (!validateRequiredFields(event, showToast)) return;
 
     if (nome.trim().length < 3) {
-      setErro("Informe um nome válido com pelo menos 3 caracteres.");
+      const message = "Informe um nome válido com pelo menos 3 caracteres.";
+      showToast({ type: "error", title: "Dados inválidos", message });
       return;
     }
 
     if (!isEdicao) {
       if (requisitosSenha.some(({ atendido }) => !atendido)) {
-        setErro(
-          "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.",
-        );
+        const message =
+          "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.";
+        showToast({ type: "error", title: "Dados inválidos", message });
         return;
       }
 
       if (senha !== confirmarSenha) {
-        setErro("As senhas não correspondem.");
+        const message = "As senhas não correspondem.";
+        showToast({ type: "error", title: "Dados inválidos", message });
         return;
       }
     }
@@ -116,11 +125,19 @@ function UsuarioForm() {
         });
       }
 
+      showToast({
+        type: "success",
+        title: "Operação concluída",
+        message: isEdicao
+          ? "Usuário atualizado com sucesso."
+          : "Usuário criado com sucesso.",
+      });
       navigate("/admin/usuarios");
     } catch (erro) {
-      setErro(
-        erro?.response?.data?.erro ||
-          "Não foi possível salvar o usuário. Tente novamente.",
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível salvar o usuário. Tente novamente.",
       );
     } finally {
       setSalvando(false);
@@ -143,7 +160,7 @@ function UsuarioForm() {
           </p>
         </div>
 
-        <form className="usuario-form" onSubmit={handleSubmit}>
+        <form className="usuario-form" onSubmit={handleSubmit} noValidate>
           <div className="usuario-form__linha">
             <Input
               id="usuario-nome"
@@ -272,11 +289,6 @@ function UsuarioForm() {
             </>
           )}
 
-          {erro && (
-            <p className="usuario-form__erro" role="alert">
-              {erro}
-            </p>
-          )}
 
           <div className="usuario-form__botoes">
             <Button

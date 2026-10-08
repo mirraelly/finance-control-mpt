@@ -13,9 +13,12 @@ import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Select from "../../components/common/Select";
+import useToast from "../../components/common/Toast/useToast";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
 import contasPagarReceberService from "../../services/contasPagarReceberService";
 import formaPagamentoService from "../../services/formaPagamentoService";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "../Cadastros/Cadastros.css";
 import "./PagarContas.css";
 
@@ -125,6 +128,7 @@ function normalizarTexto(texto) {
 }
 
 function PagarEReceber() {
+  const showToast = useToast();
   const [registros, setRegistros] = useState([]);
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [contasFinanceiras, setContasFinanceiras] = useState([]);
@@ -138,9 +142,6 @@ function PagarEReceber() {
   const [vencimentoAte, setVencimentoAte] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [erroOpcoes, setErroOpcoes] = useState("");
-  const [erroPagamento, setErroPagamento] = useState("");
-  const [mensagem, setMensagem] = useState("");
 
   useEffect(() => {
     let ativo = true;
@@ -149,7 +150,6 @@ function PagarEReceber() {
       try {
         setCarregando(true);
         setErro("");
-        setErroOpcoes("");
         const resultados = await Promise.allSettled([
           listarTodasAsContas("pagar"),
           listarTodasAsContas("receber"),
@@ -213,19 +213,40 @@ function PagarEReceber() {
           resultadoPagar.status === "rejected" &&
           resultadoReceber.status === "rejected"
         ) {
-          setErro(
-            "Não foi possível carregar as contas a pagar nem as contas a receber. Verifique a conexão com o servidor e tente novamente.",
+          const mensagemErro =
+            "Não foi possível carregar as contas a pagar nem as contas a receber. Verifique a conexão com o servidor e tente novamente.";
+          setErro(mensagemErro);
+          showApiErrorToast(
+            showToast,
+            resultadoPagar.reason,
+            mensagemErro,
           );
         } else if (erros.length > 0) {
-          setErroOpcoes(
-            `Não foi possível carregar ${erros.join(" e ")}. Algumas opções podem ficar indisponíveis.`,
+          const resultadoFalho = resultados.find(
+            (resultado) => resultado.status === "rejected",
           );
+          showToast({
+            type: "warning",
+            title: "Opções parcialmente indisponíveis",
+            message: `Não foi possível carregar ${erros.join(" e ")}. Algumas opções podem ficar indisponíveis.`,
+          });
+          if (resultadoFalho) {
+            console.error(
+              "Falha ao carregar opções de Pagar e Receber:",
+              resultadoFalho.reason,
+            );
+          }
         }
       } catch (loadError) {
         console.error("Erro ao carregar contas para pagamento:", loadError);
         if (ativo) {
-          setErro(
-            "Não foi possível carregar as contas e opções de pagamento. Recarregue a página e tente novamente.",
+          const mensagemErro =
+            "Não foi possível carregar as contas e opções de pagamento. Recarregue a página e tente novamente.";
+          setErro(mensagemErro);
+          showApiErrorToast(
+            showToast,
+            loadError,
+            mensagemErro,
           );
         }
       } finally {
@@ -237,13 +258,7 @@ function PagarEReceber() {
     return () => {
       ativo = false;
     };
-  }, []);
-
-  useEffect(() => {
-    if (!mensagem) return undefined;
-    const timeout = setTimeout(() => setMensagem(""), 4000);
-    return () => clearTimeout(timeout);
-  }, [mensagem]);
+  }, [showToast]);
 
   const pessoas = useMemo(() => {
     const pessoasUnicas = new Map();
@@ -304,7 +319,6 @@ function PagarEReceber() {
   const voltarParaLista = () => {
     setRegistroSelecionado(null);
     setPagamento(NOVO_PAGAMENTO);
-    setErroPagamento("");
   };
 
   const abrirPagamento = (registro) => {
@@ -313,28 +327,29 @@ function PagarEReceber() {
       ...NOVO_PAGAMENTO,
       valorPago: String(registro.saldo),
     });
-    setErroPagamento("");
   };
 
   const salvarPagamento = (event) => {
     event.preventDefault();
-    setErroPagamento("");
+    if (!validateRequiredFields(event, showToast)) return;
+    const notificarErro = (message) =>
+      showToast({ type: "error", title: "Dados inválidos", message });
 
     const valorPago = Number(pagamento.valorPago);
     if (!pagamento.dataPagamento) {
-      setErroPagamento("Informe a data do pagamento.");
+      notificarErro("Informe a data do pagamento.");
       return;
     }
     if (!Number.isFinite(valorPago) || valorPago <= 0) {
-      setErroPagamento("Informe um valor pago maior que zero.");
+      notificarErro("Informe um valor pago maior que zero.");
       return;
     }
     if (valorPago > registroSelecionado.saldo) {
-      setErroPagamento("O valor pago não pode ser maior que o saldo da conta.");
+      notificarErro("O valor pago não pode ser maior que o saldo da conta.");
       return;
     }
     if (!pagamento.formaPagamentoId || !pagamento.contaFinanceiraId) {
-      setErroPagamento("Selecione a forma de pagamento e a conta financeira.");
+      notificarErro("Selecione a forma de pagamento e a conta financeira.");
       return;
     }
 
@@ -347,11 +362,14 @@ function PagarEReceber() {
           : atual,
       ),
     );
-    setMensagem(
-      novoStatus === "PAGO"
-        ? "Pagamento registrado. A conta foi marcada como paga."
-        : "Pagamento parcial registrado. O saldo da conta foi atualizado.",
-    );
+    showToast({
+      type: "warning",
+      title: "Alteração temporária",
+      message:
+        novoStatus === "PAGO"
+          ? "O status foi alterado apenas nesta tela; o serviço de pagamento ainda não persiste essa baixa."
+          : "O saldo foi atualizado apenas nesta tela; o serviço de pagamento ainda não persiste essa baixa.",
+    });
     voltarParaLista();
   };
 
@@ -371,12 +389,6 @@ function PagarEReceber() {
 
   return (
     <div className="cadastros-page pagar-contas-page">
-      {erroOpcoes && (
-        <p className="cadastros-form__error" role="alert">
-          {erroOpcoes}
-        </p>
-      )}
-
       {registroSelecionado ? (
         <Card className="cadastros-form-page pagar-contas-form-card">
           <div className="cadastros-form-page__heading">
@@ -394,7 +406,7 @@ function PagarEReceber() {
             </Button>
           </div>
 
-          <form className="pagar-contas-form" onSubmit={salvarPagamento}>
+          <form className="pagar-contas-form" onSubmit={salvarPagamento} noValidate>
             <div className="pagar-contas-form__grid">
               <Input
                 label="TIPO"
@@ -483,12 +495,6 @@ function PagarEReceber() {
               />
             </div>
 
-            {erroPagamento && (
-              <p className="cadastros-form__error" role="alert">
-                {erroPagamento}
-              </p>
-            )}
-
             <div className="cadastros-form__actions">
               <Button
                 variant="outline"
@@ -567,12 +573,6 @@ function PagarEReceber() {
               />
             </div>
           </Card>
-
-          {mensagem && (
-            <p className="cadastros-mensagem" role="status">
-              {mensagem}
-            </p>
-          )}
 
           <Card className="cadastros-list-card">
             {registrosFiltrados.length === 0 ? (

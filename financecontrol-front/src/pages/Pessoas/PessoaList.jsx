@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -20,7 +20,9 @@ import Modal from "../../components/common/Modal/Modal";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import Pagination from "../../components/common/Pagination";
+import useToast from "../../components/common/Toast/useToast";
 import "./Pessoas.css";
+import { showApiErrorToast } from "../../utils/toastErrors";
 
 const TIPO_OPTIONS = [
   { value: "", label: "Todos os tipos" },
@@ -42,8 +44,9 @@ const TIPO_LABEL = {
 function PessoaList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const showToast = useToast();
+  const ultimoToastConsumido = useRef(null);
 
-  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [pessoas, setPessoas] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(15);
@@ -64,13 +67,20 @@ function PessoaList() {
   const [recarregar, setRecarregar] = useState(0);
 
   useEffect(() => {
-    if (!mensagem) return;
-
+    if (
+      !location.state?.mensagem ||
+      ultimoToastConsumido.current === location.key
+    ) {
+      return;
+    }
+    ultimoToastConsumido.current = location.key;
+    showToast({
+      type: "success",
+      title: "Operação concluída",
+      message: location.state.mensagem,
+    });
     navigate(location.pathname, { replace: true, state: null });
-    const timeout = setTimeout(() => setMensagem(""), 4000);
-
-    return () => clearTimeout(timeout);
-  }, [mensagem, navigate, location.pathname]);
+  }, [location.key, location.state, location.pathname, navigate, showToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -101,13 +111,27 @@ function PessoaList() {
       } catch (erro) {
         console.error("Erro ao carregar pessoas:", erro);
         setErro("Não foi possível carregar as pessoas.");
+        showApiErrorToast(
+          showToast,
+          erro,
+          "Não foi possível carregar as pessoas.",
+        );
       } finally {
         setCarregando(false);
       }
     }
 
     carregarPessoas();
-  }, [pagina, tamanhoPagina, nomeFiltro, documentoFiltro, tipoPessoa, situacao, recarregar]);
+  }, [
+    pagina,
+    tamanhoPagina,
+    nomeFiltro,
+    documentoFiltro,
+    tipoPessoa,
+    situacao,
+    recarregar,
+    showToast,
+  ]);
 
   const handleConfirmarSituacao = async () => {
     try {
@@ -116,18 +140,21 @@ function PessoaList() {
         pessoaSelecionada.id,
         !pessoaSelecionada.ativo,
       );
-      setMensagem(
-        pessoaSelecionada.ativo
+      showToast({
+        type: "success",
+        title: "Situação atualizada",
+        message: pessoaSelecionada.ativo
           ? "Pessoa inativada com sucesso."
           : "Pessoa ativada com sucesso.",
-      );
+      });
       setPessoaSelecionada(null);
       setRecarregar((valor) => valor + 1);
     } catch (erro) {
       console.error("Erro ao alterar situação da pessoa:", erro);
-      alert(
-        erro?.response?.data?.erro ||
-          "Não foi possível alterar a situação da pessoa.",
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível alterar a situação da pessoa.",
       );
     } finally {
       setAlterandoSituacao(false);
@@ -358,12 +385,6 @@ function PessoaList() {
           </Button>
         </div>
       </Card>
-
-      {mensagem && (
-        <p className="pessoas-mensagem" role="status">
-          {mensagem}
-        </p>
-      )}
 
       <Card
         className="pessoas-table-card"

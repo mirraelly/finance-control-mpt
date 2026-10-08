@@ -6,6 +6,8 @@ import DashboardChartPanel from "../panels/DashboardChartPanel";
 import "./DashboardRecentTransactions.css";
 import { HugeiconsIcon, ArrowRight01Icon } from "../../../assets/icons";
 import lancamentoFinanceiroService from "../../../services/lancamentoFinanceiroService";
+import useToast from "../../common/Toast/useToast";
+import { showApiErrorToast } from "../../../utils/toastErrors";
 
 const CATEGORY_VARIANT = {
   moradia: "moradia",
@@ -58,6 +60,7 @@ function getCategoryVariant(transaction) {
 }
 
 function DashboardRecentTransactions() {
+  const showToast = useToast();
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const [transactions, setTransactions] = useState([]);
@@ -88,6 +91,11 @@ function DashboardRecentTransactions() {
         console.error("Erro ao carregar últimas transações:", loadError);
         if (isCurrent) {
           setError("Não foi possível carregar as últimas transações.");
+          showApiErrorToast(
+            showToast,
+            loadError,
+            "Não foi possível carregar as últimas transações.",
+          );
           setTransactions([]);
           setTotalElements(0);
           setTotalPages(0);
@@ -101,7 +109,7 @@ function DashboardRecentTransactions() {
     return () => {
       isCurrent = false;
     };
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, showToast]);
 
   return (
     <DashboardChartPanel

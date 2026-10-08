@@ -3,25 +3,44 @@ import { Link } from "react-router-dom";
 import authService from "../../../services/authService";
 import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
+import useToast from "../../common/Toast/useToast";
+import { showApiErrorToast } from "../../../utils/toastErrors";
+import validateRequiredFields from "../../../utils/validateRequiredFields";
 
 function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const showToast = useToast();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
+    if (!validateRequiredFields(event, showToast)) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Informe um endereço de e-mail válido.",
+      });
+      return;
+    }
     setSubmitted(false);
     setLoading(true);
 
     try {
       await authService.esqueciSenha(email);
       setSubmitted(true);
+      showToast({
+        type: "info",
+        title: "Solicitação recebida",
+        message: "Se esse e-mail estiver cadastrado, enviaremos as instruções.",
+      });
     } catch (err) {
-      const message = err?.response?.data?.erro;
-      setError(message || "Não foi possível enviar as instruções. Tente novamente.");
+      showApiErrorToast(
+        showToast,
+        err,
+        "Não foi possível enviar as instruções. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }
@@ -34,7 +53,7 @@ function ForgotPasswordForm() {
         Informe seu e-mail para receber as instruções de recuperação.
       </span>
 
-      <form className="login-form" onSubmit={handleSubmit}>
+      <form className="login-form" onSubmit={handleSubmit} noValidate>
         <Input
           id="forgot-password-email"
           label="E-MAIL"
@@ -47,19 +66,11 @@ function ForgotPasswordForm() {
           required
         />
 
-        {error && <div className="login-error">{error}</div>}
-
-        {submitted && (
-          <div className="login-success">
-            Se esse e-mail estiver cadastrado, enviaremos as instruções.
-          </div>
-        )}
-
         <Button
           type="submit"
           fullWidth
           size="lg"
-          disabled={!email.trim() || loading}
+          disabled={loading || submitted}
         >
           {loading ? "Enviando..." : "Enviar instruções"}
         </Button>

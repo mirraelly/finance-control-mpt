@@ -19,6 +19,8 @@ import NewTransactionModal from "../../transaction/NewTransactionModal";
 import usuarioService from "../../../services/usuarioService";
 import lancamentoFinanceiroService from "../../../services/lancamentoFinanceiroService";
 import globalSearchService from "../../../services/globalSearchService";
+import useToast from "../../common/Toast/useToast";
+import { showApiErrorToast } from "../../../utils/toastErrors";
 
 function Header({ title = "Início", onOpenMobileMenu }) {
   const currentDate = new Date().toLocaleDateString("pt-BR", {
@@ -47,6 +49,7 @@ function Header({ title = "Início", onOpenMobileMenu }) {
   const menuPerfilRef = useRef(null);
   const buscaRef = useRef(null);
   const navigate = useNavigate();
+  const showToast = useToast();
 
   useEffect(() => {
     usuarioService
@@ -55,8 +58,15 @@ function Header({ title = "Início", onOpenMobileMenu }) {
         setNomeUsuario(usuario.nome || "");
         setEmailUsuario(usuario.email || "");
       })
-      .catch(() => setNomeUsuario(""));
-  }, []);
+      .catch((error) => {
+        console.error("Erro ao carregar o perfil do cabeçalho:", error);
+        showApiErrorToast(
+          showToast,
+          error,
+          "Não foi possível carregar os dados do perfil.",
+        );
+      });
+  }, [showToast]);
 
   useEffect(() => {
     if (buscaAberta) buscaRef.current?.focus();
@@ -90,12 +100,22 @@ function Header({ title = "Início", onOpenMobileMenu }) {
           setErroBusca(
             `Não foi possível pesquisar em: ${failedSources.join(", ")}.`,
           );
+          showToast({
+            type: "warning",
+            title: "Busca parcial",
+            message: `Não foi possível pesquisar em: ${failedSources.join(", ")}.`,
+          });
         }
       } catch (error) {
         console.error("Erro ao executar a busca global:", error);
         if (active) {
           setResultadosBusca([]);
           setErroBusca("Não foi possível realizar a busca no sistema.");
+          showApiErrorToast(
+            showToast,
+            error,
+            "Não foi possível realizar a busca no sistema.",
+          );
         }
       } finally {
         if (active) setBuscando(false);
@@ -106,7 +126,7 @@ function Header({ title = "Início", onOpenMobileMenu }) {
       active = false;
       clearTimeout(timeout);
     };
-  }, [resultadoSelecionado, termoBusca]);
+  }, [resultadoSelecionado, termoBusca, showToast]);
 
   useEffect(() => {
     const fecharMenuAoClicarFora = (event) => {
