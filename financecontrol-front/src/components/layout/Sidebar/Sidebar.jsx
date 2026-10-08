@@ -25,7 +25,7 @@ import "./Sidebar.css";
 const menuGroups = [
   {
     key: "principal",
-    roles: ["USER"],
+    roles: ["USER", "SUPERADMIN"],
     items: [
       {
         label: "Dashboard",
