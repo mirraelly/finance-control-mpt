@@ -7,16 +7,20 @@ import { pessoaService } from "./pessoaService";
 import usuarioService from "./usuarioService";
 
 const PAGE_RESULTS = [
-  { label: "Dashboard", path: "/dashboard", roles: ["USER"] },
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+    roles: ["USER", "SUPERADMIN"],
+  },
   {
     label: "Transações",
     path: "/movimentacoes/transacoes",
-    roles: ["USER"],
+    roles: ["USER", "SUPERADMIN"],
   },
   {
     label: "Pagar e Receber",
     path: "/movimentacoes/pagar-e-receber",
-    roles: ["USER"],
+    roles: ["USER", "SUPERADMIN"],
   },
   { label: "Perfil", path: "/perfil", roles: ["USER", "SUPERADMIN"] },
   { label: "Pessoas", path: "/cadastros/pessoas", roles: ["USER", "SUPERADMIN"] },
@@ -108,7 +112,7 @@ const searchSources = [
       [item.categoriaNome, item.contaFinanceiraNome]
         .filter(Boolean)
         .join(" · ") || "Lançamento financeiro",
-    roles: ["USER"],
+    roles: ["USER", "SUPERADMIN"],
   },
   {
     type: "Pessoa",

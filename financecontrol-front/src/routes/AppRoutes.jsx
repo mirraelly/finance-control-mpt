@@ -42,7 +42,7 @@ function AppRoutes() {
           <Route element={<InternalLayout />}>
             <Route path="/perfil" element={<Perfil />} />
 
-            <Route element={<ProtectedRoute roles={["USER"]} />}>
+            <Route element={<ProtectedRoute roles={["USER", "SUPERADMIN"]} />}>
               <Route
                 path="/dashboard"
                 element={
