@@ -1,0 +1,47 @@
+.contas-financeiras-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(145px, 170px) minmax(
+      160px,
+      190px
+    )
+    auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.contas-financeiras-toolbar > .input-field {
+  width: 100%;
+  min-width: 0;
+}
+
+.contas-financeiras-toolbar > .select-field {
+  width: 100%;
+  min-width: 0;
+}
+
+.contas-financeiras-toolbar > .button {
+  white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+  .contas-financeiras-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contas-financeiras-toolbar > .input-field {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .contas-financeiras-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contas-financeiras-toolbar > .input-field,
+  .contas-financeiras-toolbar > .select-field,
+  .contas-financeiras-toolbar > .button {
+    grid-column: 1;
+    width: 100%;
+  }
+}

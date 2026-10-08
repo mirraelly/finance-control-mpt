@@ -78,7 +78,7 @@ function ContaFinanceiraForm() {
       } else {
         await contaFinanceiraService.criar(dados);
       }
-      navigate("/cadastros/contas-financeiras", {
+      navigate("/contas/contas-financeiras", {
         replace: true,
         state: {
           mensagem: id
@@ -120,7 +120,7 @@ function ContaFinanceiraForm() {
           </div>
           <Button
             variant="ghost"
-            onClick={() => navigate("/cadastros/contas-financeiras")}
+            onClick={() => navigate("/contas/contas-financeiras")}
             className="button__return"
             icon={<HugeiconsIcon icon={Undo03Icon} size={18} />}
           >
@@ -171,7 +171,7 @@ function ContaFinanceiraForm() {
           <div className="cadastros-form__actions">
             <Button
               variant="outline"
-              onClick={() => navigate("/cadastros/contas-financeiras")}
+              onClick={() => navigate("/contas/contas-financeiras")}
               disabled={salvando}
             >
               Cancelar

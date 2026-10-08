@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import InternalLayout from "../layouts/Internal/InternalLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import Home from "../pages/Home/Home";
@@ -21,11 +21,12 @@ import ContaFinanceiraForm from "../pages/ContasFinanceiras/ContaFinanceiraForm"
 import ContasPagarList from "../pages/ContasPagarReceber/ContasPagarList";
 import ContasReceberList from "../pages/ContasPagarReceber/ContasReceberList";
 import ContaPagarReceberForm from "../pages/ContasPagarReceber/ContaPagarReceberForm";
+import PagarEReceber from "../pages/ContasPagarReceber/PagarEReceber";
 import FormaPagamentoList from "../pages/FormasPagamento/FormaPagamentoList";
 import FormaPagamentoForm from "../pages/FormasPagamento/FormaPagamentoForm";
-import Notificacoes from "../pages/Notificacoes/Notificacoes";
 import Loading from "../components/common/Loading";
 import NotFound from "../pages/NotFound/NotFound";
+import Transferencias from "../pages/Transferencias/Transferencias";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
@@ -54,7 +55,14 @@ function AppRoutes() {
                   </Suspense>
                 }
               />
-              <Route path="/transacoes" element={<Home />} />
+              <Route
+                path="/movimentacoes/transacoes"
+                element={<Home />}
+              />
+              <Route
+                path="/movimentacoes/pagar-e-receber"
+                element={<PagarEReceber />}
+              />
               <Route path="/componentes-teste" element={<ComponentesTeste />} />
             </Route>
 
@@ -79,15 +87,15 @@ function AppRoutes() {
                 element={<CategoriaForm />}
               />
               <Route
-                path="/cadastros/contas-financeiras"
+                path="/contas/contas-financeiras"
                 element={<ContaFinanceiraList />}
               />
               <Route
-                path="/cadastros/contas-financeiras/nova"
+                path="/contas/contas-financeiras/nova"
                 element={<ContaFinanceiraForm />}
               />
               <Route
-                path="/cadastros/contas-financeiras/:id"
+                path="/contas/contas-financeiras/:id"
                 element={<ContaFinanceiraForm />}
               />
               <Route
@@ -103,30 +111,41 @@ function AppRoutes() {
                 element={<FormaPagamentoForm />}
               />
               <Route
-                path="/cadastros/contas-pagar"
+                path="/contas/contas-pagar"
                 element={<ContasPagarList />}
               />
               <Route
-                path="/cadastros/contas-pagar/nova"
+                path="/contas/contas-pagar/nova"
                 element={<ContaPagarReceberForm tipo="pagar" />}
               />
               <Route
-                path="/cadastros/contas-pagar/:id"
+                path="/contas/contas-pagar/:id"
                 element={<ContaPagarReceberForm tipo="pagar" />}
               />
               <Route
-                path="/cadastros/contas-receber"
+                path="/contas/contas-receber"
                 element={<ContasReceberList />}
               />
+
               <Route
-                path="/cadastros/contas-receber/nova"
+                path="/movimentacoes/transferencias"
+                element={<Transferencias />}
+              />
+              <Route
+                path="/transferencias"
+                element={
+                  <Navigate to="/movimentacoes/transferencias" replace />
+                }
+              />
+              
+              <Route
+                path="/contas/contas-receber/nova"
                 element={<ContaPagarReceberForm tipo="receber" />}
               />
               <Route
-                path="/cadastros/contas-receber/:id"
+                path="/contas/contas-receber/:id"
                 element={<ContaPagarReceberForm tipo="receber" />}
               />
-              <Route path="/cadastros/notificacoes" element={<Notificacoes />} />
             </Route>
           </Route>
         </Route>

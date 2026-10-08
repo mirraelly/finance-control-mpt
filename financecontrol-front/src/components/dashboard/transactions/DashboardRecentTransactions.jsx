@@ -108,7 +108,7 @@ function DashboardRecentTransactions() {
       title="Últimas transações"
       action={
         <Link
-          to="/transacoes"
+          to="/movimentacoes/transacoes"
           aria-label="Ver todas as transações"
           className="container-see-all"
         >

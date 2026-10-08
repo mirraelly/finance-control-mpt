@@ -21,8 +21,8 @@
 
 /* Toolbar */
 .transacoes-toolbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-4);
   background-color: var(--bg-secondary) !important;
@@ -30,21 +30,20 @@
 }
 
 .transacoes-toolbar__search {
-  flex: 1 1 240px;
-  min-width: 200px;
+  width: 100%;
+  min-width: 0;
   max-height: fit-content;
 }
 
 .transacoes-toolbar__filters {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
-  margin-left: auto;
+  min-width: 0;
 }
 
-.transacoes-toolbar__category .select-field {
-  background-color: var(--bg-primary);
+.transacoes-toolbar__category {
+  width: 180px;
 }
 
 /* Tabs (Todas / Receitas / Despesas) */
@@ -53,6 +52,7 @@
   align-items: center;
   gap: 2px;
   padding: 4px;
+  min-height: 40px;
   border-radius: var(--radius-pill);
   background-color: var(--bg-primary);
   border: 1px solid var(--border);
@@ -65,7 +65,7 @@
   font-family: var(--font-primary);
   font-size: var(--font-size-13);
   font-weight: var(--font-weight-semibold);
-  padding: 0.4rem 0.9rem;
+  padding: 0.6rem 0.9rem;
   border-radius: var(--radius-pill);
   cursor: pointer;
   white-space: nowrap;
@@ -92,7 +92,7 @@
 
 .transacoes-table__wrapper {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   transition: opacity 0.15s ease;
 }
 
@@ -235,13 +235,25 @@
   color: var(--color-red-600);
 }
 
-@media (max-width: 768px) {
+@media (min-width: 768px) and (max-width: 1199px) {
   .transacoes-toolbar {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-3);
+    row-gap: var(--space-3);
+  }
+
+  .transacoes-toolbar__search {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .transacoes-toolbar__filters {
+    display: contents;
   }
 
   .transacoes-tabs {
+    grid-column: 1 / -1;
+    grid-row: 2;
     width: 100%;
   }
 
@@ -249,16 +261,127 @@
     flex: 1;
   }
 
-  .transacoes-toolbar__filters button {
+  .transacoes-toolbar__category {
+    grid-column: 1 / -1;
+    grid-row: 3;
     width: 100%;
   }
 
-  .select-field {
-    width: 100% !important;
+  .transacoes-toolbar__filters > .button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .transacoes-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .transacoes-toolbar__search {
+    grid-column: 1;
   }
 
   .transacoes-toolbar__filters {
-    margin-left: 0;
+    display: contents;
+  }
+
+  .transacoes-tabs {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .transacoes-tabs > button {
+    flex: 1;
+  }
+
+  .transacoes-toolbar__category {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .transacoes-toolbar__filters > .button {
+    grid-column: 1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 1000px) {
+  .transacoes-table__wrapper {
+    overflow: visible;
+  }
+
+  .transacoes-table,
+  .transacoes-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .transacoes-table thead {
+    display: none;
+  }
+
+  .transacoes-table tbody {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .transacoes-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+  }
+
+  .transacoes-table td {
+    display: grid;
+    grid-template-columns: minmax(92px, 0.38fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--font-size-13);
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .transacoes-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .transacoes-table td::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-size: var(--font-size-12);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .transacoes-table__description {
+    min-width: 0;
+  }
+
+  .transacoes-table__value {
+    text-align: left;
+  }
+
+  .transacoes-table__actions-col,
+  .transacoes-table tbody td:last-child {
+    text-align: left !important;
+  }
+
+  .transacoes-table tbody td:last-child {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+  }
+
+  .transacoes-table tbody td:last-child::before {
+    content: attr(data-label);
   }
 }

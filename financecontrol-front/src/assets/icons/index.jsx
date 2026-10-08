@@ -35,6 +35,10 @@ import {
   Call02Icon,
   Mail01Icon,
   Logout05Icon,
+  CreditCardPosIcon,
+  MoneyReceiveCircleIcon,
+  MoneySendCircleIcon,
+  BankIcon,
   Delete02Icon,
   ConstructionIcon,
   Plant01Icon,
@@ -44,6 +48,7 @@ import {
   PanelRightOpenIcon,
   SecurityIcon,
   SquareLock02Icon,
+  PaymentSuccess02Icon,
   EyeOffIcon,
   ViewIcon,
   UserGroupIcon,
@@ -58,8 +63,10 @@ import {
   RealEstate01Icon,
   Tag01Icon,
   Invoice03Icon,
-  MoneySendCircleIcon,
-  MoneyReceiveCircleIcon
+  ArrowReloadHorizontalIcon,
+  BanknoteArrowUpIcon,
+  PiggyBankIcon,
+  UserAccountIcon,
 } from "@hugeicons/core-free-icons";
 
 function HugeiconsIcon({ className = "", ...props }) {
@@ -116,6 +123,8 @@ export {
   UserGroupIcon,
   UserAdd01Icon,
   Clock01Icon,
+  PaymentSuccess02Icon,
+  BankIcon,
   Edit02Icon,
   UserBlock01Icon,
   UserCheck01Icon,
@@ -126,5 +135,10 @@ export {
   Tag01Icon,
   Invoice03Icon,
   MoneySendCircleIcon,
-  MoneyReceiveCircleIcon
+  MoneyReceiveCircleIcon,
+  ArrowReloadHorizontalIcon,
+  BanknoteArrowUpIcon,
+  PiggyBankIcon,
+  UserAccountIcon,
+  CreditCardPosIcon
 };

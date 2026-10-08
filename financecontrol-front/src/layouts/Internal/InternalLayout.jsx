@@ -16,7 +16,9 @@ function InternalLayout() {
   const location = useLocation();
   const pageTitles = {
     "/dashboard": "Dashboard",
-    "/transacoes": "Transações",
+    "/movimentacoes/transacoes": "Transações",
+    "/movimentacoes/transferencias": "Transferências",
+    "/movimentacoes/pagar-e-receber": "Pagar e Receber",
     "/perfil": "Perfil",
     "/componentes-teste": "Componentes",
     "/admin/usuarios": "Usuários",
@@ -24,10 +26,9 @@ function InternalLayout() {
     "/cadastros/pessoas": "Pessoas",
     "/cadastros/categorias": "Categorias",
     "/cadastros/formas-pagamento": "Formas de Pagamento",
-    "/cadastros/contas-financeiras": "Contas financeiras",
-    "/cadastros/contas-pagar": "Contas a pagar",
-    "/cadastros/contas-receber": "Contas a receber",
-    "/cadastros/notificacoes": "Notificações",
+    "/contas/contas-financeiras": "Contas financeiras",
+    "/contas/contas-pagar": "Contas a pagar",
+    "/contas/contas-receber": "Contas a receber",
   };
   const currentPath = Object.keys(pageTitles).find(
     (path) =>

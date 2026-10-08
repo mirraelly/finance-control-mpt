@@ -1,0 +1,25 @@
+.conta-parcelamento-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.conta-receber-form__hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-13);
+}
+
+.conta-receber-form__warning {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--font-size-13);
+}
+
+@media (max-width: 600px) {
+  .conta-parcelamento-form__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

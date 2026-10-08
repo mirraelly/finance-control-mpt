@@ -9,9 +9,12 @@ import Loading from "../../components/common/Loading";
 import Select from "../../components/common/Select";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
 import categoriaService from "../../services/categoriaService";
+import contaFinanceiraService from "../../services/contaFinanceiraService";
 import contasPagarReceberService from "../../services/contasPagarReceberService";
+import formaPagamentoService from "../../services/formaPagamentoService";
 import pessoaService from "../../services/pessoaService";
 import "../Cadastros/Cadastros.css";
+import "./ContaPagarReceberForm.css";
 
 function dataLocalHoje() {
   const hoje = new Date();
@@ -20,6 +23,61 @@ function dataLocalHoje() {
     String(hoje.getMonth() + 1).padStart(2, "0"),
     String(hoje.getDate()).padStart(2, "0"),
   ].join("-");
+}
+
+function adicionarMeses(data, quantidade) {
+  const [ano, mes, dia] = data.split("-").map(Number);
+  const dataAlvo = new Date(ano, mes - 1 + quantidade, 1);
+  const ultimoDiaMes = new Date(
+    dataAlvo.getFullYear(),
+    dataAlvo.getMonth() + 1,
+    0,
+  ).getDate();
+  dataAlvo.setDate(Math.min(dia, ultimoDiaMes));
+
+  return [
+    dataAlvo.getFullYear(),
+    String(dataAlvo.getMonth() + 1).padStart(2, "0"),
+    String(dataAlvo.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function paraCentavos(valor) {
+  const numero = Number(valor);
+  return Number.isFinite(numero) ? Math.round(numero * 100) : 0;
+}
+
+function paraValorInput(centavos) {
+  return (centavos / 100).toFixed(2);
+}
+
+function extrairLista(resposta) {
+  return Array.isArray(resposta) ? resposta : resposta?.content || [];
+}
+
+async function listarTodasAsFormasPagamento() {
+  const tamanhoPagina = 100;
+  const primeiraPagina = await formaPagamentoService.listar({
+    page: 0,
+    size: tamanhoPagina,
+    ativo: true,
+  });
+  const paginasRestantes = await Promise.all(
+    Array.from(
+      { length: Math.max(0, (primeiraPagina.totalPages || 1) - 1) },
+      (_, index) =>
+        formaPagamentoService.listar({
+          page: index + 1,
+          size: tamanhoPagina,
+          ativo: true,
+        }),
+    ),
+  );
+
+  return [
+    ...extrairLista(primeiraPagina),
+    ...paginasRestantes.flatMap(extrairLista),
+  ];
 }
 
 function criarFormularioInicial() {
@@ -31,6 +89,11 @@ function criarFormularioInicial() {
     valorTotal: "",
     observacao: "",
     dataVencimento: dataLocalHoje(),
+    status: "ABERTO",
+    formaPagamentoId: "",
+    contaFinanceiraId: "",
+    quantidadeParcelas: "1",
+    valorParcela: "",
     ativo: true,
   };
 }
@@ -40,13 +103,17 @@ function ContaPagarReceberForm({ tipo }) {
   const navigate = useNavigate();
   const ehPagar = tipo === "pagar";
   const titulo = ehPagar ? "conta a pagar" : "conta a receber";
-  const basePath = `/cadastros/contas-${tipo}`;
+  const basePath = `/contas/contas-${tipo}`;
   const [formulario, setFormulario] = useState(criarFormularioInicial);
   const [pessoas, setPessoas] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  const [contasFinanceiras, setContasFinanceiras] = useState([]);
   const [contaCarregada, setContaCarregada] = useState(null);
+  const [erroFormasPagamento, setErroFormasPagamento] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [parcelasAlteradas, setParcelasAlteradas] = useState(false);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -54,16 +121,104 @@ function ContaPagarReceberForm({ tipo }) {
 
     async function carregarDados() {
       try {
-        const [listaPessoas, listaCategorias, conta] = await Promise.all([
+        setErroFormasPagamento("");
+        const [
+          listaPessoas,
+          listaCategorias,
+          conta,
+          listaContasFinanceiras,
+        ] = await Promise.all([
           pessoaService.listarPessoasAtivas(),
           categoriaService.listarAtivas(),
           id ? contasPagarReceberService.buscarPorId(tipo, id) : Promise.resolve(null),
+          contaFinanceiraService.listarAtivas(),
         ]);
         if (!ativo) return;
         setPessoas(listaPessoas);
         setCategorias(listaCategorias);
+        setContasFinanceiras(listaContasFinanceiras);
+        let listaFormasPagamento = [];
+        let formasPagamentoIndisponiveis = false;
+        try {
+          listaFormasPagamento = await listarTodasAsFormasPagamento();
+        } catch (formasError) {
+          formasPagamentoIndisponiveis = true;
+          console.error("Erro ao carregar formas de pagamento:", formasError);
+          if (ativo) {
+            setErroFormasPagamento(
+              "Não foi possível carregar as opções de formas de pagamento.",
+            );
+          }
+        }
         if (conta) {
+          const formaPagamentoAtualId = conta.parcelas?.[0]?.formaPagamentoId;
+          let formasDisponiveis = listaFormasPagamento;
+          let contasDisponiveis = listaContasFinanceiras;
+          if (
+            formaPagamentoAtualId &&
+            !listaFormasPagamento.some(
+              (forma) => String(forma.id) === String(formaPagamentoAtualId),
+            )
+          ) {
+            if (!formasPagamentoIndisponiveis) {
+              try {
+                const formaAtual =
+                  await formaPagamentoService.buscarPorId(formaPagamentoAtualId);
+                formasDisponiveis = [...listaFormasPagamento, formaAtual];
+                if (
+                  formaAtual.contaFinanceiraId &&
+                  !listaContasFinanceiras.some(
+                    (item) =>
+                      String(item.id) === String(formaAtual.contaFinanceiraId),
+                  )
+                ) {
+                  contasDisponiveis = [
+                    ...listaContasFinanceiras,
+                    {
+                      id: formaAtual.contaFinanceiraId,
+                      nome: formaAtual.contaFinanceiraNome,
+                    },
+                  ];
+                }
+              } catch (formaError) {
+                console.error(
+                  "Erro ao carregar a forma de pagamento da conta:",
+                  formaError,
+                );
+                if (ativo) {
+                  setErroFormasPagamento(
+                    "Não foi possível carregar a forma de pagamento atual.",
+                  );
+                }
+                formasDisponiveis = [
+                  ...listaFormasPagamento,
+                  {
+                    id: formaPagamentoAtualId,
+                    nome: conta.parcelas[0].formaPagamentoNome,
+                    contaFinanceiraId: "",
+                  },
+                ];
+              }
+            } else {
+              formasDisponiveis = [
+                {
+                  id: formaPagamentoAtualId,
+                  nome: conta.parcelas[0].formaPagamentoNome,
+                  contaFinanceiraId: "",
+                },
+              ];
+            }
+          }
+          if (!ativo) return;
+          setFormasPagamento(formasDisponiveis);
+          setContasFinanceiras(contasDisponiveis);
           setContaCarregada(conta);
+          const primeiraParcela = conta.parcelas?.[0];
+          const quantidadeParcelas = conta.parcelas?.length || 1;
+          const valorParcela =
+            quantidadeParcelas > 0
+              ? Math.floor(paraCentavos(conta.valorTotal) / quantidadeParcelas)
+              : paraCentavos(conta.valorTotal);
           setFormulario({
             pessoaId: conta.pessoaId,
             categoriaId: conta.categoriaId || "",
@@ -71,9 +226,20 @@ function ContaPagarReceberForm({ tipo }) {
             dataEmissao: conta.dataEmissao || "",
             valorTotal: String(conta.valorTotal ?? ""),
             observacao: conta.observacao || "",
-            dataVencimento: conta.parcelas?.[0]?.dataVencimento || "",
+            dataVencimento: primeiraParcela?.dataVencimento || dataLocalHoje(),
+            status: conta.status || "ABERTO",
+            formaPagamentoId: primeiraParcela?.formaPagamentoId || "",
+            contaFinanceiraId:
+              formasDisponiveis.find(
+                (forma) =>
+                  String(forma.id) === String(primeiraParcela?.formaPagamentoId),
+              )?.contaFinanceiraId || "",
+            quantidadeParcelas: String(quantidadeParcelas),
+            valorParcela: paraValorInput(valorParcela),
             ativo: conta.ativo,
           });
+        } else {
+          setFormasPagamento(listaFormasPagamento);
         }
       } catch (loadError) {
         console.error(`Erro ao carregar formulário de ${titulo}:`, loadError);
@@ -89,11 +255,88 @@ function ContaPagarReceberForm({ tipo }) {
     return () => {
       ativo = false;
     };
-  }, [id, tipo, titulo]);
+  }, [ehPagar, id, tipo, titulo]);
 
   const atualizarCampo = (event) => {
     const { name, value } = event.target;
-    setFormulario((atual) => ({ ...atual, [name]: value }));
+    if (
+      !ehPagar &&
+      [
+        "valorTotal",
+        "formaPagamentoId",
+        "contaFinanceiraId",
+        "dataVencimento",
+        "quantidadeParcelas",
+        "valorParcela",
+      ].includes(name)
+    ) {
+      setParcelasAlteradas(true);
+    }
+    setFormulario((atual) => {
+      if (name === "contaFinanceiraId") {
+        const formaSelecionada = formasPagamento.find(
+          (forma) => String(forma.id) === String(atual.formaPagamentoId),
+        );
+        return {
+          ...atual,
+          contaFinanceiraId: value,
+          formaPagamentoId:
+            formaSelecionada &&
+            String(formaSelecionada.contaFinanceiraId) === String(value)
+              ? atual.formaPagamentoId
+              : "",
+        };
+      }
+
+      if (name === "formaPagamentoId") {
+        const formaSelecionada = formasPagamento.find(
+          (forma) => String(forma.id) === String(value),
+        );
+        return {
+          ...atual,
+          formaPagamentoId: value,
+          contaFinanceiraId: formaSelecionada?.contaFinanceiraId || "",
+        };
+      }
+
+      if (name === "valorTotal") {
+        const centavos = paraCentavos(value);
+        const quantidade = Math.max(1, Number(atual.quantidadeParcelas) || 1);
+        return {
+          ...atual,
+          valorTotal: value,
+          valorParcela: centavos
+            ? paraValorInput(Math.floor(centavos / quantidade))
+            : "",
+        };
+      }
+
+      if (name === "quantidadeParcelas") {
+        const quantidade = Math.max(1, Number(value) || 1);
+        const centavos = paraCentavos(atual.valorTotal);
+        return {
+          ...atual,
+          quantidadeParcelas: value,
+          valorParcela: centavos
+            ? paraValorInput(Math.floor(centavos / quantidade))
+            : "",
+        };
+      }
+
+      if (name === "valorParcela") {
+        const quantidade = Math.max(1, Number(atual.quantidadeParcelas) || 1);
+        const centavos = paraCentavos(value);
+        return {
+          ...atual,
+          valorParcela: value,
+          valorTotal: centavos
+            ? paraValorInput(centavos * quantidade)
+            : "",
+        };
+      }
+
+      return { ...atual, [name]: value };
+    });
   };
 
   const salvarConta = async (event) => {
@@ -107,15 +350,106 @@ function ContaPagarReceberForm({ tipo }) {
 
     setSalvando(true);
     try {
+      if (ehPagar && paraCentavos(formulario.valorTotal) <= 0) {
+        setErro("Informe um valor total maior que zero.");
+        return;
+      }
+      if (!ehPagar && (!id || parcelasAlteradas)) {
+        const quantidadeParcelas = Number(formulario.quantidadeParcelas);
+        const valorTotalCentavos = paraCentavos(formulario.valorTotal);
+        const valorParcelaCentavos = paraCentavos(formulario.valorParcela);
+
+        if (!Number.isInteger(quantidadeParcelas) || quantidadeParcelas < 1) {
+          setErro("Informe uma quantidade de parcelas válida.");
+          return;
+        }
+        if (valorTotalCentavos <= 0 || valorParcelaCentavos <= 0) {
+          setErro("Informe o valor total e o valor da parcela.");
+          return;
+        }
+        if (
+          valorParcelaCentavos * quantidadeParcelas > valorTotalCentavos ||
+          valorTotalCentavos - valorParcelaCentavos * quantidadeParcelas >=
+            quantidadeParcelas
+        ) {
+          setErro(
+            "O valor total deve corresponder às parcelas; o ajuste de arredondamento não pode exceder R$ 0,01 por parcela.",
+          );
+          return;
+        }
+        if (!formulario.dataVencimento) {
+          setErro("Informe o vencimento da primeira parcela.");
+          return;
+        }
+        if (formulario.dataVencimento < formulario.dataEmissao) {
+          setErro(
+            "O vencimento da primeira parcela não pode ser anterior à data de emissão.",
+          );
+          return;
+        }
+        if (!formulario.contaFinanceiraId || !formulario.formaPagamentoId) {
+          setErro("Selecione a conta financeira e a forma de pagamento.");
+          return;
+        }
+      }
+      if (
+        ehPagar &&
+        !erroFormasPagamento &&
+        (!formulario.contaFinanceiraId || !formulario.formaPagamentoId)
+      ) {
+        setErro("Selecione a conta financeira e a forma de pagamento.");
+        return;
+      }
+
+      const criarParcelasReceber = () => {
+        const quantidadeParcelas = Number(formulario.quantidadeParcelas);
+        const valorTotalCentavos = paraCentavos(formulario.valorTotal);
+        const valorParcelaCentavos = paraCentavos(formulario.valorParcela);
+        const parcelasComAjuste =
+          valorTotalCentavos - valorParcelaCentavos * quantidadeParcelas;
+
+        return Array.from({ length: quantidadeParcelas }, (_, index) => ({
+          dataVencimento: adicionarMeses(formulario.dataVencimento, index),
+          valor: paraValorInput(
+            valorParcelaCentavos +
+              (index >= quantidadeParcelas - parcelasComAjuste ? 1 : 0),
+          ),
+          formaPagamentoId: formulario.formaPagamentoId,
+          observacao: null,
+        }));
+      };
+
       if (id) {
-        await contasPagarReceberService.atualizar(tipo, id, {
+        const dadosAtualizacao = {
           pessoaId: formulario.pessoaId,
           categoriaId: formulario.categoriaId || null,
           descricao: formulario.descricao.trim(),
           dataEmissao: formulario.dataEmissao,
           observacao: formulario.observacao.trim(),
           ativo: formulario.ativo,
-        });
+        };
+
+        if (!ehPagar) {
+          if (["ABERTO", "CANCELADO"].includes(formulario.status)) {
+            dadosAtualizacao.status = formulario.status;
+          }
+          const parcelasBloqueadas = contaCarregada.parcelas?.some(
+            (parcela) => parcela.recebimentos?.length > 0,
+          );
+          if (
+            !parcelasBloqueadas &&
+            parcelasAlteradas &&
+            formulario.status !== "CANCELADO"
+          ) {
+            dadosAtualizacao.valorTotal = Number(formulario.valorTotal);
+            dadosAtualizacao.parcelas = criarParcelasReceber();
+          }
+        } else {
+          dadosAtualizacao.valorTotal = Number(formulario.valorTotal);
+          dadosAtualizacao.status = formulario.status;
+        }
+
+        await contasPagarReceberService.atualizar(tipo, id, dadosAtualizacao);
       } else {
         const valorTotal = Number(formulario.valorTotal);
         if (!Number.isFinite(valorTotal) || valorTotal <= 0) {
@@ -129,18 +463,12 @@ function ContaPagarReceberForm({ tipo }) {
           descricao: formulario.descricao.trim() || null,
           dataEmissao: formulario.dataEmissao,
           valorTotal,
+          ...(ehPagar ? { status: formulario.status } : {}),
           observacao: formulario.observacao.trim() || null,
           ativo: true,
         };
         if (!ehPagar) {
-          dados.parcelas = [
-            {
-              dataVencimento: formulario.dataVencimento,
-              valor: valorTotal,
-              formaPagamentoId: null,
-              observacao: null,
-            },
-          ];
+          dados.parcelas = criarParcelasReceber();
         }
         await contasPagarReceberService.criar(tipo, dados);
       }
@@ -209,6 +537,65 @@ function ContaPagarReceberForm({ tipo }) {
       label: contaCarregada.categoriaNome,
     });
   }
+  const formasPagamentoDaConta = formasPagamento.filter(
+    (forma) =>
+      String(forma.contaFinanceiraId) === String(formulario.contaFinanceiraId),
+  );
+  const formasPagamentoOptions = [
+    { value: "", label: "Selecione uma forma de pagamento" },
+    ...formasPagamentoDaConta.map((forma) => ({
+      value: forma.id,
+      label: forma.nome,
+    })),
+  ];
+  const contasFinanceirasOptions = [
+    { value: "", label: "Selecione uma conta financeira" },
+    ...contasFinanceiras.map((conta) => ({
+      value: conta.id,
+      label: conta.nome,
+    })),
+  ];
+  const parcelasBloqueadas = Boolean(
+    contaCarregada?.parcelas?.some(
+      (parcela) => parcela.recebimentos?.length > 0,
+    ),
+  );
+  const parcelasSomenteLeitura =
+    !ehPagar &&
+    (parcelasBloqueadas ||
+      Boolean(erroFormasPagamento) ||
+      (id && formulario.status === "CANCELADO"));
+  const statusReceberOptions = [
+    { value: "ABERTO", label: "Em aberto" },
+    {
+      value: "PARCIALMENTE_PAGO",
+      label: "Parcialmente pago",
+      disabled: true,
+    },
+    { value: "PAGO", label: "Pago", disabled: true },
+    {
+      value: "CANCELADO",
+      label: "Cancelado",
+      disabled:
+        !id ||
+        (parcelasBloqueadas && formulario.status !== "CANCELADO"),
+    },
+  ].map((option) => ({
+    ...option,
+    disabled:
+      option.disabled ||
+      (option.value === "ABERTO" &&
+        id &&
+        !["ABERTO", "CANCELADO"].includes(contaCarregada?.status)),
+  }));
+  const statusOptions = ehPagar
+    ? [
+        { value: "ABERTO", label: "Em aberto" },
+        { value: "PARCIALMENTE_PAGO", label: "Parcialmente pago" },
+        { value: "PAGO", label: "Pago" },
+        { value: "CANCELADO", label: "Cancelado" },
+      ]
+    : statusReceberOptions;
 
   return (
     <div className="cadastros-page">
@@ -265,44 +652,110 @@ function ContaPagarReceberForm({ tipo }) {
             onChange={atualizarCampo}
             required
           />
-          {!id && (
-            <>
-              {!ehPagar && (
-                <Input
-                  id="conta-receber-data-vencimento"
-                  name="dataVencimento"
-                  label="VENCIMENTO DA PARCELA"
-                  type="date"
-                  value={formulario.dataVencimento}
-                  onChange={atualizarCampo}
-                  required
-                />
-              )}
-              <Input
-                id={`${tipo}-valor`}
-                name="valorTotal"
-                label="VALOR TOTAL"
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={formulario.valorTotal}
-                onChange={atualizarCampo}
-                required
-              />
-            </>
-          )}
-          {id && (
-            <p className="cadastros-form-page__note">
-              Valor total:{" "}
-              {Number(contaCarregada.valorTotal).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-              {!ehPagar &&
-                contaCarregada.parcelas?.length > 0 &&
-                ` · ${contaCarregada.parcelas.length} parcela(s)`}
-            </p>
-          )}
+          <div className="conta-parcelamento-form__grid">
+            {erroFormasPagamento && (
+              <p className="conta-receber-form__warning" role="status">
+                {erroFormasPagamento}
+              </p>
+            )}
+            <Input
+              id={`${tipo}-valor-total`}
+              name="valorTotal"
+              label="VALOR TOTAL"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={formulario.valorTotal}
+              onChange={atualizarCampo}
+              disabled={parcelasSomenteLeitura}
+              required
+            />
+            <Select
+              id={`${tipo}-status`}
+              name="status"
+              label="STATUS"
+              options={statusOptions}
+              value={formulario.status}
+              onChange={atualizarCampo}
+            />
+            <Select
+              id={`${tipo}-conta-financeira`}
+              name="contaFinanceiraId"
+              label="CONTA FINANCEIRA"
+              options={contasFinanceirasOptions}
+              value={formulario.contaFinanceiraId}
+              onChange={atualizarCampo}
+              disabled={parcelasSomenteLeitura}
+              required
+            />
+            <Select
+              id={`${tipo}-forma-pagamento`}
+              name="formaPagamentoId"
+              label="FORMA DE PAGAMENTO"
+              options={formasPagamentoOptions}
+              value={formulario.formaPagamentoId}
+              onChange={atualizarCampo}
+              disabled={
+                parcelasSomenteLeitura ||
+                Boolean(erroFormasPagamento) ||
+                !formulario.contaFinanceiraId
+              }
+              required
+            />
+            <Input
+              id={`${tipo}-data-vencimento`}
+              name="dataVencimento"
+              label="VENCIMENTO DA PRIMEIRA PARCELA"
+              type="date"
+              value={formulario.dataVencimento}
+              onChange={atualizarCampo}
+              disabled={parcelasSomenteLeitura}
+              required
+            />
+            <Input
+              id={`${tipo}-quantidade-parcelas`}
+              name="quantidadeParcelas"
+              label="QTE. PARCELAS"
+              type="number"
+              min="1"
+              step="1"
+              value={formulario.quantidadeParcelas}
+              onChange={atualizarCampo}
+              disabled={parcelasSomenteLeitura}
+              required
+            />
+            <Input
+              id={`${tipo}-valor-parcela`}
+              name="valorParcela"
+              label="VALOR DA PARCELA*"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={formulario.valorParcela}
+              onChange={atualizarCampo}
+              disabled={parcelasSomenteLeitura}
+              required
+            />
+            {ehPagar ? (
+              <p className="conta-receber-form__hint">
+                Vencimento, parcelamento, conta financeira e forma de pagamento
+                são exibidos no formulário, mas ainda não são persistidos pelo
+                serviço atual de Contas a Pagar.
+              </p>
+            ) : (
+              <p className="conta-receber-form__hint">
+                As parcelas vencem mensalmente a partir da data informada. Se
+                necessário, algumas parcelas podem ajustar até R$ 0,01 para
+                fechar o valor total.
+              </p>
+            )}
+            {!ehPagar && parcelasBloqueadas && (
+              <p className="conta-receber-form__hint">
+                Os dados das parcelas não podem ser alterados porque esta conta
+                já possui recebimentos.
+              </p>
+            )}
+          </div>
           <label className="cadastros-field" htmlFor={`${tipo}-observacao`}>
             <span className="cadastros-field__label">OBSERVAÇÃO</span>
             <textarea

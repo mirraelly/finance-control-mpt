@@ -8,28 +8,32 @@ import usuarioService from "./usuarioService";
 
 const PAGE_RESULTS = [
   { label: "Dashboard", path: "/dashboard", roles: ["USER"] },
-  { label: "Transações", path: "/transacoes", roles: ["USER"] },
+  {
+    label: "Transações",
+    path: "/movimentacoes/transacoes",
+    roles: ["USER"],
+  },
+  {
+    label: "Pagar e Receber",
+    path: "/movimentacoes/pagar-e-receber",
+    roles: ["USER"],
+  },
   { label: "Perfil", path: "/perfil", roles: ["USER", "SUPERADMIN"] },
   { label: "Pessoas", path: "/cadastros/pessoas", roles: ["USER", "SUPERADMIN"] },
   { label: "Categorias", path: "/cadastros/categorias", roles: ["USER", "SUPERADMIN"] },
   {
     label: "Contas financeiras",
-    path: "/cadastros/contas-financeiras",
+    path: "/contas/contas-financeiras",
     roles: ["USER", "SUPERADMIN"],
   },
   {
     label: "Contas a pagar",
-    path: "/cadastros/contas-pagar",
+    path: "/contas/contas-pagar",
     roles: ["USER", "SUPERADMIN"],
   },
   {
     label: "Contas a receber",
-    path: "/cadastros/contas-receber",
-    roles: ["USER", "SUPERADMIN"],
-  },
-  {
-    label: "Notificações",
-    path: "/cadastros/notificacoes",
+    path: "/contas/contas-receber",
     roles: ["USER", "SUPERADMIN"],
   },
   { label: "Usuários", path: "/admin/usuarios", roles: ["SUPERADMIN"] },
@@ -92,7 +96,7 @@ function toSearchResults(response, { type, path, getLabel, getDetail }, term) {
 const searchSources = [
   {
     type: "Transação",
-    path: "/transacoes",
+    path: "/movimentacoes/transacoes",
     search: (term) =>
       lancamentoFinanceiroService.listarLancamentos({
         page: 0,
@@ -139,7 +143,7 @@ const searchSources = [
   },
   {
     type: "Conta financeira",
-    path: "/cadastros/contas-financeiras",
+    path: "/contas/contas-financeiras",
     search: (term) =>
       contaFinanceiraService.listar({ page: 0, size: 4, nome: term }),
     getLabel: (item) => item.nome,
@@ -148,7 +152,7 @@ const searchSources = [
   },
   {
     type: "Conta a pagar",
-    path: "/cadastros/contas-pagar",
+    path: "/contas/contas-pagar",
     search: (term) =>
       contasPagarReceberService.listar("pagar", {
         page: 0,
@@ -161,7 +165,7 @@ const searchSources = [
   },
   {
     type: "Conta a receber",
-    path: "/cadastros/contas-receber",
+    path: "/contas/contas-receber",
     search: (term) =>
       contasPagarReceberService.listar("receber", {
         page: 0,

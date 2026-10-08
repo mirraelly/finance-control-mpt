@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 export default function ProtectedRoute({ roles }) {
+  
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const location = useLocation();
