@@ -7,7 +7,10 @@ import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
+import useToast from "../../components/common/Toast/useToast";
 import categoriaService from "../../services/categoriaService";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "../Cadastros/Cadastros.css";
 
 const FORM_INICIAL = { nome: "", descricao: "", ativo: true };
@@ -15,6 +18,7 @@ const FORM_INICIAL = { nome: "", descricao: "", ativo: true };
 function CategoriaForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
   const [formulario, setFormulario] = useState(FORM_INICIAL);
   const [carregando, setCarregando] = useState(Boolean(id));
   const [salvando, setSalvando] = useState(false);
@@ -36,7 +40,10 @@ function CategoriaForm() {
       })
       .catch((loadError) => {
         console.error("Erro ao carregar categoria:", loadError);
-        if (ativo) setErro("Não foi possível carregar a categoria.");
+        if (ativo) {
+          setErro("Não foi possível carregar a categoria.");
+          showApiErrorToast(showToast, loadError, "Não foi possível carregar a categoria.");
+        }
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -45,7 +52,7 @@ function CategoriaForm() {
     return () => {
       ativo = false;
     };
-  }, [id]);
+  }, [id, showToast]);
 
   const atualizarCampo = (event) => {
     const { name, value, checked, type } = event.target;
@@ -57,6 +64,7 @@ function CategoriaForm() {
 
   const salvarCategoria = async (event) => {
     event.preventDefault();
+    if (!validateRequiredFields(event, showToast)) return;
     setErro("");
     setSalvando(true);
 
@@ -81,10 +89,15 @@ function CategoriaForm() {
       });
     } catch (saveError) {
       console.error("Erro ao salvar categoria:", saveError);
-      setErro(
+      const mensagemErro =
         saveError?.response?.data?.erro ||
-          saveError?.response?.data?.message ||
-          "Não foi possível salvar a categoria.",
+        saveError?.response?.data?.message ||
+        "Não foi possível salvar a categoria.";
+      setErro(mensagemErro);
+      showApiErrorToast(
+        showToast,
+        saveError,
+        "Não foi possível salvar a categoria.",
       );
     } finally {
       setSalvando(false);
@@ -119,7 +132,7 @@ function CategoriaForm() {
           >
           </Button>
         </div>
-        <form className="cadastros-form" onSubmit={salvarCategoria}>
+        <form className="cadastros-form" onSubmit={salvarCategoria} noValidate>
           <Input
             id="categoria-nome"
             name="nome"
@@ -157,11 +170,6 @@ function CategoriaForm() {
                 </span>
               </div>
             </div>
-          )}
-          {erro && (
-            <p className="cadastros-form__error" role="alert">
-              {erro}
-            </p>
           )}
           <div className="cadastros-form__actions">
             <Button

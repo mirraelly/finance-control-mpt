@@ -13,7 +13,9 @@ import Select from "../../components/common/Select";
 import EmptyState from "../../components/common/EmptyState";
 import Loading from "../../components/common/Loading";
 import Pagination from "../../components/common/Pagination/Pagination";
+import useToast from "../../components/common/Toast/useToast";
 import transferenciaService from "../../services/transferenciaService";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "./Transferencias.css";
 
 const PAGE_SIZE_DEFAULT = 15;
@@ -69,6 +71,7 @@ function getTodayIsoDate() {
 }
 
 function FormTransferencia({ accounts, onSubmit, onCancel }) {
+  const showToast = useToast();
   const [formData, setFormData] = useState({
     contaOrigemId: "",
     contaDestinoId: "",
@@ -96,6 +99,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!validateRequiredFields(e, showToast)) return;
 
     if (!formData.contaOrigemId) {
       setError("Selecione a conta de origem.");
@@ -135,7 +139,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form-transferencia">
+    <form onSubmit={handleSubmit} className="form-transferencia" noValidate>
       {error && <p className="transferencias-page__error">{error}</p>}
 
       <div className="form-transferencia__grid">
@@ -231,6 +235,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
 }
 
 function Transferencias() {
+  const showToast = useToast();
   const [transferencias, setTransferencias] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -316,6 +321,11 @@ function Transferencias() {
     setIsCreating(false);
     setCurrentPage(0);
     setRefreshKey((current) => current + 1);
+    showToast({
+      type: "success",
+      title: "Operação concluída",
+      message: "Transferência realizada com sucesso.",
+    });
   };
 
   const handleDeleteTransferencia = async (id) => {

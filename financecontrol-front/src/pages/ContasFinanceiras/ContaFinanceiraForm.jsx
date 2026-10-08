@@ -8,7 +8,10 @@ import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Select from "../../components/common/Select";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
+import useToast from "../../components/common/Toast/useToast";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "../Cadastros/Cadastros.css";
 
 const FORM_INICIAL = { nome: "", tipo: "CORRENTE", ativo: true };
@@ -22,6 +25,7 @@ const TIPOS_CONTA = [
 function ContaFinanceiraForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
   const [formulario, setFormulario] = useState(FORM_INICIAL);
   const [carregando, setCarregando] = useState(Boolean(id));
   const [salvando, setSalvando] = useState(false);
@@ -43,7 +47,14 @@ function ContaFinanceiraForm() {
       })
       .catch((loadError) => {
         console.error("Erro ao carregar conta financeira:", loadError);
-        if (ativo) setErro("Não foi possível carregar a conta financeira.");
+        if (ativo) {
+          setErro("Não foi possível carregar a conta financeira.");
+          showApiErrorToast(
+            showToast,
+            loadError,
+            "Não foi possível carregar a conta financeira.",
+          );
+        }
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -52,7 +63,7 @@ function ContaFinanceiraForm() {
     return () => {
       ativo = false;
     };
-  }, [id]);
+  }, [id, showToast]);
 
   const atualizarCampo = (event) => {
     const { name, value, checked, type } = event.target;
@@ -64,6 +75,7 @@ function ContaFinanceiraForm() {
 
   const salvarConta = async (event) => {
     event.preventDefault();
+    if (!validateRequiredFields(event, showToast)) return;
     setErro("");
     setSalvando(true);
 
@@ -88,10 +100,15 @@ function ContaFinanceiraForm() {
       });
     } catch (saveError) {
       console.error("Erro ao salvar conta financeira:", saveError);
-      setErro(
+      const mensagemErro =
         saveError?.response?.data?.erro ||
-          saveError?.response?.data?.message ||
-          "Não foi possível salvar a conta financeira.",
+        saveError?.response?.data?.message ||
+        "Não foi possível salvar a conta financeira.";
+      setErro(mensagemErro);
+      showApiErrorToast(
+        showToast,
+        saveError,
+        "Não foi possível salvar a conta financeira.",
       );
     } finally {
       setSalvando(false);
@@ -126,7 +143,7 @@ function ContaFinanceiraForm() {
           >
           </Button>
         </div>
-        <form className="cadastros-form" onSubmit={salvarConta}>
+        <form className="cadastros-form" onSubmit={salvarConta} noValidate>
           <Input
             id="conta-financeira-nome"
             name="nome"
@@ -162,11 +179,6 @@ function ContaFinanceiraForm() {
                 </span>
               </div>
             </div>
-          )}
-          {erro && (
-            <p className="cadastros-form__error" role="alert">
-              {erro}
-            </p>
           )}
           <div className="cadastros-form__actions">
             <Button

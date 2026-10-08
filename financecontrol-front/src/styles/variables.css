@@ -20,6 +20,7 @@
   --header-height: 3.75rem;
   --sidebar-item-height: 2.5rem;
   --sidebar-item-radius: var(--radius-md);
+  --z-toast: 1100;
 
   --space-0-3: 3px;
   --space-1: 4px;

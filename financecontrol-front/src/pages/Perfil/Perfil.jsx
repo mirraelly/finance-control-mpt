@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import usuarioService from "../../services/usuarioService";
 import { formatarTelefone } from "../../utils/formatters";
 import Card from "../../components/common/Card/Card";
 import Button from "../../components/common/Button/Button";
 import Input from "../../components/common/Input/Input";
 import Modal from "../../components/common/Modal/Modal";
+import useToast from "../../components/common/Toast/useToast";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import {
   HugeiconsIcon,
   Calendar03Icon,
@@ -35,6 +39,8 @@ function formatarMesAno(dataISO) {
 }
 
 function Perfil() {
+  const navigate = useNavigate();
+  const showToast = useToast();
   const [usuario, setUsuario] = useState(null);
 
   const [carregando, setCarregando] = useState(true);
@@ -82,13 +88,18 @@ function Perfil() {
         setErroCarregamento(
           "Não foi possível carregar os dados do seu perfil.",
         );
+        showApiErrorToast(
+          showToast,
+          erro,
+          "Não foi possível carregar os dados do seu perfil.",
+        );
       } finally {
         setCarregando(false);
       }
     }
 
     carregarDadosDoPerfil();
-  }, []);
+  }, [showToast]);
 
   const abrirModalEdicao = () => {
     setNomeEditado(usuario.nome || "");
@@ -131,10 +142,16 @@ function Perfil() {
 
   const handleAlterarSenha = async (event) => {
     event.preventDefault();
+    if (!validateRequiredFields(event, showToast)) return;
     limparFeedbackSenha();
 
     if (!senhaAtual) {
       setErroSenha("Informe sua senha atual.");
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Informe sua senha atual.",
+      });
       return;
     }
 
@@ -145,11 +162,22 @@ function Perfil() {
       setErroSenha(
         "A nova senha deve ter entre 8 e 100 caracteres e atender a todos os critérios.",
       );
+      showToast({
+        type: "error",
+        title: "Senha inválida",
+        message:
+          "A nova senha deve ter entre 8 e 100 caracteres e atender a todos os critérios.",
+      });
       return;
     }
 
     if (novaSenha !== confirmarNovaSenha) {
       setErroSenha("A nova senha e a confirmação não correspondem.");
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "A nova senha e a confirmação não correspondem.",
+      });
       return;
     }
 
@@ -160,10 +188,20 @@ function Perfil() {
       setNovaSenha("");
       setConfirmarNovaSenha("");
       setMensagemSenha("Senha alterada com sucesso.");
+      showToast({
+        type: "success",
+        title: "Senha alterada",
+        message: "Sua senha foi alterada com sucesso.",
+      });
     } catch (erro) {
-      setErroSenha(
+      const mensagemErro =
         erro?.response?.data?.erro ||
-          "Não foi possível alterar a senha. Tente novamente.",
+        "Não foi possível alterar a senha. Tente novamente.";
+      setErroSenha(mensagemErro);
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível alterar a senha. Tente novamente.",
       );
     } finally {
       setAlterandoSenha(false);
@@ -172,9 +210,14 @@ function Perfil() {
 
   const handleSalvar = async (event) => {
     event.preventDefault();
+    if (!validateRequiredFields(event, showToast)) return;
 
     if (!nomeEditado.trim() || nomeEditado.trim().length < 3) {
-      alert("Por favor, informe um nome válido com pelo menos 3 caracteres.");
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Por favor, informe um nome válido com pelo menos 3 caracteres.",
+      });
       return;
     }
 
@@ -199,9 +242,18 @@ function Perfil() {
       }
 
       setModalAberto(false);
+      showToast({
+        type: "success",
+        title: "Perfil atualizado",
+        message: "As alterações do perfil foram salvas.",
+      });
     } catch (erro) {
       console.error("Erro ao atualizar perfil:", erro);
-      alert("Não foi possível salvar as alterações. Tente novamente.");
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível salvar as alterações. Tente novamente.",
+      );
     } finally {
       setSalvando(false);
     }
@@ -219,10 +271,19 @@ function Perfil() {
       localStorage.removeItem("token");
       localStorage.removeItem("financecontrol_token");
       localStorage.removeItem("userId");
-      window.location.href = "/";
+      showToast({
+        type: "success",
+        title: "Conta excluída",
+        message: "Sua conta foi excluída com sucesso.",
+      });
+      navigate("/", { replace: true });
     } catch (erro) {
       console.error("Erro ao deletar conta:", erro);
-      alert("Não foi possível excluir sua conta. Tente novamente.");
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível excluir sua conta. Tente novamente.",
+      );
       setDeletando(false);
     }
   };
@@ -480,7 +541,7 @@ function Perfil() {
         theme="dark"
         className="perfil-modal"
       >
-        <form className="perfil-form" onSubmit={handleSalvar}>
+        <form className="perfil-form" onSubmit={handleSalvar} noValidate>
           <div className="perfil-form-row perfil-form-row--nome">
             <Input
               label="NOME COMPLETO"
@@ -555,7 +616,7 @@ function Perfil() {
         bodyClassName="perfil-modal-senha-corpo"
         closeOnOverlay={!alterandoSenha}
       >
-        <form className="perfil-senha-form" onSubmit={handleAlterarSenha}>
+        <form className="perfil-senha-form" onSubmit={handleAlterarSenha} noValidate>
           <div className="perfil-senha-campo">
             <Input
               label="SENHA ATUAL"

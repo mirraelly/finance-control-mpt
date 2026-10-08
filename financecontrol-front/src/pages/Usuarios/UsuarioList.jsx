@@ -19,7 +19,9 @@ import Modal from "../../components/common/Modal/Modal";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import Pagination from "../../components/common/Pagination";
+import useToast from "../../components/common/Toast/useToast";
 import "./Usuarios.css";
+import { showApiErrorToast } from "../../utils/toastErrors";
 
 const SITUACAO_OPTIONS = [
   { value: "", label: "Todas as situações" },
@@ -40,6 +42,7 @@ const PERFIL_LABEL = {
 
 function UsuarioList() {
   const navigate = useNavigate();
+  const showToast = useToast();
   const usuarioLogadoId = localStorage.getItem("userId");
 
   const [usuarios, setUsuarios] = useState([]);
@@ -86,13 +89,14 @@ function UsuarioList() {
       } catch (erro) {
         console.error("Erro ao carregar usuários:", erro);
         setErro("Não foi possível carregar os usuários.");
+        showApiErrorToast(showToast, erro, "Não foi possível carregar os usuários.");
       } finally {
         setCarregando(false);
       }
     }
 
     carregarUsuarios();
-}, [pagina, tamanhoPagina, nomeFiltro, situacao, perfil, recarregar]);
+}, [pagina, tamanhoPagina, nomeFiltro, situacao, perfil, recarregar, showToast]);
 
   const handleConfirmarSituacao = async () => {
     try {
@@ -101,13 +105,21 @@ function UsuarioList() {
         usuarioSelecionado.id,
         !usuarioSelecionado.ativo,
       );
+      showToast({
+        type: "success",
+        title: "Situação atualizada",
+        message: usuarioSelecionado.ativo
+          ? "Usuário inativado com sucesso."
+          : "Usuário ativado com sucesso.",
+      });
       setUsuarioSelecionado(null);
       setRecarregar((valor) => valor + 1);
     } catch (erro) {
       console.error("Erro ao alterar situação do usuário:", erro);
-      alert(
-        erro?.response?.data?.erro ||
-          "Não foi possível alterar a situação do usuário.",
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível alterar a situação do usuário.",
       );
     } finally {
       setAlterandoSituacao(false);

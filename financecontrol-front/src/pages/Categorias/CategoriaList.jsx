@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   HugeiconsIcon,
@@ -18,7 +18,9 @@ import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
+import useToast from "../../components/common/Toast/useToast";
 import categoriaService from "../../services/categoriaService";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "../Cadastros/Cadastros.css";
 import "./CategoriaList.css";
 
@@ -51,6 +53,8 @@ async function listarTodasAsCategorias(nome) {
 function CategoriaList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const showToast = useToast();
+  const ultimoToastConsumido = useRef(null);
   const [categorias, setCategorias] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(PAGE_SIZE);
@@ -59,21 +63,25 @@ function CategoriaList() {
   const [situacaoFiltro, setSituacaoFiltro] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [mensagem, setMensagem] = useState(location.state?.mensagem || "");
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [alterandoSituacao, setAlterandoSituacao] = useState(false);
   const [recarregar, setRecarregar] = useState(0);
 
   useEffect(() => {
-    if (!location.state?.mensagem) return;
+    if (
+      !location.state?.mensagem ||
+      ultimoToastConsumido.current === location.key
+    ) {
+      return;
+    }
+    ultimoToastConsumido.current = location.key;
+    showToast({
+      type: "success",
+      title: "Operação concluída",
+      message: location.state.mensagem,
+    });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.pathname, location.state, navigate]);
-
-  useEffect(() => {
-    if (!mensagem) return;
-    const timeout = setTimeout(() => setMensagem(""), 4000);
-    return () => clearTimeout(timeout);
-  }, [mensagem]);
+  }, [location.key, location.pathname, location.state, navigate, showToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -96,7 +104,14 @@ function CategoriaList() {
         setCategorias(resposta);
       } catch (erroCarregamento) {
         console.error("Erro ao carregar categorias:", erroCarregamento);
-        if (ativo) setErro("Não foi possível carregar as categorias.");
+        if (ativo) {
+          setErro("Não foi possível carregar as categorias.");
+          showApiErrorToast(
+            showToast,
+            erroCarregamento,
+            "Não foi possível carregar as categorias.",
+          );
+        }
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -106,7 +121,7 @@ function CategoriaList() {
     return () => {
       ativo = false;
     };
-  }, [filtro, recarregar]);
+  }, [filtro, recarregar, showToast]);
 
   const categoriasFiltradas = useMemo(
     () =>
@@ -131,18 +146,21 @@ function CategoriaList() {
         descricao: categoriaSelecionada.descricao,
         ativo: !categoriaSelecionada.ativo,
       });
-      setMensagem(
-        categoriaSelecionada.ativo
+      showToast({
+        type: "success",
+        title: "Situação atualizada",
+        message: categoriaSelecionada.ativo
           ? "Categoria inativada com sucesso."
           : "Categoria ativada com sucesso.",
-      );
+      });
       setCategoriaSelecionada(null);
       setRecarregar((valor) => valor + 1);
     } catch (alteracaoError) {
       console.error("Erro ao alterar situação da categoria:", alteracaoError);
-      alert(
-        alteracaoError?.response?.data?.erro ||
-          "Não foi possível alterar a situação da categoria.",
+      showApiErrorToast(
+        showToast,
+        alteracaoError,
+        "Não foi possível alterar a situação da categoria.",
       );
     } finally {
       setAlterandoSituacao(false);
@@ -151,12 +169,6 @@ function CategoriaList() {
 
   return (
     <div className="cadastros-page">
-      {mensagem && (
-        <p className="cadastros-mensagem" role="status">
-          {mensagem}
-        </p>
-      )}
-
       <Card className="cadastros-toolbar categorias-toolbar">
         <Input
           aria-label="Buscar categorias"

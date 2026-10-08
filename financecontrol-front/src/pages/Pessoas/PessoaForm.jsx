@@ -30,6 +30,8 @@ import Select from "../../components/common/Select";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
+import useToast from "../../components/common/Toast/useToast";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "./Pessoas.css";
 
 const TIPO_PESSOA_OPTIONS = [
@@ -71,6 +73,7 @@ function LabelObrigatorio({ children }) {
 function PessoaForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
   const isEdicao = Boolean(id);
 
   const [tipoPessoa, setTipoPessoa] = useState("PESSOA_FISICA");
@@ -120,11 +123,16 @@ function PessoaForm() {
       } catch (erro) {
         console.error("Erro ao carregar tipos:", erro);
         setErro("Não foi possível carregar os tipos de telefone, e-mail e endereço.");
+        showApiErrorToast(
+          showToast,
+          erro,
+          "Não foi possível carregar os tipos de telefone, e-mail e endereço.",
+        );
       }
     }
 
     carregarTipos();
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     if (!isEdicao) return;
@@ -187,13 +195,18 @@ function PessoaForm() {
       } catch (erro) {
         console.error("Erro ao carregar pessoa:", erro);
         setErroCarregamento(true);
+        showApiErrorToast(
+          showToast,
+          erro,
+          "Não foi possível carregar os dados da pessoa.",
+        );
       } finally {
         setCarregando(false);
       }
     }
 
     carregarPessoa();
-  }, [id, isEdicao]);
+  }, [id, isEdicao, showToast]);
 
   const alterarItem = (setLista, indice, campos) => {
     setLista((lista) =>
@@ -248,6 +261,11 @@ function PessoaForm() {
         ),
       );
     } catch (erro) {
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível consultar o CEP.",
+      );
       alterarItem(setEnderecos, indice, {
         erroCep: erro?.response?.data?.erro || "Não foi possível consultar o CEP.",
       });
@@ -257,40 +275,44 @@ function PessoaForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErro("");
+    const notificarErro = (message) => {
+      setErro(message);
+      showToast({ type: "error", title: "Dados inválidos", message });
+    };
 
     if (nome.trim().length < 3) {
       setEtapaAtiva(0);
-      setErro("Informe um nome válido com pelo menos 3 caracteres.");
+      notificarErro("Informe um nome válido com pelo menos 3 caracteres.");
       return;
     }
 
     if (isFisica && cpf && somenteDigitos(cpf)?.length !== 11) {
       setEtapaAtiva(0);
-      setErro("Informe um CPF válido com 11 dígitos.");
+      notificarErro("Informe um CPF válido com 11 dígitos.");
       return;
     }
 
     if (!isFisica && cnpj && somenteDigitos(cnpj)?.length !== 14) {
       setEtapaAtiva(0);
-      setErro("Informe um CNPJ válido com 14 dígitos.");
+      notificarErro("Informe um CNPJ válido com 14 dígitos.");
       return;
     }
 
     if (telefones.some((telefone) => !telefone.tipoTelefoneId || (somenteDigitos(telefone.numero)?.length || 0) < 10)) {
       setEtapaAtiva(1);
-      setErro("Informe o tipo e um número válido em todos os telefones.");
+      notificarErro("Informe o tipo e um número válido em todos os telefones.");
       return;
     }
 
     if (emails.some((email) => !email.tipoEmailId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.email.trim()))) {
       setEtapaAtiva(2);
-      setErro("Informe o tipo e um e-mail válido em todos os e-mails.");
+      notificarErro("Informe o tipo e um e-mail válido em todos os e-mails.");
       return;
     }
 
     if (enderecos.some((endereco) => !endereco.tipoEnderecoId)) {
       setEtapaAtiva(3);
-      setErro("Informe o tipo de todos os endereços.");
+      notificarErro("Informe o tipo de todos os endereços.");
       return;
     }
 
@@ -355,9 +377,14 @@ function PessoaForm() {
         },
       });
     } catch (erro) {
-      setErro(
+      const mensagemErro =
         erro?.response?.data?.erro ||
-          "Não foi possível salvar a pessoa. Tente novamente.",
+        "Não foi possível salvar a pessoa. Tente novamente.";
+      setErro(mensagemErro);
+      showApiErrorToast(
+        showToast,
+        erro,
+        "Não foi possível salvar a pessoa. Tente novamente.",
       );
     } finally {
       setSalvando(false);

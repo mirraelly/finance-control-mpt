@@ -8,13 +8,17 @@ import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Select from "../../components/common/Select";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
+import useToast from "../../components/common/Toast/useToast";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
 import formaPagamentoService from "../../services/formaPagamentoService";
+import { showApiErrorToast } from "../../utils/toastErrors";
+import validateRequiredFields from "../../utils/validateRequiredFields";
 import "../Cadastros/Cadastros.css";
 
 function FormaPagamentoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
   const [formulario, setFormulario] = useState({
     nome: "",
     contaFinanceiraId: "",
@@ -60,7 +64,14 @@ function FormaPagamentoForm() {
         }
       } catch (loadError) {
         console.error("Erro ao carregar forma de pagamento:", loadError);
-        if (ativo) setErro("Não foi possível carregar os dados da forma de pagamento.");
+        if (ativo) {
+          setErro("Não foi possível carregar os dados da forma de pagamento.");
+          showApiErrorToast(
+            showToast,
+            loadError,
+            "Não foi possível carregar os dados da forma de pagamento.",
+          );
+        }
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -70,7 +81,7 @@ function FormaPagamentoForm() {
     return () => {
       ativo = false;
     };
-  }, [id]);
+  }, [id, showToast]);
 
   const atualizarCampo = (event) => {
     const { name, value } = event.target;
@@ -79,6 +90,7 @@ function FormaPagamentoForm() {
 
   const salvarFormaPagamento = async (event) => {
     event.preventDefault();
+    if (!validateRequiredFields(event, showToast)) return;
     setErro("");
     setSalvando(true);
 
@@ -103,10 +115,15 @@ function FormaPagamentoForm() {
       });
     } catch (saveError) {
       console.error("Erro ao salvar forma de pagamento:", saveError);
-      setErro(
+      const mensagemErro =
         saveError?.response?.data?.erro ||
-          saveError?.response?.data?.message ||
-          "Não foi possível salvar a forma de pagamento.",
+        saveError?.response?.data?.message ||
+        "Não foi possível salvar a forma de pagamento.";
+      setErro(mensagemErro);
+      showApiErrorToast(
+        showToast,
+        saveError,
+        "Não foi possível salvar a forma de pagamento.",
       );
     } finally {
       setSalvando(false);
@@ -149,7 +166,7 @@ function FormaPagamentoForm() {
             aria-label="Voltar para formas de pagamento"
           />
         </div>
-        <form className="cadastros-form" onSubmit={salvarFormaPagamento}>
+        <form className="cadastros-form" onSubmit={salvarFormaPagamento} noValidate>
           <Input
             id="forma-pagamento-nome"
             name="nome"
@@ -188,11 +205,6 @@ function FormaPagamentoForm() {
               </span>
             </div>
           </div>
-          {erro && (
-            <p className="cadastros-form__error" role="alert">
-              {erro}
-            </p>
-          )}
           <div className="cadastros-form__actions">
             <Button
               variant="outline"

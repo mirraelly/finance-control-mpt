@@ -9,6 +9,8 @@ import DatePicker from "../../components/common/DatePicker/Datepicker";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import Pagination from "../../components/common/Pagination";
+import useToast from "../../components/common/Toast/useToast";
+import { showApiErrorToast } from "../../utils/toastErrors";
 import "./LogsLogin.css";
 
 const RESULTADO_OPTIONS = [
@@ -35,6 +37,7 @@ function formatarDataHora(dataISO) {
 }
 
 function LogLoginList() {
+  const showToast = useToast();
   const [logs, setLogs] = useState([]);
   const [pagina, setPagina] = useState(0);
   const [tamanhoPagina, setTamanhoPagina] = useState(15);
@@ -77,13 +80,26 @@ function LogLoginList() {
       } catch (erro) {
         console.error("Erro ao carregar logs de login:", erro);
         setErro("Não foi possível carregar os logs de login.");
+        showApiErrorToast(
+          showToast,
+          erro,
+          "Não foi possível carregar os logs de login.",
+        );
       } finally {
         setCarregando(false);
       }
     }
 
       carregarLogs();
-  }, [pagina, tamanhoPagina, emailFiltro, resultado, dataInicio, dataFim]);
+  }, [
+    pagina,
+    tamanhoPagina,
+    emailFiltro,
+    resultado,
+    dataInicio,
+    dataFim,
+    showToast,
+  ]);
 
   const renderConteudo = () => {
     if (carregando) {

@@ -9,7 +9,9 @@ import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
 import Select from "../../common/Select/Select";
 import DatePicker from "../../common/DatePicker/Datepicker";
+import useToast from "../../common/Toast/useToast";
 import lancamentoFinanceiroService from "../../../services/lancamentoFinanceiroService";
+import { showApiErrorToast } from "../../../utils/toastErrors";
 import "./NewTransactionModal.css";
 
 const DEFAULT_VALUES = {
@@ -43,6 +45,7 @@ function NewTransactionModal({
   title = "Nova Transação",
   submitLabel = "Confirmar",
 }) {
+  const showToast = useToast();
   const [values, setValues] = useState({
     ...DEFAULT_VALUES,
     data: new Date().toLocaleDateString("sv-SE"),
@@ -52,7 +55,6 @@ function NewTransactionModal({
   const [isLoadingOptions, setIsLoadingOptions] = useState(apiEnabled);
   const [apiCategories, setApiCategories] = useState(null);
   const [accounts, setAccounts] = useState([]);
-  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (!apiEnabled) return undefined;
@@ -78,9 +80,14 @@ function NewTransactionModal({
           })),
         );
       })
-      .catch(() => {
-        if (isCurrent)
-          setFormError("Não foi possível carregar contas e categorias.");
+      .catch((error) => {
+        if (isCurrent) {
+          showApiErrorToast(
+            showToast,
+            error,
+            "Não foi possível carregar contas e categorias.",
+          );
+        }
       })
       .finally(() => {
         if (isCurrent) setIsLoadingOptions(false);
@@ -89,7 +96,7 @@ function NewTransactionModal({
     return () => {
       isCurrent = false;
     };
-  }, [apiEnabled]);
+  }, [apiEnabled, showToast]);
 
   const categoryOptions = apiCategories ?? (apiEnabled ? [] : categories);
 
@@ -100,35 +107,71 @@ function NewTransactionModal({
       ...initialValues,
     });
     setIsSubmitting(false);
-    setFormError("");
     onClose?.();
   };
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
     setValues((current) => ({ ...current, [name]: files ? files[0] : value }));
-    setFormError("");
   };
 
   const handleTypeChange = (tipo) => {
     setValues((current) => ({ ...current, tipo }));
-    setFormError("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const camposObrigatorios = [];
+
     if (apiEnabled && !values.contaFinanceiraId) {
-      setFormError("Selecione uma conta financeira.");
+      camposObrigatorios.push("Conta financeira");
+    }
+    if (!values.data) {
+      camposObrigatorios.push("Data");
+    }
+    if (!String(values.valor).trim()) {
+      camposObrigatorios.push("Valor");
+    }
+    if (!String(values.descricao ?? "").trim()) {
+      camposObrigatorios.push("Descrição");
+    }
+
+    if (camposObrigatorios.length > 0) {
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: `Preencha os campos obrigatórios: ${camposObrigatorios.join(", ")}.`,
+      });
+      return;
+    }
+
+    if (!Number.isFinite(Number(values.valor)) || Number(values.valor) <= 0) {
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Informe um valor maior que zero.",
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onSubmit?.({ ...values, valor: Number(values.valor) });
+      if (apiEnabled) {
+        showToast({
+          type: "success",
+          title: "Operação concluída",
+          message: "Transação salva com sucesso.",
+        });
+      }
       handleClose();
     } catch (error) {
       console.error("Erro ao salvar transação:", error);
-      setFormError("Não foi possível salvar a transação. Tente novamente.");
+      showApiErrorToast(
+        showToast,
+        error,
+        "Não foi possível salvar a transação. Tente novamente.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -169,6 +212,7 @@ function NewTransactionModal({
         className="transaction-form"
         onSubmit={handleSubmit}
         id="new-transaction-form"
+        noValidate
       >
         <div
           className="transaction-type"
@@ -284,11 +328,6 @@ function NewTransactionModal({
           required
         />
 
-        {formError && (
-          <p className="transaction-form__error" role="alert">
-            {formError}
-          </p>
-        )}
       </form>
     </Modal>
   );

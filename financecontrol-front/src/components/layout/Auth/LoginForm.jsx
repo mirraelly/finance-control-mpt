@@ -9,19 +9,30 @@ import {
 import authService from "../../../services/authService";
 import Button from "../../common/Button/Button";
 import Input from "../../common/Input/Input";
+import useToast from "../../common/Toast/useToast";
+import { showApiErrorToast } from "../../../utils/toastErrors";
+import validateRequiredFields from "../../../utils/validateRequiredFields";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
+    if (!validateRequiredFields(event, showToast)) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "Informe um endereço de e-mail válido.",
+      });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -33,8 +44,11 @@ function LoginForm() {
         response.role === "SUPERADMIN" ? "/admin/usuarios" : "/dashboard",
       );
     } catch (err) {
-      const message = err?.response?.data?.erro || err?.message;
-      setError(message || "Erro ao fazer login. Verifique seu e-mail e senha.");
+      showApiErrorToast(
+        showToast,
+        err,
+        "Erro ao fazer login. Verifique seu e-mail e senha.",
+      );
     } finally {
       setLoading(false);
     }
@@ -51,7 +65,7 @@ function LoginForm() {
           Entre na sua conta para continuar.
         </span>
 
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form className="login-form" onSubmit={handleSubmit} noValidate>
           <Input
             id="login-email"
             label="E-MAIL"
@@ -117,8 +131,6 @@ function LoginForm() {
               Esqueceu a senha?
             </Link>
           </div>
-
-          {error && <div className="login-error">{error}</div>}
 
           <Button type="submit" fullWidth size="lg" disabled={loading}>
             {loading ? "Entrando..." : "Entrar"}
