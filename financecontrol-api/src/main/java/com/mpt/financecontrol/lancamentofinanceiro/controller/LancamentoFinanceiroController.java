@@ -58,9 +58,15 @@ public class LancamentoFinanceiroController {
             @RequestParam(required = false) LocalDate dataInicio,
 
             @Parameter(description = "Data final")
-            @RequestParam(required = false) LocalDate dataFim
+            @RequestParam(required = false) LocalDate dataFim,
+
+            @Parameter(description = "Filtro por categoria")
+            @RequestParam(required = false) UUID categoriaId,
+
+            @Parameter(description = "Filtro por descrição")
+            @RequestParam(required = false) String descricao
     ) {
-        return service.getAll(pageable, contaFinanceiraId, tipo, origem, dataInicio, dataFim);
+        return service.getAll(pageable, contaFinanceiraId, tipo, origem, dataInicio, dataFim, categoriaId, descricao);
     }
 
     @Operation(summary = "Buscar por ID", description = "Retorna um lançamento pelo ID")

@@ -176,6 +176,18 @@
   text-align: right;
 }
 
+.transacoes-table__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.transacoes-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
 .transacoes-table__readonly,
 .transacoes-page__error {
   color: var(--text-secondary);

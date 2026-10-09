@@ -4,6 +4,7 @@ import {
   HugeiconsIcon,
   Wallet01Icon,
   Edit02Icon,
+  Delete02Icon,
   Search01Icon,
 } from "../../assets/icons";
 import Card from "../../components/common/Card";
@@ -13,11 +14,13 @@ import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import EmptyState from "../../components/common/EmptyState";
 import Loading from "../../components/common/Loading";
+import Modal from "../../components/common/Modal/Modal";
 import Pagination from "../../components/common/Pagination/Pagination";
 import useToast from "../../components/common/Toast/useToast";
 import NewTransactionModal from "../../components/transaction/NewTransactionModal";
 import categoriaService from "../../services/categoriaService";
 import lancamentoFinanceiroService from "../../services/lancamentoFinanceiroService";
+import { centavosParaMoeda } from "../../utils/formatters";
 import { showApiErrorToast } from "../../utils/toastErrors";
 import "./Transacoes.css";
 
@@ -65,17 +68,6 @@ function mapTransaction(transaction) {
   };
 }
 
-function matchesTransactionFilters(transaction, { search, categoryId, activeTab }) {
-  const matchesSearch = !search
-    || (transaction.descricao || "").toLocaleLowerCase().includes(search.toLocaleLowerCase());
-  const matchesCategory = !categoryId || transaction.categoriaId === categoryId;
-  const matchesType = activeTab === "todas"
-    || (activeTab === "receitas" && transaction.tipo === "ENTRADA")
-    || (activeTab === "despesas" && transaction.tipo !== "ENTRADA");
-
-  return matchesSearch && matchesCategory && matchesType;
-}
-
 function getCategoryVariant(transaction) {
   const categoryName = transaction.categoriaLabel
     .normalize("NFD")
@@ -102,6 +94,8 @@ function Transacoes() {
   const [error, setError] = useState("");
   const [categoriesError, setCategoriesError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
@@ -153,24 +147,9 @@ function Transacoes() {
           descricao: debouncedSearch || undefined,
         });
         if (!isCurrent) return;
-        const filteredTransactions = response.content.filter((transaction) =>
-          matchesTransactionFilters(transaction, {
-            search: debouncedSearch,
-            categoryId,
-            activeTab,
-          }),
-        );
-        const apiIgnoredFilters = filteredTransactions.length !== response.content.length;
-
-        setTransactions(filteredTransactions.map(mapTransaction));
-        setTotalPages(
-          apiIgnoredFilters
-            ? Math.ceil(filteredTransactions.length / pageSize)
-            : response.totalPages,
-        );
-        setTotalElements(
-          apiIgnoredFilters ? filteredTransactions.length : response.totalElements,
-        );
+        setTransactions(response.content.map(mapTransaction));
+        setTotalPages(response.totalPages);
+        setTotalElements(response.totalElements);
       } catch (loadError) {
         console.error("Erro ao carregar transações:", loadError);
         if (isCurrent) {
@@ -229,10 +208,35 @@ function Transacoes() {
     setEditingTransaction(null);
   };
 
+  const confirmDeleteTransaction = async () => {
+    try {
+      setIsDeleting(true);
+      await lancamentoFinanceiroService.excluir(transactionToDelete.id);
+      showToast({
+        type: "success",
+        title: "Operação concluída",
+        message: "Transação excluída com sucesso.",
+      });
+      setTransactionToDelete(null);
+      setRefreshKey((current) => current + 1);
+    } catch (deleteError) {
+      console.error("Erro ao excluir transação:", deleteError);
+      showApiErrorToast(
+        showToast,
+        deleteError,
+        "Não foi possível excluir a transação.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const modalInitialValues = editingTransaction
     ? {
         tipo: editingTransaction.tipo,
-        valor: String(editingTransaction.valor),
+        valor: centavosParaMoeda(
+          Math.round(Number(editingTransaction.valor) * 100),
+        ),
         descricao: editingTransaction.descricao || "",
         categoria: editingTransaction.categoria || "",
         contaFinanceiraId: editingTransaction.contaFinanceiraId,
@@ -421,19 +425,35 @@ function Transacoes() {
                         </td>
                         <td data-label="Ações">
                           {isManual ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditTransaction(transaction)}
-                              aria-label={`Editar transação ${transaction.descricao || ""}`}
-                              icon={
-                                <HugeiconsIcon
-                                  icon={Edit02Icon}
-                                  size={18}
-                                  color="var(--color-emerald-500)"
-                                />
-                              }
-                            />
+                            <div className="transacoes-table__actions">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditTransaction(transaction)}
+                                aria-label={`Editar transação ${transaction.descricao || ""}`}
+                                icon={
+                                  <HugeiconsIcon
+                                    icon={Edit02Icon}
+                                    size={18}
+                                    color="var(--color-emerald-500)"
+                                  />
+                                }
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Excluir transação"
+                                onClick={() => setTransactionToDelete(transaction)}
+                                aria-label={`Excluir transação ${transaction.descricao || ""}`}
+                                icon={
+                                  <HugeiconsIcon
+                                    icon={Delete02Icon}
+                                    size={18}
+                                    color="#b91c1c"
+                                  />
+                                }
+                              />
+                            </div>
                           ) : (
                             <span
                               className="transacoes-table__readonly"
@@ -482,6 +502,40 @@ function Transacoes() {
         theme="auto"
         apiEnabled
       />
+
+      <Modal
+        isOpen={Boolean(transactionToDelete)}
+        onClose={() => !isDeleting && setTransactionToDelete(null)}
+        title="Excluir transação"
+        closeOnOverlay={!isDeleting}
+        footer={
+          <div className="transacoes-modal__actions">
+            <Button
+              variant="outline"
+              onClick={() => setTransactionToDelete(null)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteTransaction}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Excluindo..." : "Confirmar"}
+            </Button>
+          </div>
+        }
+      >
+        {transactionToDelete && (
+          <p>
+            Deseja excluir a transação{" "}
+            {transactionToDelete.descricao || "sem descrição"} de{" "}
+            {formatCurrency(transactionToDelete.valor)}? O saldo da conta
+            financeira será recalculado.
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }

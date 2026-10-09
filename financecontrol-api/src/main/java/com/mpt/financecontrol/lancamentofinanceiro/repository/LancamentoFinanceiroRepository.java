@@ -24,6 +24,9 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
                 AND (CAST(:origem AS text) IS NULL OR l.origem = CAST(:origem AS text))
                 AND (CAST(:dataInicio AS date) IS NULL OR l.data >= CAST(:dataInicio AS date))
                 AND (CAST(:dataFim AS date) IS NULL OR l.data <= CAST(:dataFim AS date))
+                AND (CAST(:categoriaId AS uuid) IS NULL OR l.categoria_id = CAST(:categoriaId AS uuid))
+                AND (CAST(:descricao AS text) IS NULL
+                    OR unaccent(lower(l.descricao)) LIKE unaccent(lower('%' || CAST(:descricao AS text) || '%')))
     """,
     countQuery = """
         SELECT count(*) FROM lancamento_financeiro l
@@ -33,6 +36,9 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
                 AND (CAST(:origem AS text) IS NULL OR l.origem = CAST(:origem AS text))
                 AND (CAST(:dataInicio AS date) IS NULL OR l.data >= CAST(:dataInicio AS date))
                 AND (CAST(:dataFim AS date) IS NULL OR l.data <= CAST(:dataFim AS date))
+                AND (CAST(:categoriaId AS uuid) IS NULL OR l.categoria_id = CAST(:categoriaId AS uuid))
+                AND (CAST(:descricao AS text) IS NULL
+                    OR unaccent(lower(l.descricao)) LIKE unaccent(lower('%' || CAST(:descricao AS text) || '%')))
     """,
     nativeQuery = true)
     Page<LancamentoFinanceiro> findAllWithFilters(
@@ -42,7 +48,9 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
             @Param("tipo") String tipo,
             @Param("origem") String origem,
             @Param("dataInicio") LocalDate dataInicio,
-            @Param("dataFim") LocalDate dataFim
+            @Param("dataFim") LocalDate dataFim,
+            @Param("categoriaId") UUID categoriaId,
+            @Param("descricao") String descricao
     );
 
     @Query("SELECT new com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto("

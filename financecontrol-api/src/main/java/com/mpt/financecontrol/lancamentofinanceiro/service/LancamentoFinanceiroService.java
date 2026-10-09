@@ -70,7 +70,9 @@ public class LancamentoFinanceiroService {
             TipoLancamento   tipo,
             OrigemLancamento origem,
             LocalDate        dataInicio,
-            LocalDate        dataFim
+            LocalDate        dataFim,
+            UUID             categoriaId,
+            String           descricao
     ) {
         Tenant tenant = usuarioService.getTenantLogado();
         return repository.findAllWithFilters(
@@ -80,7 +82,9 @@ public class LancamentoFinanceiroService {
                         tipo != null ? tipo.name() : null,
                         origem != null ? origem.name() : null,
                         dataInicio,
-                        dataFim)
+                        dataFim,
+                        categoriaId,
+                        descricao != null && !descricao.isBlank() ? descricao.trim() : null)
                 .map(LancamentoFinanceiroMapper::toResponseDto);
     }
 
@@ -119,6 +123,9 @@ public class LancamentoFinanceiroService {
 
         Categoria categoria = dto.categoriaId() != null ? categoriaService.findById(dto.categoriaId()) : null;
 
+        if (categoria != null && !Boolean.TRUE.equals(categoria.getAtivo()))
+            throw new BadRequestException("Categoria inativa");
+
         return LancamentoFinanceiroMapper.toResponseDto(registrar(
                 tenant,
                 contaFinanceira,
@@ -144,6 +151,12 @@ public class LancamentoFinanceiroService {
         Categoria categoria = dto.categoriaId() != null
                 ? categoriaService.findById(dto.categoriaId())
                 : null;
+
+        boolean categoriaAlterada = categoria != null
+                && (lancamento.getCategoria() == null || !lancamento.getCategoria().getId().equals(categoria.getId()));
+
+        if (categoriaAlterada && !Boolean.TRUE.equals(categoria.getAtivo()))
+            throw new BadRequestException("Categoria inativa");
 
         lancamento.setContaFinanceira(contaFinanceira);
         lancamento.setCategoria(categoria);

@@ -66,6 +66,13 @@ const lancamentoFinanceiroService = {
         );
         return response.data;
     },
+
+    excluir: async (id) => {
+        await axios.delete(
+            `${API_URL}/lancamentos/${id}`,
+            getAuthConfig(),
+        );
+    },
 };
 
 export default lancamentoFinanceiroService;

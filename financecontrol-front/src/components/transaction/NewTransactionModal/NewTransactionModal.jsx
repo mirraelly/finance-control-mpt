@@ -11,6 +11,7 @@ import Select from "../../common/Select/Select";
 import DatePicker from "../../common/DatePicker/Datepicker";
 import useToast from "../../common/Toast/useToast";
 import lancamentoFinanceiroService from "../../../services/lancamentoFinanceiroService";
+import { mascaraMoeda, moedaParaCentavos } from "../../../utils/formatters";
 import { showApiErrorToast } from "../../../utils/toastErrors";
 import "./NewTransactionModal.css";
 
@@ -112,7 +113,11 @@ function NewTransactionModal({
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
-    setValues((current) => ({ ...current, [name]: files ? files[0] : value }));
+    const novoValor = name === "valor" ? mascaraMoeda(value) : value;
+    setValues((current) => ({
+      ...current,
+      [name]: files ? files[0] : novoValor,
+    }));
   };
 
   const handleTypeChange = (tipo) => {
@@ -145,7 +150,16 @@ function NewTransactionModal({
       return;
     }
 
-    if (!Number.isFinite(Number(values.valor)) || Number(values.valor) <= 0) {
+    if (values.data > new Date().toLocaleDateString("sv-SE")) {
+      showToast({
+        type: "error",
+        title: "Dados inválidos",
+        message: "A data não pode ser futura.",
+      });
+      return;
+    }
+
+    if (moedaParaCentavos(values.valor) <= 0) {
       showToast({
         type: "error",
         title: "Dados inválidos",
@@ -156,7 +170,10 @@ function NewTransactionModal({
 
     setIsSubmitting(true);
     try {
-      await onSubmit?.({ ...values, valor: Number(values.valor) });
+      await onSubmit?.({
+        ...values,
+        valor: moedaParaCentavos(values.valor) / 100,
+      });
       if (apiEnabled) {
         showToast({
           type: "success",
@@ -281,6 +298,7 @@ function NewTransactionModal({
             theme={theme}
             fullWidth
             required
+            max={new Date().toLocaleDateString("sv-SE")}
             dropdownPosition="right"
           />
 
@@ -288,9 +306,8 @@ function NewTransactionModal({
             id="transaction-value"
             name="valor"
             label="VALOR"
-            type="number"
-            min="0.01"
-            step="0.01"
+            inputMode="numeric"
+            prefix="R$"
             value={values.valor}
             onChange={handleChange}
             placeholder="0,00"
