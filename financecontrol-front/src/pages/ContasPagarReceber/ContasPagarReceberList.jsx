@@ -316,7 +316,7 @@ function ContasPagarReceberList({ tipo }) {
                     <th>{pessoaLabel}</th>
                     <th>Descrição</th>
                     <th>Data de emissão</th>
-                    {!ehPagar && <th>Vencimento</th>}
+                    <th>Vencimento</th>
                     <th>Valor</th>
                     <th>Status</th>
                     <th>Situação</th>
@@ -329,13 +329,11 @@ function ContasPagarReceberList({ tipo }) {
                       <td>{conta.pessoaNome}</td>
                       <td>{conta.descricao || conta.categoriaNome || "—"}</td>
                       <td>{formatarData(conta.dataEmissao)}</td>
-                      {!ehPagar && (
-                        <td>
-                          {formatarData(conta.parcelas?.[0]?.dataVencimento)}
-                          {conta.parcelas?.length > 1 &&
-                            ` (+${conta.parcelas.length - 1})`}
-                        </td>
-                      )}
+                      <td>
+                        {formatarData(conta.parcelas?.[0]?.dataVencimento)}
+                        {conta.parcelas?.length > 1 &&
+                          ` (+${conta.parcelas.length - 1})`}
+                      </td>
                       <td>{formatarMoeda(conta.valorTotal)}</td>
                       <td>
                         <Badge variant={variantStatus(conta.status)}>

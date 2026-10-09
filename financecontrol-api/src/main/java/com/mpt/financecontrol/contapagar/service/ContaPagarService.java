@@ -221,7 +221,9 @@ public class ContaPagarService {
         if (dto.pessoaId() != null)
             contaPagar.setPessoa(pessoaService.findById(dto.pessoaId()));
 
-        if (dto.categoriaId() != null) {
+        if (Boolean.TRUE.equals(dto.removerCategoria())) {
+            contaPagar.setCategoria(null);
+        } else if (dto.categoriaId() != null) {
             Categoria categoria = categoriaRepository.findById(dto.categoriaId())
                     .orElseThrow(() -> new NotFoundException("Categoria não encontrada"));
 

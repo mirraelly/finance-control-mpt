@@ -22,6 +22,9 @@ public record ContaReceberUpdateDto(
         @Schema(description = "ID da categoria")
         UUID categoriaId,
 
+        @Schema(description = "Remover a categoria da conta", example = "false")
+        Boolean removerCategoria,
+
         @Schema(description = "Descrição da conta", example = "Venda de produto X")
         @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
         String descricao,

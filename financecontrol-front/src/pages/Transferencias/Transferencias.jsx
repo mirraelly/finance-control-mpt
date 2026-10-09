@@ -15,6 +15,7 @@ import Loading from "../../components/common/Loading";
 import Pagination from "../../components/common/Pagination/Pagination";
 import useToast from "../../components/common/Toast/useToast";
 import transferenciaService from "../../services/transferenciaService";
+import { mascaraMoeda, moedaParaCentavos } from "../../utils/formatters";
 import validateRequiredFields from "../../utils/validateRequiredFields";
 import "./Transferencias.css";
 
@@ -113,7 +114,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
       setError("A conta de destino deve ser diferente da conta de origem.");
       return;
     }
-    if (!formData.valor || Number(formData.valor) <= 0) {
+    if (moedaParaCentavos(formData.valor) <= 0) {
       setError("Informe um valor válido maior que zero.");
       return;
     }
@@ -123,7 +124,7 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
       const payload = {
         contaOrigemId: formData.contaOrigemId,
         contaDestinoId: formData.contaDestinoId,
-        valor: Number(formData.valor),
+        valor: moedaParaCentavos(formData.valor) / 100,
         data: formData.data,
         descricao: formData.descricao.trim(),
       };
@@ -199,11 +200,11 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
           </label>
           <Input
             id="valor"
-            type="number"
-            step="0.01"
+            inputMode="numeric"
+            prefix="R$"
             placeholder="0,00"
             value={formData.valor}
-            onChange={(e) => setFormData((prev) => ({ ...prev, valor: e.target.value }))}
+            onChange={(e) => setFormData((prev) => ({ ...prev, valor: mascaraMoeda(e.target.value) }))}
             required
             fullWidth
           />

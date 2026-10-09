@@ -39,10 +39,27 @@
   font-size: var(--font-size-12);
 }
 
-.pagar-contas-aviso {
+.pagar-contas-form__observacao {
+  grid-column: 1 / -1;
+}
+
+.pagar-contas-historico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.pagar-contas-historico h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-16);
+}
+
+.pagar-contas-historico__vazio {
   margin: 0;
   color: var(--text-secondary);
-  font-size: var(--font-size-12);
+  font-size: var(--font-size-13);
 }
 
 @media (max-width: 1000px) {

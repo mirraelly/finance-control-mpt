@@ -28,6 +28,14 @@ const formaPagamentoService = {
     return response.data;
   },
 
+  listarAtivas: async () => {
+    const response = await axios.get(
+      `${API_URL}/formas-pagamento/select`,
+      getAuthConfig(),
+    );
+    return response.data;
+  },
+
   criar: async (dados) => {
     const response = await axios.post(
       `${API_URL}/formas-pagamento`,

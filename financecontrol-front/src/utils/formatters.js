@@ -59,3 +59,24 @@ export function somenteDigitos(value) {
 
     return numeros || null;
 }
+
+export function mascaraMoeda(value) {
+    const numeros = String(value ?? "").replace(/\D/g, "").slice(0, 15);
+
+    if (!numeros) return "";
+
+    return centavosParaMoeda(Number(numeros));
+}
+
+export function moedaParaCentavos(value) {
+    const numeros = String(value ?? "").replace(/\D/g, "");
+
+    return numeros ? Number(numeros) : 0;
+}
+
+export function centavosParaMoeda(centavos) {
+    return (centavos / 100).toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+}

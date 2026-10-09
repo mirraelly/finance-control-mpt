@@ -221,7 +221,9 @@ public class ContaReceberService {
         if (dto.pessoaId() != null)
             contaReceber.setPessoa(pessoaService.findById(dto.pessoaId()));
 
-        if (dto.categoriaId() != null) {
+        if (Boolean.TRUE.equals(dto.removerCategoria())) {
+            contaReceber.setCategoria(null);
+        } else if (dto.categoriaId() != null) {
             Categoria categoria = categoriaRepository.findById(dto.categoriaId())
                     .orElseThrow(() -> new NotFoundException("Categoria não encontrada"));
 

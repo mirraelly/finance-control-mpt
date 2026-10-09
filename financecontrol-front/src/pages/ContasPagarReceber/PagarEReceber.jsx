@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  CancelCircleIcon,
   Edit02Icon,
   HugeiconsIcon,
   Search01Icon,
   Undo03Icon,
+  ViewIcon,
 } from "../../assets/icons";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
@@ -12,17 +14,32 @@ import DatePicker from "../../components/common/DatePicker/DatePicker";
 import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
+import Modal from "../../components/common/Modal/Modal";
 import Select from "../../components/common/Select";
 import useToast from "../../components/common/Toast/useToast";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
 import contasPagarReceberService from "../../services/contasPagarReceberService";
 import formaPagamentoService from "../../services/formaPagamentoService";
+import {
+  centavosParaMoeda,
+  mascaraMoeda,
+  moedaParaCentavos,
+} from "../../utils/formatters";
 import { showApiErrorToast } from "../../utils/toastErrors";
 import validateRequiredFields from "../../utils/validateRequiredFields";
 import "../Cadastros/Cadastros.css";
 import "./PagarContas.css";
 
 const PAGE_SIZE = 100;
+
+const CAMPOS_MOEDA = ["valor", "juros", "multa", "desconto"];
+
+const STATUS_LABELS = {
+  ABERTO: "Em aberto",
+  PARCIALMENTE_PAGO: "Parcialmente pago",
+  PAGO: "Pago",
+  CANCELADO: "Cancelado",
+};
 
 function dataLocalHoje() {
   const hoje = new Date();
@@ -33,37 +50,39 @@ function dataLocalHoje() {
   ].join("-");
 }
 
-const NOVO_PAGAMENTO = {
-  dataPagamento: dataLocalHoje(),
-  valorPago: "",
-  formaPagamentoId: "",
-  contaFinanceiraId: "",
-};
+function criarNovaBaixa() {
+  return {
+    dataBaixa: dataLocalHoje(),
+    valor: "",
+    juros: "",
+    multa: "",
+    desconto: "",
+    formaPagamentoId: "",
+    contaFinanceiraId: "",
+    observacao: "",
+  };
+}
 
-const STATUS_LABELS = {
-  ABERTO: "Em aberto",
-  PARCIALMENTE_PAGO: "Parcialmente pago",
-  PAGO: "Pago",
-  CANCELADO: "Cancelado",
-};
+function paraCentavos(valor) {
+  return Math.round(Number(valor || 0) * 100);
+}
 
 function extrairLista(resposta) {
   return Array.isArray(resposta) ? resposta : resposta?.content || [];
 }
 
-async function listarTodasAsContas(tipo) {
-  const primeiraPagina = await contasPagarReceberService.listar(tipo, {
+async function listarTodasAsParcelas(tipo, status) {
+  const filtros = { size: PAGE_SIZE, status: status || undefined };
+  const primeiraPagina = await contasPagarReceberService.listarParcelas(tipo, {
+    ...filtros,
     page: 0,
-    size: PAGE_SIZE,
-    ativo: true,
   });
   const paginasRestantes = Array.from(
     { length: Math.max(0, (primeiraPagina.totalPages || 1) - 1) },
     (_, index) =>
-      contasPagarReceberService.listar(tipo, {
+      contasPagarReceberService.listarParcelas(tipo, {
+        ...filtros,
         page: index + 1,
-        size: PAGE_SIZE,
-        ativo: true,
       }),
   );
   const paginas = await Promise.all(paginasRestantes);
@@ -71,32 +90,43 @@ async function listarTodasAsContas(tipo) {
   return [
     ...extrairLista(primeiraPagina),
     ...paginas.flatMap(extrairLista),
-  ].flatMap((conta) => normalizarConta(conta, tipo));
+  ].map((parcela) => normalizarParcela(parcela, tipo));
 }
 
-function normalizarConta(conta, tipo) {
-  const parcelas = conta.parcelas?.length ? conta.parcelas : [null];
-  return parcelas.map((parcela) => {
-    const valor = Number(parcela?.valor ?? conta.valorTotal ?? 0);
-    const saldo = Number(parcela?.saldo ?? valor);
-    const parcelaId = parcela?.id;
-    const dataVencimento =
-      parcela?.dataVencimento ?? conta.dataVencimento ?? null;
+function normalizarParcela(parcela, tipo) {
+  return {
+    id: `${tipo}-${parcela.id}`,
+    parcelaId: parcela.id,
+    contaId: tipo === "pagar" ? parcela.contaPagarId : parcela.contaReceberId,
+    tipo,
+    pessoaId: parcela.pessoaId,
+    pessoaNome: parcela.pessoaNome || "—",
+    descricao: parcela.descricao || "—",
+    numeroParcela: parcela.numeroParcela,
+    totalParcelas: parcela.totalParcelas,
+    dataVencimento: parcela.dataVencimento,
+    valor: Number(parcela.valor),
+    saldo: Number(parcela.saldo),
+    formaPagamentoId: parcela.formaPagamentoId || "",
+    status: parcela.status,
+  };
+}
 
-    return {
-      id: `${tipo}-${conta.id}${parcelaId ? `-${parcelaId}` : ""}`,
-      contaId: conta.id,
-      parcelaId,
-      tipo,
-      pessoaId: conta.pessoaId,
-      pessoaNome: conta.pessoaNome || "—",
-      descricao: parcela?.descricao || conta.descricao || conta.categoriaNome || "—",
-      dataVencimento,
-      valor,
-      saldo,
-      status: parcela?.status || conta.status || "ABERTO",
-    };
-  });
+function resumirParcela(conta, parcelaId, tipo) {
+  const parcela = conta.parcelas?.find((item) => item.id === parcelaId);
+  const baixas =
+    (tipo === "pagar" ? parcela?.pagamentos : parcela?.recebimentos) || [];
+  const abatidoCentavos = baixas.reduce(
+    (total, baixa) =>
+      total + paraCentavos(baixa.valor) + paraCentavos(baixa.desconto),
+    0,
+  );
+
+  return {
+    baixas,
+    saldo: (paraCentavos(parcela?.valor) - abatidoCentavos) / 100,
+    status: parcela?.status,
+  };
 }
 
 function formatarData(data) {
@@ -123,7 +153,7 @@ function varianteStatus(status) {
 function normalizarTexto(texto) {
   return String(texto || "")
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLocaleLowerCase("pt-BR");
 }
 
@@ -133,7 +163,12 @@ function PagarEReceber() {
   const [formasPagamento, setFormasPagamento] = useState([]);
   const [contasFinanceiras, setContasFinanceiras] = useState([]);
   const [registroSelecionado, setRegistroSelecionado] = useState(null);
-  const [pagamento, setPagamento] = useState(NOVO_PAGAMENTO);
+  const [baixas, setBaixas] = useState([]);
+  const [carregandoBaixas, setCarregandoBaixas] = useState(false);
+  const [baixa, setBaixa] = useState(criarNovaBaixa);
+  const [salvando, setSalvando] = useState(false);
+  const [baixaEstorno, setBaixaEstorno] = useState(null);
+  const [estornando, setEstornando] = useState(false);
   const [busca, setBusca] = useState("");
   const [filtroPessoa, setFiltroPessoa] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
@@ -142,37 +177,71 @@ function PagarEReceber() {
   const [vencimentoAte, setVencimentoAte] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [recarregar, setRecarregar] = useState(0);
 
   useEffect(() => {
     let ativo = true;
 
-    async function carregarDados() {
+    async function carregarOpcoes() {
+      const [resultadoFormas, resultadoContas] = await Promise.allSettled([
+        formaPagamentoService.listarAtivas(),
+        contaFinanceiraService.listarAtivas(),
+      ]);
+
+      if (!ativo) return;
+      const erros = [];
+
+      if (resultadoFormas.status === "fulfilled") {
+        setFormasPagamento(resultadoFormas.value);
+      } else {
+        console.error(
+          "Erro ao carregar formas de pagamento:",
+          resultadoFormas.reason,
+        );
+        erros.push("formas de pagamento");
+      }
+
+      if (resultadoContas.status === "fulfilled") {
+        setContasFinanceiras(resultadoContas.value);
+      } else {
+        console.error(
+          "Erro ao carregar contas financeiras:",
+          resultadoContas.reason,
+        );
+        erros.push("contas financeiras");
+      }
+
+      if (erros.length > 0) {
+        showToast({
+          type: "warning",
+          title: "Opções parcialmente indisponíveis",
+          message: `Não foi possível carregar ${erros.join(" e ")}. Algumas opções podem ficar indisponíveis.`,
+        });
+      }
+    }
+
+    carregarOpcoes();
+    return () => {
+      ativo = false;
+    };
+  }, [showToast]);
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarParcelas() {
       try {
         setCarregando(true);
         setErro("");
-        const resultados = await Promise.allSettled([
-          listarTodasAsContas("pagar"),
-          listarTodasAsContas("receber"),
-          formaPagamentoService.listar({
-            page: 0,
-            size: PAGE_SIZE,
-            ativo: true,
-          }),
-          contaFinanceiraService.listarAtivas(),
+        const [resultadoPagar, resultadoReceber] = await Promise.allSettled([
+          listarTodasAsParcelas("pagar", filtroStatus),
+          listarTodasAsParcelas("receber", filtroStatus),
         ]);
 
         if (!ativo) return;
-        const [
-          resultadoPagar,
-          resultadoReceber,
-          resultadoFormas,
-          resultadoContas,
-        ] = resultados;
-        const erros = [];
 
         if (resultadoPagar.status === "rejected") {
           console.error("Erro ao carregar contas a pagar:", resultadoPagar.reason);
-          erros.push("contas a pagar");
         }
 
         if (resultadoReceber.status === "rejected") {
@@ -180,26 +249,6 @@ function PagarEReceber() {
             "Erro ao carregar contas a receber:",
             resultadoReceber.reason,
           );
-          erros.push("contas a receber");
-        }
-
-        if (resultadoFormas.status === "fulfilled") {
-          setFormasPagamento(extrairLista(resultadoFormas.value));
-        } else {
-          console.error("Erro ao carregar formas de pagamento:", resultadoFormas.reason);
-          setFormasPagamento([]);
-          erros.push("formas de pagamento");
-        }
-
-        if (resultadoContas.status === "fulfilled") {
-          setContasFinanceiras(resultadoContas.value);
-        } else {
-          console.error(
-            "Erro ao carregar contas financeiras:",
-            resultadoContas.reason,
-          );
-          setContasFinanceiras([]);
-          erros.push("contas financeiras");
         }
 
         setRegistros([
@@ -216,49 +265,39 @@ function PagarEReceber() {
           const mensagemErro =
             "Não foi possível carregar as contas a pagar nem as contas a receber. Verifique a conexão com o servidor e tente novamente.";
           setErro(mensagemErro);
-          showApiErrorToast(
-            showToast,
-            resultadoPagar.reason,
-            mensagemErro,
-          );
-        } else if (erros.length > 0) {
-          const resultadoFalho = resultados.find(
-            (resultado) => resultado.status === "rejected",
-          );
+          showApiErrorToast(showToast, resultadoPagar.reason, mensagemErro);
+        } else if (
+          resultadoPagar.status === "rejected" ||
+          resultadoReceber.status === "rejected"
+        ) {
           showToast({
             type: "warning",
-            title: "Opções parcialmente indisponíveis",
-            message: `Não foi possível carregar ${erros.join(" e ")}. Algumas opções podem ficar indisponíveis.`,
+            title: "Contas parcialmente indisponíveis",
+            message: `Não foi possível carregar as ${
+              resultadoPagar.status === "rejected"
+                ? "contas a pagar"
+                : "contas a receber"
+            }.`,
           });
-          if (resultadoFalho) {
-            console.error(
-              "Falha ao carregar opções de Pagar e Receber:",
-              resultadoFalho.reason,
-            );
-          }
         }
       } catch (loadError) {
-        console.error("Erro ao carregar contas para pagamento:", loadError);
+        console.error("Erro ao carregar parcelas:", loadError);
         if (ativo) {
           const mensagemErro =
-            "Não foi possível carregar as contas e opções de pagamento. Recarregue a página e tente novamente.";
+            "Não foi possível carregar as parcelas. Recarregue a página e tente novamente.";
           setErro(mensagemErro);
-          showApiErrorToast(
-            showToast,
-            loadError,
-            mensagemErro,
-          );
+          showApiErrorToast(showToast, loadError, mensagemErro);
         }
       } finally {
         if (ativo) setCarregando(false);
       }
     }
 
-    carregarDados();
+    carregarParcelas();
     return () => {
       ativo = false;
     };
-  }, [showToast]);
+  }, [filtroStatus, recarregar, showToast]);
 
   const pessoas = useMemo(() => {
     const pessoasUnicas = new Map();
@@ -292,7 +331,6 @@ function PagarEReceber() {
         correspondeBusca &&
         (!filtroPessoa || String(registro.pessoaId) === filtroPessoa) &&
         (!filtroTipo || registro.tipo === filtroTipo) &&
-        (!filtroStatus || registro.status === filtroStatus) &&
         (!vencimentoDe ||
           (registro.dataVencimento &&
             registro.dataVencimento >= vencimentoDe)) &&
@@ -301,79 +339,197 @@ function PagarEReceber() {
             registro.dataVencimento <= vencimentoAte))
       );
     });
-  }, [
-    busca,
-    filtroPessoa,
-    filtroStatus,
-    filtroTipo,
-    registros,
-    vencimentoAte,
-    vencimentoDe,
-  ]);
+  }, [busca, filtroPessoa, filtroTipo, registros, vencimentoAte, vencimentoDe]);
 
-  const alterarCampoPagamento = (event) => {
-    const { name, value } = event.target;
-    setPagamento((atual) => ({ ...atual, [name]: value }));
+  const ehPagar = registroSelecionado?.tipo === "pagar";
+
+  const alterarCampoBaixa = (event) => {
+    const { name } = event.target;
+    const value = CAMPOS_MOEDA.includes(name)
+      ? mascaraMoeda(event.target.value)
+      : event.target.value;
+
+    setBaixa((atual) => {
+      if (name === "formaPagamentoId") {
+        const formaSelecionada = formasPagamento.find(
+          (forma) => String(forma.id) === String(value),
+        );
+        return {
+          ...atual,
+          formaPagamentoId: value,
+          contaFinanceiraId: formaSelecionada?.contaFinanceiraId
+            ? String(formaSelecionada.contaFinanceiraId)
+            : atual.contaFinanceiraId,
+        };
+      }
+
+      return { ...atual, [name]: value };
+    });
   };
 
   const voltarParaLista = () => {
     setRegistroSelecionado(null);
-    setPagamento(NOVO_PAGAMENTO);
+    setBaixas([]);
+    setBaixa(criarNovaBaixa());
   };
 
-  const abrirPagamento = (registro) => {
+  const abrirParcela = async (registro) => {
+    const formaParcela = formasPagamento.find(
+      (forma) => String(forma.id) === String(registro.formaPagamentoId),
+    );
     setRegistroSelecionado(registro);
-    setPagamento({
-      ...NOVO_PAGAMENTO,
-      valorPago: String(registro.saldo),
+    setBaixas([]);
+    setBaixa({
+      ...criarNovaBaixa(),
+      valor:
+        registro.saldo > 0 ? centavosParaMoeda(paraCentavos(registro.saldo)) : "",
+      formaPagamentoId: formaParcela ? String(formaParcela.id) : "",
+      contaFinanceiraId: formaParcela?.contaFinanceiraId
+        ? String(formaParcela.contaFinanceiraId)
+        : "",
     });
+
+    try {
+      setCarregandoBaixas(true);
+      const conta = await contasPagarReceberService.buscarPorId(
+        registro.tipo,
+        registro.contaId,
+      );
+      setBaixas(resumirParcela(conta, registro.parcelaId, registro.tipo).baixas);
+    } catch (loadError) {
+      console.error("Erro ao carregar baixas da parcela:", loadError);
+      showApiErrorToast(
+        showToast,
+        loadError,
+        "Não foi possível carregar o histórico da parcela.",
+      );
+    } finally {
+      setCarregandoBaixas(false);
+    }
   };
 
-  const salvarPagamento = (event) => {
+  const salvarBaixa = async (event) => {
     event.preventDefault();
     if (!validateRequiredFields(event, showToast)) return;
     const notificarErro = (message) =>
       showToast({ type: "error", title: "Dados inválidos", message });
 
-    const valorPago = Number(pagamento.valorPago);
-    if (!pagamento.dataPagamento) {
-      notificarErro("Informe a data do pagamento.");
+    const valorCentavos = moedaParaCentavos(baixa.valor);
+    const descontoCentavos = moedaParaCentavos(baixa.desconto);
+
+    if (!baixa.dataBaixa) {
+      notificarErro(`Informe a data do ${ehPagar ? "pagamento" : "recebimento"}.`);
       return;
     }
-    if (!Number.isFinite(valorPago) || valorPago <= 0) {
-      notificarErro("Informe um valor pago maior que zero.");
+    if (baixa.dataBaixa > dataLocalHoje()) {
+      notificarErro(
+        `A data do ${ehPagar ? "pagamento" : "recebimento"} não pode ser futura.`,
+      );
       return;
     }
-    if (valorPago > registroSelecionado.saldo) {
-      notificarErro("O valor pago não pode ser maior que o saldo da conta.");
+    if (valorCentavos <= 0) {
+      notificarErro("Informe um valor maior que zero.");
       return;
     }
-    if (!pagamento.formaPagamentoId || !pagamento.contaFinanceiraId) {
+    if (
+      valorCentavos + descontoCentavos >
+      paraCentavos(registroSelecionado.saldo)
+    ) {
+      notificarErro(
+        "O valor somado ao desconto não pode ser maior que o saldo da parcela.",
+      );
+      return;
+    }
+    if (!baixa.formaPagamentoId || !baixa.contaFinanceiraId) {
       notificarErro("Selecione a forma de pagamento e a conta financeira.");
       return;
     }
 
-    const novoSaldo = Math.max(0, registroSelecionado.saldo - valorPago);
-    const novoStatus = novoSaldo === 0 ? "PAGO" : "PARCIALMENTE_PAGO";
-    setRegistros((atuais) =>
-      atuais.map((atual) =>
-        atual.id === registroSelecionado.id
-          ? { ...atual, saldo: novoSaldo, status: novoStatus }
-          : atual,
-      ),
-    );
-    showToast({
-      type: "warning",
-      title: "Alteração temporária",
-      message:
-        novoStatus === "PAGO"
-          ? "O status foi alterado apenas nesta tela; o serviço de pagamento ainda não persiste essa baixa."
-          : "O saldo foi atualizado apenas nesta tela; o serviço de pagamento ainda não persiste essa baixa.",
-    });
-    voltarParaLista();
+    const dados = {
+      [ehPagar ? "dataPagamento" : "dataRecebimento"]: baixa.dataBaixa,
+      valor: valorCentavos / 100,
+      juros: moedaParaCentavos(baixa.juros) / 100,
+      multa: moedaParaCentavos(baixa.multa) / 100,
+      desconto: descontoCentavos / 100,
+      formaPagamentoId: baixa.formaPagamentoId,
+      contaFinanceiraId: baixa.contaFinanceiraId,
+      observacao: baixa.observacao.trim() || null,
+    };
+
+    try {
+      setSalvando(true);
+      await contasPagarReceberService.baixarParcela(
+        registroSelecionado.tipo,
+        registroSelecionado.parcelaId,
+        dados,
+      );
+      showToast({
+        type: "success",
+        title: "Operação concluída",
+        message: ehPagar
+          ? "Pagamento registrado com sucesso."
+          : "Recebimento registrado com sucesso.",
+      });
+      voltarParaLista();
+      setRecarregar((valor) => valor + 1);
+    } catch (saveError) {
+      console.error("Erro ao registrar baixa:", saveError);
+      showApiErrorToast(
+        showToast,
+        saveError,
+        `Não foi possível registrar o ${ehPagar ? "pagamento" : "recebimento"}.`,
+      );
+    } finally {
+      setSalvando(false);
+    }
   };
 
-  if (carregando) return <Loading message="Carregando contas..." />;
+  const confirmarEstorno = async () => {
+    try {
+      setEstornando(true);
+      const conta = await contasPagarReceberService.estornarBaixa(
+        registroSelecionado.tipo,
+        baixaEstorno.id,
+      );
+      const resumo = resumirParcela(
+        conta,
+        registroSelecionado.parcelaId,
+        registroSelecionado.tipo,
+      );
+      setBaixas(resumo.baixas);
+      setRegistroSelecionado((atual) => ({
+        ...atual,
+        saldo: resumo.saldo,
+        status: resumo.status,
+      }));
+      setBaixa((atual) => ({
+        ...atual,
+        valor: centavosParaMoeda(paraCentavos(resumo.saldo)),
+      }));
+      showToast({
+        type: "success",
+        title: "Operação concluída",
+        message: ehPagar
+          ? "Pagamento estornado com sucesso."
+          : "Recebimento estornado com sucesso.",
+      });
+      setBaixaEstorno(null);
+      setRecarregar((valor) => valor + 1);
+    } catch (estornoError) {
+      console.error("Erro ao estornar baixa:", estornoError);
+      showApiErrorToast(
+        showToast,
+        estornoError,
+        `Não foi possível estornar o ${ehPagar ? "pagamento" : "recebimento"}.`,
+      );
+    } finally {
+      setEstornando(false);
+    }
+  };
+
+  if (carregando && registros.length === 0 && !registroSelecionado) {
+    return <Loading message="Carregando contas..." />;
+  }
 
   if (erro) {
     return (
@@ -387,14 +543,30 @@ function PagarEReceber() {
     );
   }
 
+  const permiteBaixa =
+    registroSelecionado &&
+    registroSelecionado.saldo > 0 &&
+    registroSelecionado.status !== "CANCELADO";
+  const nomeBaixa = ehPagar ? "pagamento" : "recebimento";
+
   return (
     <div className="cadastros-page pagar-contas-page">
       {registroSelecionado ? (
         <Card className="cadastros-form-page pagar-contas-form-card">
           <div className="cadastros-form-page__heading">
             <div>
-              <h2>Registrar pagamento</h2>
-              <p>Confira os dados da conta e preencha as informações do pagamento.</p>
+              <h2>
+                {permiteBaixa
+                  ? `Registrar ${nomeBaixa}`
+                  : ehPagar
+                    ? "Pagamentos da parcela"
+                    : "Recebimentos da parcela"}
+              </h2>
+              <p>
+                {permiteBaixa
+                  ? `Confira os dados da parcela e preencha as informações do ${nomeBaixa}.`
+                  : "Esta parcela não possui saldo em aberto."}
+              </p>
             </div>
             <Button
               variant="ghost"
@@ -406,15 +578,11 @@ function PagarEReceber() {
             </Button>
           </div>
 
-          <form className="pagar-contas-form" onSubmit={salvarPagamento} noValidate>
+          <form className="pagar-contas-form" onSubmit={salvarBaixa} noValidate>
             <div className="pagar-contas-form__grid">
               <Input
                 label="TIPO"
-                value={
-                  registroSelecionado.tipo === "pagar"
-                    ? "Contas a pagar"
-                    : "Contas a receber"
-                }
+                value={ehPagar ? "Contas a pagar" : "Contas a receber"}
                 readOnly
                 disabled
               />
@@ -431,6 +599,12 @@ function PagarEReceber() {
                 disabled
               />
               <Input
+                label="PARCELA"
+                value={`${registroSelecionado.numeroParcela}/${registroSelecionado.totalParcelas}`}
+                readOnly
+                disabled
+              />
+              <Input
                 label="VENCIMENTO"
                 value={formatarData(registroSelecionado.dataVencimento)}
                 readOnly
@@ -442,69 +616,203 @@ function PagarEReceber() {
                 readOnly
                 disabled
               />
-              <DatePicker
-                id="pagar-contas-data-pagamento"
-                name="dataPagamento"
-                label="DATA DE PAGAMENTO*"
-                value={pagamento.dataPagamento}
-                onChange={alterarCampoPagamento}
-                required
-                dropdownPosition="left"
+              <Input
+                label="SALDO"
+                value={formatarMoeda(registroSelecionado.saldo)}
+                readOnly
+                disabled
               />
               <Input
-                id="pagar-contas-valor-pago"
-                name="valorPago"
-                label="VALOR PAGO*"
-                type="number"
-                min="0.01"
-                max={registroSelecionado.saldo}
-                step="0.01"
-                value={pagamento.valorPago}
-                onChange={alterarCampoPagamento}
-                required
+                label="STATUS"
+                value={
+                  STATUS_LABELS[registroSelecionado.status] ||
+                  registroSelecionado.status
+                }
+                readOnly
+                disabled
               />
-              <Select
-                id="pagar-contas-forma-pagamento"
-                name="formaPagamentoId"
-                label="FORMA DE PAGAMENTO*"
-                required
-                options={[
-                  { value: "", label: "Selecione uma forma de pagamento" },
-                  ...formasPagamento.map((forma) => ({
-                    value: String(forma.id),
-                    label: forma.nome,
-                  })),
-                ]}
-                value={pagamento.formaPagamentoId}
-                onChange={alterarCampoPagamento}
-              />
-              <Select
-                id="pagar-contas-conta-financeira"
-                name="contaFinanceiraId"
-                label="CONTA*"
-                required
-                options={[
-                  { value: "", label: "Selecione uma conta" },
-                  ...contasFinanceiras.map((conta) => ({
-                    value: String(conta.id),
-                    label: conta.nome,
-                  })),
-                ]}
-                value={pagamento.contaFinanceiraId}
-                onChange={alterarCampoPagamento}
-              />
+              {permiteBaixa && (
+                <>
+                  <DatePicker
+                    id="pagar-contas-data-baixa"
+                    name="dataBaixa"
+                    label={`DATA DO ${nomeBaixa.toUpperCase()}*`}
+                    value={baixa.dataBaixa}
+                    onChange={alterarCampoBaixa}
+                    max={dataLocalHoje()}
+                    required
+                    dropdownPosition="left"
+                  />
+                  <Input
+                    id="pagar-contas-valor"
+                    name="valor"
+                    label="VALOR*"
+                    inputMode="numeric"
+                    prefix="R$"
+                    placeholder="0,00"
+                    value={baixa.valor}
+                    onChange={alterarCampoBaixa}
+                    required
+                  />
+                  <Input
+                    id="pagar-contas-juros"
+                    name="juros"
+                    label="JUROS"
+                    inputMode="numeric"
+                    prefix="R$"
+                    placeholder="0,00"
+                    value={baixa.juros}
+                    onChange={alterarCampoBaixa}
+                  />
+                  <Input
+                    id="pagar-contas-multa"
+                    name="multa"
+                    label="MULTA"
+                    inputMode="numeric"
+                    prefix="R$"
+                    placeholder="0,00"
+                    value={baixa.multa}
+                    onChange={alterarCampoBaixa}
+                  />
+                  <Input
+                    id="pagar-contas-desconto"
+                    name="desconto"
+                    label="DESCONTO"
+                    inputMode="numeric"
+                    prefix="R$"
+                    placeholder="0,00"
+                    value={baixa.desconto}
+                    onChange={alterarCampoBaixa}
+                  />
+                  <Select
+                    id="pagar-contas-forma-pagamento"
+                    name="formaPagamentoId"
+                    label="FORMA DE PAGAMENTO*"
+                    required
+                    options={[
+                      { value: "", label: "Selecione uma forma de pagamento" },
+                      ...formasPagamento.map((forma) => ({
+                        value: String(forma.id),
+                        label: forma.nome,
+                      })),
+                    ]}
+                    value={baixa.formaPagamentoId}
+                    onChange={alterarCampoBaixa}
+                  />
+                  <Select
+                    id="pagar-contas-conta-financeira"
+                    name="contaFinanceiraId"
+                    label="CONTA FINANCEIRA*"
+                    required
+                    options={[
+                      { value: "", label: "Selecione uma conta" },
+                      ...contasFinanceiras.map((conta) => ({
+                        value: String(conta.id),
+                        label: conta.nome,
+                      })),
+                    ]}
+                    value={baixa.contaFinanceiraId}
+                    onChange={alterarCampoBaixa}
+                  />
+                  <label
+                    className="cadastros-field pagar-contas-form__observacao"
+                    htmlFor="pagar-contas-observacao"
+                  >
+                    <span className="cadastros-field__label">OBSERVAÇÃO</span>
+                    <textarea
+                      id="pagar-contas-observacao"
+                      name="observacao"
+                      value={baixa.observacao}
+                      onChange={alterarCampoBaixa}
+                      maxLength={255}
+                      rows={2}
+                    />
+                  </label>
+                </>
+              )}
             </div>
 
-            <div className="cadastros-form__actions">
-              <Button
-                variant="outline"
-                onClick={voltarParaLista}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">Salvar</Button>
-            </div>
+            {permiteBaixa && (
+              <div className="cadastros-form__actions">
+                <Button
+                  variant="outline"
+                  onClick={voltarParaLista}
+                  disabled={salvando}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={salvando}>
+                  {salvando ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            )}
           </form>
+
+          <div className="pagar-contas-historico">
+            <h3>{ehPagar ? "Pagamentos" : "Recebimentos"}</h3>
+            {carregandoBaixas ? (
+              <Loading message="Carregando histórico..." />
+            ) : baixas.length === 0 ? (
+              <p className="pagar-contas-historico__vazio">
+                Nenhum {nomeBaixa} registrado para esta parcela.
+              </p>
+            ) : (
+              <div className="cadastros-table-wrapper">
+                <table className="cadastros-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Valor</th>
+                      <th>Juros</th>
+                      <th>Multa</th>
+                      <th>Desconto</th>
+                      <th>Forma de pagamento</th>
+                      <th>Conta financeira</th>
+                      <th className="cadastros-table__actions-heading">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {baixas.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          {formatarData(
+                            ehPagar ? item.dataPagamento : item.dataRecebimento,
+                          )}
+                        </td>
+                        <td>{formatarMoeda(item.valor)}</td>
+                        <td>{formatarMoeda(item.juros)}</td>
+                        <td>{formatarMoeda(item.multa)}</td>
+                        <td>{formatarMoeda(item.desconto)}</td>
+                        <td>{item.formaPagamentoNome}</td>
+                        <td>{item.contaFinanceiraNome}</td>
+                        <td>
+                          <div className="cadastros-table__actions">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title={`Estornar ${nomeBaixa}`}
+                              aria-label={`Estornar ${nomeBaixa} de ${formatarMoeda(item.valor)}`}
+                              disabled={registroSelecionado.status === "CANCELADO"}
+                              onClick={() => setBaixaEstorno(item)}
+                              icon={
+                                <HugeiconsIcon
+                                  icon={CancelCircleIcon}
+                                  size={18}
+                                  color="#b91c1c"
+                                />
+                              }
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </Card>
       ) : (
         <>
@@ -582,13 +890,17 @@ function PagarEReceber() {
                 fullWidth
               />
             ) : (
-              <div className="cadastros-table-wrapper">
+              <div
+                className={`cadastros-table-wrapper${carregando ? " cadastros-table-wrapper--loading" : ""}`}
+                aria-busy={carregando}
+              >
                 <table className="cadastros-table">
                   <thead>
                     <tr>
                       <th>Tipo</th>
                       <th>Pessoa</th>
                       <th>Descrição</th>
+                      <th>Parcela</th>
                       <th>Vencimento</th>
                       <th>Valor</th>
                       <th>Saldo</th>
@@ -599,63 +911,108 @@ function PagarEReceber() {
                     </tr>
                   </thead>
                   <tbody>
-                    {registrosFiltrados.map((registro) => (
-                      <tr key={registro.id}>
-                        <td>
-                          {registro.tipo === "pagar"
-                            ? "Contas a pagar"
-                            : "Contas a receber"}
-                        </td>
-                        <td>{registro.pessoaNome}</td>
-                        <td className="cadastros-table__muted">
-                          {registro.descricao}
-                        </td>
-                        <td>{formatarData(registro.dataVencimento)}</td>
-                        <td>{formatarMoeda(registro.valor)}</td>
-                        <td>{formatarMoeda(registro.saldo)}</td>
-                        <td>
-                          <Badge variant={varianteStatus(registro.status)}>
-                            {STATUS_LABELS[registro.status] ||
-                              registro.status}
-                          </Badge>
-                        </td>
-                        <td>
-                          <div className="cadastros-table__actions">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              title="Registrar pagamento"
-                              aria-label={`Registrar pagamento: ${registro.descricao} — ${registro.pessoaNome}`}
-                              disabled={
-                                registro.status === "PAGO" ||
-                                registro.status === "CANCELADO"
-                              }
-                              onClick={() => abrirPagamento(registro)}
-                              icon={
-                                <HugeiconsIcon
-                                  icon={Edit02Icon}
-                                  size={18}
-                                  color="var(--color-emerald-500)"
-                                />
-                              }
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {registrosFiltrados.map((registro) => {
+                      const nomeAcao =
+                        registro.tipo === "pagar" ? "pagamento" : "recebimento";
+                      const titulo =
+                        registro.status === "PAGO"
+                          ? `Ver ${nomeAcao}s`
+                          : `Registrar ${nomeAcao}`;
+
+                      return (
+                        <tr key={registro.id}>
+                          <td>
+                            {registro.tipo === "pagar"
+                              ? "Contas a pagar"
+                              : "Contas a receber"}
+                          </td>
+                          <td>{registro.pessoaNome}</td>
+                          <td className="cadastros-table__muted">
+                            {registro.descricao}
+                          </td>
+                          <td>
+                            {registro.numeroParcela}/{registro.totalParcelas}
+                          </td>
+                          <td>{formatarData(registro.dataVencimento)}</td>
+                          <td>{formatarMoeda(registro.valor)}</td>
+                          <td>{formatarMoeda(registro.saldo)}</td>
+                          <td>
+                            <Badge variant={varianteStatus(registro.status)}>
+                              {STATUS_LABELS[registro.status] ||
+                                registro.status}
+                            </Badge>
+                          </td>
+                          <td>
+                            <div className="cadastros-table__actions">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title={titulo}
+                                aria-label={`${titulo}: ${registro.descricao} — ${registro.pessoaNome}`}
+                                disabled={registro.status === "CANCELADO"}
+                                onClick={() => abrirParcela(registro)}
+                                icon={
+                                  <HugeiconsIcon
+                                    icon={
+                                      registro.status === "PAGO"
+                                        ? ViewIcon
+                                        : Edit02Icon
+                                    }
+                                    size={18}
+                                    color="var(--color-emerald-500)"
+                                  />
+                                }
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
           </Card>
-
-          <p className="pagar-contas-aviso">
-            A API ainda não expõe o vencimento das contas a pagar nem o endpoint
-            de baixa; nesses casos, o vencimento aparece como indisponível e o
-            pagamento e o status ficam nesta tela.
-          </p>
         </>
       )}
+
+      <Modal
+        isOpen={Boolean(baixaEstorno)}
+        onClose={() => !estornando && setBaixaEstorno(null)}
+        title={`Estornar ${nomeBaixa}`}
+        closeOnOverlay={!estornando}
+        footer={
+          <div className="cadastros-form__actions">
+            <Button
+              variant="outline"
+              onClick={() => setBaixaEstorno(null)}
+              disabled={estornando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmarEstorno}
+              disabled={estornando}
+            >
+              {estornando ? "Estornando..." : "Confirmar"}
+            </Button>
+          </div>
+        }
+      >
+        {baixaEstorno && (
+          <p>
+            Deseja estornar o {nomeBaixa} de{" "}
+            {formatarMoeda(baixaEstorno.valor)} feito em{" "}
+            {formatarData(
+              ehPagar
+                ? baixaEstorno.dataPagamento
+                : baixaEstorno.dataRecebimento,
+            )}
+            ? O lançamento financeiro gerado também será excluído.
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }
