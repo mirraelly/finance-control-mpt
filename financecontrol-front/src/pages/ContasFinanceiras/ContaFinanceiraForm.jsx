@@ -133,21 +133,29 @@ function ContaFinanceiraForm() {
         <div className="cadastros-form-page__heading">
           <div>
             <h2>{id ? "Editar Conta Financeira" : "Nova Conta Financeira"}</h2>
-            <p>{id ? "Altere os dados da conta conforme necessário." : "Preencha os campos abaixo para cadastrar uma nova conta."}</p>
+            <p>
+              {id
+                ? "Altere os dados da conta conforme necessário."
+                : "Preencha os campos abaixo para cadastrar uma nova conta."}
+            </p>
           </div>
           <Button
             variant="ghost"
             onClick={() => navigate("/contas/contas-financeiras")}
             className="button__return"
             icon={<HugeiconsIcon icon={Undo03Icon} size={18} />}
-          >
-          </Button>
+          ></Button>
         </div>
         <form className="cadastros-form" onSubmit={salvarConta} noValidate>
           <Input
             id="conta-financeira-nome"
             name="nome"
-            label="NOME"
+            label={
+              <span>
+                NOME
+                <span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             value={formulario.nome}
             onChange={atualizarCampo}
             maxLength={150}
@@ -172,7 +180,11 @@ function ContaFinanceiraForm() {
                   onChange={(ativo) =>
                     setFormulario((atual) => ({ ...atual, ativo }))
                   }
-                  title={formulario.ativo ? "Inativar conta financeira" : "Ativar conta financeira"}
+                  title={
+                    formulario.ativo
+                      ? "Inativar conta financeira"
+                      : "Ativar conta financeira"
+                  }
                 />
                 <span className="cadastros-situacao__status">
                   {formulario.ativo ? "Ativa" : "Inativa"}

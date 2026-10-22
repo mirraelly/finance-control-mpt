@@ -75,8 +75,6 @@ input {
 .input-field input:-webkit-autofill:hover,
 .input-field input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--input-color);
-  -webkit-box-shadow: 0 0 0 1000px var(--input-background) inset;
-  box-shadow: 0 0 0 1000px var(--input-background) inset;
   border-radius: var(--radius-pill);
   clip-path: inset(0 round var(--radius-pill));
   background-clip: padding-box;
