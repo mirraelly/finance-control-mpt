@@ -129,14 +129,17 @@ function CategoriaForm() {
             onClick={() => navigate("/cadastros/categorias")}
             className="button__return"
             icon={<HugeiconsIcon icon={Undo03Icon} size={18} />}
-          >
-          </Button>
+          ></Button>
         </div>
         <form className="cadastros-form" onSubmit={salvarCategoria} noValidate>
           <Input
             id="categoria-nome"
             name="nome"
-            label="NOME"
+            label={
+              <span>
+                NOME <span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             value={formulario.nome}
             onChange={atualizarCampo}
             maxLength={100}
@@ -163,7 +166,9 @@ function CategoriaForm() {
                   onChange={(ativo) =>
                     setFormulario((atual) => ({ ...atual, ativo }))
                   }
-                  title={formulario.ativo ? "Inativar categoria" : "Ativar categoria"}
+                  title={
+                    formulario.ativo ? "Inativar categoria" : "Ativar categoria"
+                  }
                 />
                 <span className="cadastros-situacao__status">
                   {formulario.ativo ? "Ativa" : "Inativa"}

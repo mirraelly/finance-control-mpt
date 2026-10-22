@@ -155,7 +155,9 @@ function FormaPagamentoForm() {
       <Card className="cadastros-form-page">
         <div className="cadastros-form-page__heading">
           <div>
-            <h2>{id ? "Editar forma de pagamento" : "Nova forma de pagamento"}</h2>
+            <h2>
+              {id ? "Editar forma de pagamento" : "Nova forma de pagamento"}
+            </h2>
             <p>Preencha os dados da forma de pagamento.</p>
           </div>
           <Button
@@ -166,11 +168,19 @@ function FormaPagamentoForm() {
             aria-label="Voltar para formas de pagamento"
           />
         </div>
-        <form className="cadastros-form" onSubmit={salvarFormaPagamento} noValidate>
+        <form
+          className="cadastros-form"
+          onSubmit={salvarFormaPagamento}
+          noValidate
+        >
           <Input
             id="forma-pagamento-nome"
             name="nome"
-            label="NOME"
+            label={
+              <span>
+                NOME <span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             value={formulario.nome}
             onChange={atualizarCampo}
             maxLength={150}
@@ -180,7 +190,12 @@ function FormaPagamentoForm() {
           <Select
             id="forma-pagamento-conta-financeira"
             name="contaFinanceiraId"
-            label="CONTA FINANCEIRA"
+            label={
+              <span>
+                CONTA FINANCEIRA{" "}
+                <span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             options={contasOptions}
             value={formulario.contaFinanceiraId}
             onChange={atualizarCampo}

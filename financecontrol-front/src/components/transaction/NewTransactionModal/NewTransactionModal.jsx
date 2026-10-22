@@ -274,7 +274,12 @@ function NewTransactionModal({
           <Select
             id="transaction-account"
             name="contaFinanceiraId"
-            label="CONTA FINANCEIRA"
+            label={
+              <span>
+                CONTA FINANCEIRA
+                <span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             options={accounts}
             value={values.contaFinanceiraId}
             onChange={handleChange}
@@ -292,7 +297,11 @@ function NewTransactionModal({
           <DatePicker
             id="transaction-date"
             name="data"
-            label="DATA"
+            label={
+              <span>
+                DATA<span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             value={values.data}
             onChange={handleChange}
             theme={theme}
@@ -305,7 +314,11 @@ function NewTransactionModal({
           <Input
             id="transaction-value"
             name="valor"
-            label="VALOR"
+            label={
+              <span>
+                VALOR<span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             inputMode="numeric"
             prefix="R$"
             value={values.valor}
@@ -321,7 +334,11 @@ function NewTransactionModal({
           <Select
             id="transaction-category"
             name="categoria"
-            label="CATEGORIA"
+               label={
+              <span>
+                CATEGORIA<span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             options={categoryOptions}
             value={values.categoria}
             onChange={handleChange}
@@ -336,7 +353,11 @@ function NewTransactionModal({
         <Input
           id="transaction-description"
           name="descricao"
-          label="DESCRIÇÃO"
+          label={
+            <>
+              DESCRIÇÃO<span className="form__campo-obrigatorio">*</span>
+            </>
+          }
           value={values.descricao}
           onChange={handleChange}
           placeholder="Ex: Mercado Extra, Salário..."

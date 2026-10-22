@@ -616,14 +616,19 @@ function ContaPagarReceberForm({ tipo }) {
             onClick={() => navigate(basePath)}
             className="button__return"
             icon={<HugeiconsIcon icon={Undo03Icon} size={18} />}
-          >
-          </Button>
+          ></Button>
         </div>
         <form className="cadastros-form" onSubmit={salvarConta} noValidate>
           <Select
             id={`${tipo}-pessoa`}
             name="pessoaId"
-            label={ehPagar ? "FORNECEDOR / CREDOR" : "CLIENTE / DEVEDOR"}
+            l
+            label={
+              <span>
+                {ehPagar ? "FORNECEDOR / CREDOR" : "CLIENTE / DEVEDOR"}
+                <span className="form__campo-obrigatorio">*</span>
+              </span>
+            }
             options={pessoasOptions}
             value={formulario.pessoaId}
             onChange={atualizarCampo}
@@ -663,7 +668,12 @@ function ContaPagarReceberForm({ tipo }) {
             <Input
               id={`${tipo}-valor-total`}
               name="valorTotal"
-              label="VALOR TOTAL"
+              label={
+                <span>
+                  VALOR TOTAL
+                  <span className="form__campo-obrigatorio">*</span>
+                </span>
+              }
               inputMode="numeric"
               prefix="R$"
               placeholder="0,00"
@@ -683,7 +693,12 @@ function ContaPagarReceberForm({ tipo }) {
             <Select
               id={`${tipo}-conta-financeira`}
               name="contaFinanceiraId"
-              label="CONTA FINANCEIRA"
+              label={
+                <span>
+                  CONTA FINANCEIRA{" "}
+                  <span className="form__campo-obrigatorio">*</span>
+                </span>
+              }
               options={contasFinanceirasOptions}
               value={formulario.contaFinanceiraId}
               onChange={atualizarCampo}
@@ -693,7 +708,12 @@ function ContaPagarReceberForm({ tipo }) {
             <Select
               id={`${tipo}-forma-pagamento`}
               name="formaPagamentoId"
-              label="FORMA DE PAGAMENTO"
+              label={
+                <span>
+                  FORMA DE PAGAMENTO{" "}
+                  <span className="form__campo-obrigatorio">*</span>
+                </span>
+              }
               options={formasPagamentoOptions}
               value={formulario.formaPagamentoId}
               onChange={atualizarCampo}
@@ -729,7 +749,12 @@ function ContaPagarReceberForm({ tipo }) {
             <Input
               id={`${tipo}-valor-parcela`}
               name="valorParcela"
-              label="VALOR DA PARCELA"
+              label={
+                <span>
+                  VALOR DA PARCELA{" "}
+                  <span className="form__campo-obrigatorio">*</span>
+                </span>
+              }
               inputMode="numeric"
               prefix="R$"
               placeholder="0,00"
@@ -740,8 +765,8 @@ function ContaPagarReceberForm({ tipo }) {
             />
             <p className="conta-receber-form__hint">
               As parcelas vencem mensalmente a partir da data informada. Se
-              necessário, algumas parcelas podem ajustar até R$ 0,01 para
-              fechar o valor total.
+              necessário, algumas parcelas podem ajustar até R$ 0,01 para fechar
+              o valor total.
             </p>
             {parcelasBloqueadas && (
               <p className="conta-receber-form__hint">
@@ -771,9 +796,7 @@ function ContaPagarReceberForm({ tipo }) {
                     setFormulario((atual) => ({ ...atual, ativo }))
                   }
                   title={
-                    formulario.ativo
-                      ? `Inativar ${titulo}`
-                      : `Ativar ${titulo}`
+                    formulario.ativo ? `Inativar ${titulo}` : `Ativar ${titulo}`
                   }
                 />
                 <span className="cadastros-situacao__status">

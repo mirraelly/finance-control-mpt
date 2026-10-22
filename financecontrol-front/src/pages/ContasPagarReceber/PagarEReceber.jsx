@@ -636,7 +636,12 @@ function PagarEReceber() {
                   <DatePicker
                     id="pagar-contas-data-baixa"
                     name="dataBaixa"
-                    label={`DATA DO ${nomeBaixa.toUpperCase()}*`}
+                    label={
+                      <span>
+                        DATA DO {nomeBaixa.toUpperCase()}
+                        <span className="form__campo-obrigatorio">*</span>
+                      </span>
+                    }
                     value={baixa.dataBaixa}
                     onChange={alterarCampoBaixa}
                     max={dataLocalHoje()}
@@ -646,7 +651,12 @@ function PagarEReceber() {
                   <Input
                     id="pagar-contas-valor"
                     name="valor"
-                    label="VALOR*"
+                    label={
+                      <span>
+                        VALOR
+                        <span className="form__campo-obrigatorio">*</span>
+                      </span>
+                    }
                     inputMode="numeric"
                     prefix="R$"
                     placeholder="0,00"
@@ -687,7 +697,12 @@ function PagarEReceber() {
                   <Select
                     id="pagar-contas-forma-pagamento"
                     name="formaPagamentoId"
-                    label="FORMA DE PAGAMENTO*"
+                    label={
+                      <span>
+                        FORMA DE PAGAMENTO
+                        <span className="form__campo-obrigatorio">*</span>
+                      </span>
+                    }
                     required
                     options={[
                       { value: "", label: "Selecione uma forma de pagamento" },
@@ -702,7 +717,12 @@ function PagarEReceber() {
                   <Select
                     id="pagar-contas-conta-financeira"
                     name="contaFinanceiraId"
-                    label="CONTA FINANCEIRA*"
+                    label={
+                      <span>
+                        CONTA FINANCEIRA
+                        <span className="form__campo-obrigatorio">*</span>
+                      </span>
+                    }
                     required
                     options={[
                       { value: "", label: "Selecione uma conta" },
@@ -794,7 +814,9 @@ function PagarEReceber() {
                               size="sm"
                               title={`Estornar ${nomeBaixa}`}
                               aria-label={`Estornar ${nomeBaixa} de ${formatarMoeda(item.valor)}`}
-                              disabled={registroSelecionado.status === "CANCELADO"}
+                              disabled={
+                                registroSelecionado.status === "CANCELADO"
+                              }
                               onClick={() => setBaixaEstorno(item)}
                               icon={
                                 <HugeiconsIcon
@@ -1002,8 +1024,8 @@ function PagarEReceber() {
       >
         {baixaEstorno && (
           <p>
-            Deseja estornar o {nomeBaixa} de{" "}
-            {formatarMoeda(baixaEstorno.valor)} feito em{" "}
+            Deseja estornar o {nomeBaixa} de {formatarMoeda(baixaEstorno.valor)}{" "}
+            feito em{" "}
             {formatarData(
               ehPagar
                 ? baixaEstorno.dataPagamento
