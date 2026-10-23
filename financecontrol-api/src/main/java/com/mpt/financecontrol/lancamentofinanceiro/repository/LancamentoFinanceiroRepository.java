@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,4 +63,30 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     +      "GROUP BY c.id, c.nome, c.tipo "
     +      "ORDER BY c.nome")
     List<ContaFinanceiraSaldoDto> findSaldos(@Param("tenantId") UUID tenantId);
+
+    @Query("""
+        SELECT COALESCE(SUM(CASE
+            WHEN l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.ENTRADA THEN l.valor
+            ELSE -l.valor
+        END), 0)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+        """)
+    BigDecimal findSaldoTotalDasContasAtivas(@Param("tenantId") UUID tenantId);
+
+    @Query("""
+        SELECT COALESCE(SUM(l.valor), 0)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.tipo = :tipo
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        """)
+    BigDecimal findTotalPorTipoNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
 }
