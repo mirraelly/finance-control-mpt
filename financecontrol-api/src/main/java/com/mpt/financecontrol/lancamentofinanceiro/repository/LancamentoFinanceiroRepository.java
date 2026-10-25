@@ -1,6 +1,7 @@
 package com.mpt.financecontrol.lancamentofinanceiro.repository;
 
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto;
 import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -86,6 +87,24 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     BigDecimal findTotalPorTipoNoPeriodo(
             @Param("tenantId") UUID tenantId,
             @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto(
+            l.data,
+            l.tipo,
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY l.data, l.tipo
+        ORDER BY l.data
+        """)
+    List<DashboardLancamentoDiarioDto> findTotaisDiariosPorTipoNoPeriodo(
+            @Param("tenantId") UUID tenantId,
             @Param("dataInicio") LocalDate dataInicio,
             @Param("dataFim") LocalDate dataFim
     );

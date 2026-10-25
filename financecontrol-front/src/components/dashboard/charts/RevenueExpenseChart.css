@@ -7,6 +7,15 @@
   height: 196px;
 }
 
+.revenue-expense-chart__status {
+  display: grid;
+  height: 100%;
+  margin: 0;
+  place-items: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
 @media (max-width: 520px) {
   .revenue-expense-chart__period-filter {
     flex-wrap: wrap;

@@ -15,6 +15,14 @@ const dashboardService = {
     });
     return response.data;
   },
+
+  buscarReceitasDespesas: async ({ dataInicio, dataFim }) => {
+    const response = await axios.get(`${API_URL}/dashboard/receitas-despesas`, {
+      ...getAuthConfig(),
+      params: { dataInicio, dataFim },
+    });
+    return response.data;
+  },
 };
 
 export default dashboardService;

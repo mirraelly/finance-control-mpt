@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.DateTimeException;
 import java.time.YearMonth;
+import java.time.LocalDate;
+import java.util.List;
+import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 
 @RestController
 @RequestMapping("/dashboard")
@@ -38,6 +42,28 @@ public class DashboardController {
             @RequestParam(name = "anoMes") String anoMes
     ) {
         return service.buscarResumo(parseAnoMes(anoMes));
+    }
+
+    @Operation(summary = "Consultar receitas e despesas agrupadas por mes")
+    @GetMapping("/receitas-despesas")
+    @PreAuthorize("isAuthenticated()")
+    public List<DashboardReceitasDespesasMensalDto> receitasDespesas(
+            @Parameter(
+                    description = "Data inicial do período no formato AAAA-MM-DD.",
+                    example = "2026-05-01",
+                    required = true
+            )
+            @RequestParam(name = "dataInicio")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @Parameter(
+                    description = "Data final do período no formato AAAA-MM-DD.",
+                    example = "2026-10-31",
+                    required = true
+            )
+            @RequestParam(name = "dataFim")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+    ) {
+        return service.buscarReceitasDespesas(dataInicio, dataFim);
     }
 
     private YearMonth parseAnoMes(String anoMes) {
