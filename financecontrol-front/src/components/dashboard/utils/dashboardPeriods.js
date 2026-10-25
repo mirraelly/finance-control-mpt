@@ -103,7 +103,10 @@ export function getDashboardPeriodRange(
     let start = new Date(currentYear, currentMonth, 1);
     let end = new Date(currentYear, currentMonth + 1, 0);
 
-    if (["3", "6", "12"].includes(period)) {
+    if (period === "previousMonth") {
+        start = new Date(currentYear, currentMonth - 1, 1);
+        end = new Date(currentYear, currentMonth, 0);
+    } else if (["3", "6", "12"].includes(period)) {
         start = new Date(currentYear, currentMonth - Number(period) + 1, 1);
     } else if (period === "year") {
         start = new Date(currentYear, 0, 1);

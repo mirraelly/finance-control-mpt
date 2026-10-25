@@ -2,6 +2,7 @@ package com.mpt.financecontrol.dashboard.controller;
 
 import com.mpt.financecontrol.config.JwtFilter;
 import com.mpt.financecontrol.config.SecurityConfig;
+import com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
@@ -85,5 +86,24 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$[0].anoMes").value("2026-05"))
                 .andExpect(jsonPath("$[0].receitas").value(5200))
                 .andExpect(jsonPath("$[0].despesas").value(3500));
+    }
+
+    @Test
+    @DisplayName("GET /dashboard/despesas-por-categoria retorna as despesas por categoria")
+    void despesasPorCategoria_comPeriodoValido_retorna200() throws Exception {
+        LocalDate dataInicio = LocalDate.of(2026, 5, 1);
+        LocalDate dataFim = LocalDate.of(2026, 10, 25);
+        when(service.buscarDespesasPorCategoria(dataInicio, dataFim))
+                .thenReturn(List.of(new DashboardDespesaCategoriaDto(
+                        "Moradia",
+                        new BigDecimal("1200.00")
+                )));
+
+        mockMvc.perform(get("/dashboard/despesas-por-categoria")
+                        .param("dataInicio", "2026-05-01")
+                        .param("dataFim", "2026-10-25"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].categoria").value("Moradia"))
+                .andExpect(jsonPath("$[0].valor").value(1200.00));
     }
 }

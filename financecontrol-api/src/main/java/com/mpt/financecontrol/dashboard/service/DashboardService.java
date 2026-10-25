@@ -1,7 +1,8 @@
 package com.mpt.financecontrol.dashboard.service;
 
-import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.lancamentofinanceiro.repository.LancamentoFinanceiroRepository;
@@ -78,6 +79,21 @@ public class DashboardService {
                         entry.getValue()[1]
                 ))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<DashboardDespesaCategoriaDto> buscarDespesasPorCategoria(
+            LocalDate dataInicio,
+            LocalDate dataFim
+    ) {
+        validarPeriodo(dataInicio, dataFim);
+        Tenant tenant = usuarioService.getTenantLogado();
+
+        return lancamentoRepository.findDespesasPorCategoriaNoPeriodo(
+                tenant.getId(),
+                dataInicio,
+                dataFim
+        );
     }
 
     private void validarPeriodo(LocalDate dataInicio, LocalDate dataFim) {

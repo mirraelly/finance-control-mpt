@@ -1,17 +1,14 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
 import Select from "../../common/Select";
+import dashboardService from "../../../services/dashboardService";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
 } from "../utils/dashboardChartOptions";
-import {
-  dashboardMonthlyData,
-  filterDashboardMonths,
-  getCurrentMonthKey,
-} from "../utils/dashboardPeriods";
+import { getDashboardPeriodRange } from "../utils/dashboardPeriods";
 
 const periods = [
   { value: "month", label: "Este mês" },
@@ -23,35 +20,16 @@ const periods = [
   { value: "custom", label: "Personalizado" },
 ];
 
-const categoryDefinitions = [
-  { name: "Moradia", baseValue: 2100, color: "#08a779" },
-  { name: "Alimentação", baseValue: 420, color: "#f4bd36" },
-  { name: "Transporte", baseValue: 156, color: "#3983f7" },
-  { name: "Entretenimento", baseValue: 89, color: "#884cff" },
-  { name: "Saúde", baseValue: 119, color: "#f45d79" },
-  { name: "Outros", baseValue: 536, color: "#9aa8ba" },
+const CATEGORY_COLORS = [
+  "#08a779",
+  "#f4bd36",
+  "#3983f7",
+  "#884cff",
+  "#f45d79",
+  "#9aa8ba",
+  "#e67e22",
+  "#14b8a6",
 ];
-
-function getCategoryData(months) {
-  const total = months.reduce((sum, item) => sum + item.expenses, 0);
-  let allocated = 0;
-
-  return categoryDefinitions.map((category, index) => {
-    const value =
-      index === categoryDefinitions.length - 1
-        ? total - allocated
-        : Math.round((total * category.baseValue) / 3420);
-    allocated += value;
-
-    return {
-      ...category,
-      value,
-      percent: total
-        ? `${((value / total) * 100).toFixed(1).replace(".", ",")}%`
-        : "0,0%",
-    };
-  });
-}
 
 function createChartOptions(categories) {
   return {
@@ -70,7 +48,6 @@ function createChartOptions(categories) {
       },
     },
     plotOptions: {
-      ...dashboardChartBaseOptions.plotOptions,
       pie: {
         innerSize: "68%",
         size: "100%",
@@ -82,33 +59,92 @@ function createChartOptions(categories) {
     series: [
       {
         name: "Despesas",
-        data: categories.map(({ name, value }) => ({ name, y: value })),
+        type: "pie",
+        data: categories.map(({ name, value, color }) => ({
+          color,
+          name,
+          y: value,
+        })),
       },
     ],
   };
 }
 
-function getTodayDate() {
-  const today = new Date();
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${getCurrentMonthKey(today)}-${day}`;
+function normalizeCategoryData(data) {
+  if (!Array.isArray(data)) {
+    throw new Error("A resposta de despesas por categoria é inválida.");
+  }
+
+  const categories = data.map((item, index) => {
+    const value = Number(item?.valor);
+    if (item?.valor == null || !Number.isFinite(value)) {
+      throw new Error("A resposta contém um valor de despesa inválido.");
+    }
+
+    return {
+      name: item.categoria || "Sem categoria",
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+      value,
+    };
+  });
+  const total = categories.reduce((sum, category) => sum + category.value, 0);
+
+  return categories.map((category) => ({
+    ...category,
+    percent: total
+      ? `${((category.value / total) * 100).toFixed(1).replace(".", ",")}%`
+      : "0,0%",
+  }));
 }
 
 function ExpensesCategoryChart() {
-  const today = getTodayDate();
-  const [period, setPeriod] = useState("month");
-  const [startDate, setStartDate] = useState(`${getCurrentMonthKey()}-01`);
-  const [endDate, setEndDate] = useState(today);
-  const months = filterDashboardMonths(
-    dashboardMonthlyData,
-    period,
-    startDate,
-    endDate,
+  const initialRange = useMemo(() => getDashboardPeriodRange("6"), []);
+  const [period, setPeriod] = useState("6");
+  const [startDate, setStartDate] = useState(initialRange.dataInicio);
+  const [endDate, setEndDate] = useState(initialRange.dataFim);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const range = useMemo(
+    () => getDashboardPeriodRange(period, startDate, endDate),
+    [endDate, period, startDate],
   );
-  const categories = getCategoryData(months);
-  const total = months.reduce((sum, item) => sum + item.expenses, 0);
-  const customRangeInvalid =
-    period === "custom" && startDate && endDate && startDate > endDate;
+  const total = useMemo(
+    () => categories.reduce((sum, category) => sum + category.value, 0),
+    [categories],
+  );
+  const customRangeInvalid = period === "custom" && !range;
+
+  useEffect(() => {
+    if (!range) return undefined;
+
+    let isActive = true;
+
+    async function loadExpensesByCategory() {
+      try {
+        setLoading(true);
+        setError(false);
+        const response =
+          await dashboardService.buscarDespesasPorCategoria(range);
+
+        if (isActive) setCategories(normalizeCategoryData(response));
+      } catch (loadError) {
+        console.error("Erro ao carregar despesas por categoria:", loadError);
+        if (isActive) {
+          setCategories([]);
+          setError(true);
+        }
+      } finally {
+        if (isActive) setLoading(false);
+      }
+    }
+
+    loadExpensesByCategory();
+    return () => {
+      isActive = false;
+    };
+  }, [range]);
 
   return (
     <DashboardChartPanel
@@ -148,45 +184,58 @@ function ExpensesCategoryChart() {
           </label>
         </div>
       )}
-      {customRangeInvalid && (
-        <p className="dashboard-period-range-error" role="alert">
+      {customRangeInvalid ? (
+        <p className="dashboard-category-status" role="alert">
           A data inicial deve ser anterior à data final.
         </p>
-      )}
-      <div className="dashboard-category-layout">
-        <div className="dashboard-category-donut">
-          <div className="dashboard-category-donut__chart">
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={createChartOptions(categories)}
-            />
-          </div>
-          <div className="dashboard-category-donut__total">
-            <strong>{formatDashboardCurrency(total)}</strong>
-            <span>Total</span>
-          </div>
-        </div>
-        <ul className="dashboard-category-legend">
-          {categories.map((category) => (
-            <li key={category.name}>
-              <span
-                className="dashboard-category-legend__dot"
-                style={{ "--category-color": category.color }}
-                aria-hidden="true"
+      ) : loading ? (
+        <p className="dashboard-category-status" aria-live="polite">
+          Carregando dados...
+        </p>
+      ) : error ? (
+        <p className="dashboard-category-status" role="alert">
+          Não foi possível carregar as despesas por categoria.
+        </p>
+      ) : categories.length === 0 ? (
+        <p className="dashboard-category-status">
+          Nenhuma despesa encontrada no período.
+        </p>
+      ) : (
+        <div className="dashboard-category-layout">
+          <div className="dashboard-category-donut">
+            <div className="dashboard-category-donut__chart">
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={createChartOptions(categories)}
               />
-              <span className="dashboard-category-legend__name">
-                {category.name}
-              </span>
-              <strong className="dashboard-category-legend__amount">
-                {formatDashboardCurrency(category.value)}
-              </strong>
-              <span className="dashboard-category-legend__percent">
-                {category.percent}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+            </div>
+            <div className="dashboard-category-donut__total">
+              <strong>{formatDashboardCurrency(total)}</strong>
+              <span>Total</span>
+            </div>
+          </div>
+          <ul className="dashboard-category-legend">
+            {categories.map((category, index) => (
+              <li key={`${category.name}-${index}`}>
+                <span
+                  className="dashboard-category-legend__dot"
+                  style={{ "--category-color": category.color }}
+                  aria-hidden="true"
+                />
+                <span className="dashboard-category-legend__name">
+                  {category.name}
+                </span>
+                <strong className="dashboard-category-legend__amount">
+                  {formatDashboardCurrency(category.value)}
+                </strong>
+                <span className="dashboard-category-legend__percent">
+                  {category.percent}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </DashboardChartPanel>
   );
 }

@@ -43,14 +43,15 @@ function Dashboard() {
       <DashboardSummary resumo={resumo} erro={erroResumo} />
       <div className="dashboard__chart-grid">
         <RevenueExpenseChart />
-        <ExpensesCategoryChart />
+       
       </div>
-      <div className="dashboard__chart-grid">
+      {/* <div className="dashboard__chart-grid">
         <BudgetChart />
         <GoalsChart />
-      </div>
+      </div> */}
       <div className="dashboard__asset-grid">
-        <InvestmentsChart />
+        {/* <InvestmentsChart /> */}
+         <ExpensesCategoryChart />
         <PatrimonialChart />
       </div>
       <DashboardRecentTransactions />

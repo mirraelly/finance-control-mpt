@@ -1,5 +1,6 @@
 package com.mpt.financecontrol.dashboard.controller;
 
+import com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
 import com.mpt.financecontrol.exceptions.BadRequestException;
@@ -14,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.DateTimeException;
-import java.time.YearMonth;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 
@@ -64,6 +65,28 @@ public class DashboardController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
     ) {
         return service.buscarReceitasDespesas(dataInicio, dataFim);
+    }
+
+    @Operation(summary = "Consultar despesas agrupadas por categoria")
+    @GetMapping("/despesas-por-categoria")
+    @PreAuthorize("isAuthenticated()")
+    public List<DashboardDespesaCategoriaDto> despesasPorCategoria(
+            @Parameter(
+                    description = "Data inicial do período no formato AAAA-MM-DD.",
+                    example = "2026-05-01",
+                    required = true
+            )
+            @RequestParam(name = "dataInicio")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @Parameter(
+                    description = "Data final do período no formato AAAA-MM-DD.",
+                    example = "2026-10-25",
+                    required = true
+            )
+            @RequestParam(name = "dataFim")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+    ) {
+        return service.buscarDespesasPorCategoria(dataInicio, dataFim);
     }
 
     private YearMonth parseAnoMes(String anoMes) {
