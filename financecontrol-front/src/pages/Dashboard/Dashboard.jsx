@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  BudgetChart,
   DashboardRecentTransactions,
   DashboardSummary,
   ExpensesCategoryChart,
-  GoalsChart,
-  InvestmentsChart,
+  IncomeCategoryChart,
   PatrimonialChart,
   RevenueExpenseChart,
 } from "../../components/dashboard";
@@ -43,15 +41,18 @@ function Dashboard() {
       <DashboardSummary resumo={resumo} erro={erroResumo} />
       <div className="dashboard__chart-grid">
         <RevenueExpenseChart />
-       
+
       </div>
       {/* <div className="dashboard__chart-grid">
         <BudgetChart />
         <GoalsChart />
       </div> */}
+      <div className="dashboard__category-grid">
+        <ExpensesCategoryChart />
+        <IncomeCategoryChart />
+      </div>
       <div className="dashboard__asset-grid">
         {/* <InvestmentsChart /> */}
-         <ExpensesCategoryChart />
         <PatrimonialChart />
       </div>
       <DashboardRecentTransactions />

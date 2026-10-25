@@ -1,7 +1,7 @@
 package com.mpt.financecontrol.lancamentofinanceiro.repository;
 
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto;
-import com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto;
 import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
 import org.springframework.data.domain.Page;
@@ -111,20 +111,22 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     );
 
     @Query("""
-        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto(
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto(
+            c.id,
             COALESCE(c.nome, 'Sem categoria'),
             SUM(l.valor)
         )
         FROM LancamentoFinanceiro l
         LEFT JOIN l.categoria c
         WHERE l.tenant.id = :tenantId
-          AND l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.SAIDA
+          AND l.tipo = :tipo
           AND l.data BETWEEN :dataInicio AND :dataFim
         GROUP BY c.id, c.nome
         ORDER BY SUM(l.valor) DESC
         """)
-    List<DashboardDespesaCategoriaDto> findDespesasPorCategoriaNoPeriodo(
+    List<DashboardCategoriaValorDto> findTotaisPorCategoriaNoPeriodo(
             @Param("tenantId") UUID tenantId,
+            @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
             @Param("dataInicio") LocalDate dataInicio,
             @Param("dataFim") LocalDate dataFim
     );

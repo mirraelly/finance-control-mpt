@@ -31,6 +31,14 @@ const dashboardService = {
     });
     return response.data;
   },
+
+  buscarReceitasPorCategoria: async ({ dataInicio, dataFim }) => {
+    const response = await axios.get(`${API_URL}/dashboard/receitas-por-categoria`, {
+      ...getAuthConfig(),
+      params: { dataInicio, dataFim },
+    });
+    return response.data;
+  },
 };
 
 export default dashboardService;

@@ -1,9 +1,10 @@
 package com.mpt.financecontrol.dashboard.controller;
 
-import com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
 import com.mpt.financecontrol.exceptions.BadRequestException;
+import com.mpt.financecontrol.financeiro.TipoLancamento;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -70,7 +71,7 @@ public class DashboardController {
     @Operation(summary = "Consultar despesas agrupadas por categoria")
     @GetMapping("/despesas-por-categoria")
     @PreAuthorize("isAuthenticated()")
-    public List<DashboardDespesaCategoriaDto> despesasPorCategoria(
+    public List<DashboardCategoriaValorDto> despesasPorCategoria(
             @Parameter(
                     description = "Data inicial do período no formato AAAA-MM-DD.",
                     example = "2026-05-01",
@@ -86,7 +87,29 @@ public class DashboardController {
             @RequestParam(name = "dataFim")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
     ) {
-        return service.buscarDespesasPorCategoria(dataInicio, dataFim);
+        return service.buscarTotaisPorCategoria(TipoLancamento.SAIDA, dataInicio, dataFim);
+    }
+
+    @Operation(summary = "Consultar receitas agrupadas por categoria")
+    @GetMapping("/receitas-por-categoria")
+    @PreAuthorize("isAuthenticated()")
+    public List<DashboardCategoriaValorDto> receitasPorCategoria(
+            @Parameter(
+                    description = "Data inicial do período no formato AAAA-MM-DD.",
+                    example = "2026-05-01",
+                    required = true
+            )
+            @RequestParam(name = "dataInicio")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @Parameter(
+                    description = "Data final do período no formato AAAA-MM-DD.",
+                    example = "2026-10-25",
+                    required = true
+            )
+            @RequestParam(name = "dataFim")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+    ) {
+        return service.buscarTotaisPorCategoria(TipoLancamento.ENTRADA, dataInicio, dataFim);
     }
 
     private YearMonth parseAnoMes(String anoMes) {

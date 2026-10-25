@@ -36,7 +36,13 @@ export const dashboardChartBaseOptions = {
         backgroundColor: "var(--bg-secondary)",
         borderColor: "var(--border)",
         borderRadius: 8,
-        style: { color: "var(--text-primary)" },
+        borderWidth: 1,
+        shadow: true,
+        style: {
+            color: "var(--text-primary)",
+            fontSize: "12px",
+            fontWeight: "500",
+        },
     },
     plotOptions: {
         series: { animation: { duration: 350 } },

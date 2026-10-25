@@ -1,6 +1,6 @@
 package com.mpt.financecontrol.dashboard.service;
 
-import com.mpt.financecontrol.dashboard.dtos.DashboardDespesaCategoriaDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.exceptions.BadRequestException;
@@ -82,15 +82,17 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
-    public List<DashboardDespesaCategoriaDto> buscarDespesasPorCategoria(
+    public List<DashboardCategoriaValorDto> buscarTotaisPorCategoria(
+            TipoLancamento tipo,
             LocalDate dataInicio,
             LocalDate dataFim
     ) {
         validarPeriodo(dataInicio, dataFim);
         Tenant tenant = usuarioService.getTenantLogado();
 
-        return lancamentoRepository.findDespesasPorCategoriaNoPeriodo(
+        return lancamentoRepository.findTotaisPorCategoriaNoPeriodo(
                 tenant.getId(),
+                tipo,
                 dataInicio,
                 dataFim
         );

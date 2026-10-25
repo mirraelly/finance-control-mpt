@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import {
   HugeiconsIcon,
@@ -78,12 +79,19 @@ function getCategoryVariant(transaction) {
 
 function Transacoes() {
   const showToast = useToast();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tipo");
+  const initialCategoryId = searchParams.get("categoriaId") || "";
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("todas");
-  const [categoryId, setCategoryId] = useState("");
+  const [activeTab, setActiveTab] = useState(
+    initialTab === "receitas" || initialTab === "despesas"
+      ? initialTab
+      : "todas",
+  );
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
