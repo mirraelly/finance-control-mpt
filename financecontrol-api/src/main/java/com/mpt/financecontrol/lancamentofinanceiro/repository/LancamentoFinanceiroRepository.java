@@ -3,6 +3,7 @@ package com.mpt.financecontrol.lancamentofinanceiro.repository;
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto;
 import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -107,6 +108,24 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     List<DashboardLancamentoDiarioDto> findTotaisDiariosPorTipoNoPeriodo(
             @Param("tenantId") UUID tenantId,
             @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto(
+            c.id, c.nome, l.data,
+            SUM(CASE WHEN l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.ENTRADA THEN l.valor ELSE -l.valor END)
+        )
+        FROM LancamentoFinanceiro l
+        JOIN l.contaFinanceira c
+        WHERE l.tenant.id = :tenantId
+          AND c.ativo = true
+          AND l.data <= :dataFim
+        GROUP BY c.id, c.nome, l.data
+        ORDER BY l.data, c.nome
+        """)
+    List<DashboardSaldoContaDiarioDto> findMovimentacoesDiariasPorContaAte(
+            @Param("tenantId") UUID tenantId,
             @Param("dataFim") LocalDate dataFim
     );
 

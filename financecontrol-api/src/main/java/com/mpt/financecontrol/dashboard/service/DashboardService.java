@@ -3,6 +3,9 @@ package com.mpt.financecontrol.dashboard.service;
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaMensalDto;
+import com.mpt.financecontrol.contafinanceira.repository.ContaFinanceiraRepository;
 import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.lancamentofinanceiro.repository.LancamentoFinanceiroRepository;
@@ -18,6 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class DashboardService {
@@ -26,13 +30,16 @@ public class DashboardService {
 
     private final LancamentoFinanceiroRepository lancamentoRepository;
     private final UsuarioService usuarioService;
+    private final ContaFinanceiraRepository contaFinanceiraRepository;
 
     public DashboardService(
             LancamentoFinanceiroRepository lancamentoRepository,
-            UsuarioService usuarioService
+            UsuarioService usuarioService,
+            ContaFinanceiraRepository contaFinanceiraRepository
     ) {
         this.lancamentoRepository = lancamentoRepository;
         this.usuarioService = usuarioService;
+        this.contaFinanceiraRepository = contaFinanceiraRepository;
     }
 
     @Transactional(readOnly = true)
@@ -96,6 +103,33 @@ public class DashboardService {
                 dataInicio,
                 dataFim
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<DashboardSaldoContaMensalDto> buscarSaldosPorConta(
+            LocalDate dataInicio, LocalDate dataFim
+    ) {
+        validarPeriodo(dataInicio, dataFim);
+        Tenant tenant = usuarioService.getTenantLogado();
+        var contas = contaFinanceiraRepository.findForSelect(tenant.getId());
+        var movimentacoes = lancamentoRepository.findMovimentacoesDiariasPorContaAte(tenant.getId(), dataFim);
+        Map<UUID, BigDecimal> saldos = new LinkedHashMap<>();
+        contas.forEach(conta -> saldos.put(conta.getId(), BigDecimal.ZERO));
+        int indiceMovimentacao = 0;
+        List<DashboardSaldoContaMensalDto> resultado = new java.util.ArrayList<>();
+
+        for (YearMonth mes : criarMesesDoPeriodo(dataInicio, dataFim).keySet()) {
+            LocalDate referencia = mes.equals(YearMonth.from(dataFim)) ? dataFim : mes.atEndOfMonth();
+            while (indiceMovimentacao < movimentacoes.size()
+                    && !movimentacoes.get(indiceMovimentacao).data().isAfter(referencia)) {
+                DashboardSaldoContaDiarioDto movimentacao = movimentacoes.get(indiceMovimentacao++);
+                saldos.computeIfPresent(movimentacao.contaId(),
+                        (id, saldo) -> saldo.add(valorOuZero(movimentacao.movimentacao())));
+            }
+            contas.forEach(conta -> resultado.add(new DashboardSaldoContaMensalDto(
+                    mes, conta.getId(), conta.getNome(), saldos.get(conta.getId()))));
+        }
+        return resultado;
     }
 
     private void validarPeriodo(LocalDate dataInicio, LocalDate dataFim) {

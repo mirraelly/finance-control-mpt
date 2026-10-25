@@ -2,6 +2,7 @@ package com.mpt.financecontrol.dashboard.controller;
 
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaMensalDto;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
 import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
@@ -66,6 +67,16 @@ public class DashboardController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
     ) {
         return service.buscarReceitasDespesas(dataInicio, dataFim);
+    }
+
+    @Operation(summary = "Consultar saldos mensais por conta financeira")
+    @GetMapping("/saldos-por-conta")
+    @PreAuthorize("isAuthenticated()")
+    public List<DashboardSaldoContaMensalDto> saldosPorConta(
+            @RequestParam(name = "dataInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam(name = "dataFim") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+    ) {
+        return service.buscarSaldosPorConta(dataInicio, dataFim);
     }
 
     @Operation(summary = "Consultar despesas agrupadas por categoria")

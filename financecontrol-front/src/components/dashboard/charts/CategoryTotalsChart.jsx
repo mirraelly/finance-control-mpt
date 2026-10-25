@@ -143,8 +143,8 @@ function CategoryTotalsChart({
   transactionType,
 }) {
   const navigate = useNavigate();
-  const initialRange = useMemo(() => getDashboardPeriodRange("6"), []);
-  const [period, setPeriod] = useState("6");
+  const initialRange = useMemo(() => getDashboardPeriodRange("3"), []);
+  const [period, setPeriod] = useState("3");
   const [startDate, setStartDate] = useState(initialRange.dataInicio);
   const [endDate, setEndDate] = useState(initialRange.dataFim);
   const [categories, setCategories] = useState([]);

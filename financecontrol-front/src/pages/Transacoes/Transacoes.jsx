@@ -82,6 +82,9 @@ function Transacoes() {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get("tipo");
   const initialCategoryId = searchParams.get("categoriaId") || "";
+  const initialAccountId = searchParams.get("contaFinanceiraId") || "";
+  const initialStartDate = searchParams.get("dataInicio") || "";
+  const initialEndDate = searchParams.get("dataFim") || "";
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,6 +95,9 @@ function Transacoes() {
       : "todas",
   );
   const [categoryId, setCategoryId] = useState(initialCategoryId);
+  const [accountId] = useState(initialAccountId);
+  const [startDate] = useState(initialStartDate);
+  const [endDate] = useState(initialEndDate);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -152,6 +158,9 @@ function Transacoes() {
                 ? "SAIDA"
                 : undefined,
           categoriaId: categoryId || undefined,
+          contaFinanceiraId: accountId || undefined,
+          dataInicio: startDate || undefined,
+          dataFim: endDate || undefined,
           descricao: debouncedSearch || undefined,
         });
         if (!isCurrent) return;
@@ -185,6 +194,9 @@ function Transacoes() {
     pageSize,
     activeTab,
     categoryId,
+    accountId,
+    startDate,
+    endDate,
     debouncedSearch,
     refreshKey,
     showToast,

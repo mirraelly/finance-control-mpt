@@ -6,4 +6,5 @@ export { default as GoalsChart } from "./charts/GoalsChart";
 export { default as InvestmentsChart } from "./charts/InvestmentsChart";
 export { default as PatrimonialChart } from "./charts/PatrimonialChart";
 export { default as RevenueExpenseChart } from "./charts/RevenueExpenseChart";
+export { default as AccountBalancesChart } from "./charts/AccountBalancesChart";
 export { default as DashboardRecentTransactions } from "./transactions/DashboardRecentTransactions";
