@@ -18,8 +18,154 @@
   font-size: var(--font-size-13);
 }
 
+.conta-parcelamento-form__gerar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.conta-parcelamento-form__gerar > .input-field__label {
+  flex: 1;
+  min-width: 0;
+}
+
+.conta-parcelas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.conta-parcelas__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.conta-parcelas__titulo {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+}
+
+.conta-parcelas__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.conta-parcelas__linha {
+  display: grid;
+  grid-template-columns:
+    40px minmax(140px, 1fr) minmax(140px, 1fr) minmax(180px, 1.4fr)
+    40px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.conta-parcelas__linha--titulo {
+  color: var(--text-secondary);
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.conta-parcelas__numero {
+  color: var(--text-secondary);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+}
+
+.conta-parcelas__vencimento,
+.conta-parcelas__valor,
+.conta-parcelas__forma {
+  width: 100%;
+  min-width: 0;
+}
+
+.conta-parcelas__remover {
+  justify-self: end;
+}
+
+.conta-parcelas__resumo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.conta-parcelas__resumo > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.conta-parcelas__resumo span {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.conta-parcelas__resumo strong {
+  color: var(--text-primary);
+  font-size: var(--font-size-14);
+}
+
+.conta-parcelas__resumo .conta-parcelas__saldo--negativo {
+  color: var(--danger);
+}
+
+.conta-parcelas__resumo .conta-parcelas__saldo--zerado {
+  color: var(--success);
+}
+
+.conta-parcelas__resumo .conta-parcelas__saldo--positivo {
+  color: var(--warning);
+}
+
 @media (max-width: 600px) {
   .conta-parcelamento-form__grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .conta-parcelas__linha {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "numero remover"
+      "vencimento valor"
+      "forma forma";
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .conta-parcelas__linha--titulo {
+    display: none;
+  }
+
+  .conta-parcelas__numero {
+    grid-area: numero;
+  }
+
+  .conta-parcelas__vencimento {
+    grid-area: vencimento;
+  }
+
+  .conta-parcelas__valor {
+    grid-area: valor;
+  }
+
+  .conta-parcelas__forma {
+    grid-area: forma;
+  }
+
+  .conta-parcelas__remover {
+    grid-area: remover;
+  }
+
+  .conta-parcelas__resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
