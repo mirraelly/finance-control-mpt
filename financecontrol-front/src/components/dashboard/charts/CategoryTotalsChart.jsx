@@ -166,16 +166,6 @@ function CategoryTotalsChart({
   );
   const customRangeInvalid = period === "custom" && !range;
 
-  const handleCategoryClick = (categoryId) => {
-    if (!categoryId) return;
-
-    const searchParams = new URLSearchParams({
-      tipo: transactionType,
-      categoriaId: categoryId,
-    });
-    navigate(`/movimentacoes/transacoes?${searchParams.toString()}`);
-  };
-
   useEffect(() => {
     if (!range) return undefined;
 
@@ -204,6 +194,18 @@ function CategoryTotalsChart({
       isActive = false;
     };
   }, [chartLabel, fetchTotals, range]);
+
+  const handleCategoryClick = (categoryId) => {
+    if (!categoryId || !range) return;
+
+    const searchParams = new URLSearchParams({
+      tipo: transactionType,
+      categoriaId: categoryId,
+      dataInicio: range.dataInicio,
+      dataFim: range.dataFim,
+    });
+    navigate(`/movimentacoes/transacoes?${searchParams.toString()}`);
+  };
 
   return (
     <DashboardChartPanel
