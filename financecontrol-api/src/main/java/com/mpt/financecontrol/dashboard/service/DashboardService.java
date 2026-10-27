@@ -112,22 +112,20 @@ public class DashboardService {
         validarPeriodo(dataInicio, dataFim);
         Tenant tenant = usuarioService.getTenantLogado();
         var contas = contaFinanceiraRepository.findForSelect(tenant.getId());
-        var movimentacoes = lancamentoRepository.findMovimentacoesDiariasPorContaAte(tenant.getId(), dataFim);
-        Map<UUID, BigDecimal> saldos = new LinkedHashMap<>();
-        contas.forEach(conta -> saldos.put(conta.getId(), BigDecimal.ZERO));
-        int indiceMovimentacao = 0;
+        var movimentacoes = lancamentoRepository.findMovimentacoesDiariasPorContaNoPeriodo(
+                tenant.getId(), dataInicio, dataFim);
+        Map<YearMonth, Map<UUID, BigDecimal>> saldosPorMes = new LinkedHashMap<>();
+        criarMesesDoPeriodo(dataInicio, dataFim).keySet()
+                .forEach(mes -> saldosPorMes.put(mes, new LinkedHashMap<>()));
+        movimentacoes.forEach(movimentacao -> saldosPorMes
+                .get(YearMonth.from(movimentacao.data()))
+                .merge(movimentacao.contaId(), valorOuZero(movimentacao.movimentacao()), BigDecimal::add));
         List<DashboardSaldoContaMensalDto> resultado = new java.util.ArrayList<>();
 
-        for (YearMonth mes : criarMesesDoPeriodo(dataInicio, dataFim).keySet()) {
-            LocalDate referencia = mes.equals(YearMonth.from(dataFim)) ? dataFim : mes.atEndOfMonth();
-            while (indiceMovimentacao < movimentacoes.size()
-                    && !movimentacoes.get(indiceMovimentacao).data().isAfter(referencia)) {
-                DashboardSaldoContaDiarioDto movimentacao = movimentacoes.get(indiceMovimentacao++);
-                saldos.computeIfPresent(movimentacao.contaId(),
-                        (id, saldo) -> saldo.add(valorOuZero(movimentacao.movimentacao())));
-            }
+        for (YearMonth mes : saldosPorMes.keySet()) {
             contas.forEach(conta -> resultado.add(new DashboardSaldoContaMensalDto(
-                    mes, conta.getId(), conta.getNome(), saldos.get(conta.getId()))));
+                    mes, conta.getId(), conta.getNome(),
+                    saldosPorMes.get(mes).getOrDefault(conta.getId(), BigDecimal.ZERO))));
         }
         return resultado;
     }

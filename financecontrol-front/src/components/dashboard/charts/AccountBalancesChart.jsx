@@ -32,8 +32,8 @@ function options(data, onAccountClick = options.onAccountClick) {
     xAxis: { ...dashboardChartBaseOptions.xAxis, categories: months.map(monthLabel) },
     yAxis: { ...dashboardChartBaseOptions.yAxis, labels: { ...dashboardChartBaseOptions.yAxis.labels, formatter() { return formatDashboardCurrency(this.value); } } },
     tooltip: { ...dashboardChartBaseOptions.tooltip, pointFormatter() { return `<span>${this.series.name}: </span><b>${formatDashboardCurrency(this.y)}</b><br/>`; } },
-    plotOptions: { ...dashboardChartBaseOptions.plotOptions, line: { cursor: "pointer", dataLabels: { enabled: true, formatter() { return formatDashboardCurrency(this.y); }, style: { color: "#64748b", fontSize: "9px", fontWeight: "500", textOutline: "none" } }, point: { events: { click() { onAccountClick(this.series.userOptions.accountId); } } } } },
-    series: accounts.map(([id, name]) => ({ accountId: id, name, data: months.map((month) => Number(data.find((item) => item.anoMes === month && item.contaId === id)?.saldo ?? 0)) })),
+    plotOptions: { ...dashboardChartBaseOptions.plotOptions, line: { cursor: "pointer", dataLabels: { enabled: true, formatter() { return formatDashboardCurrency(this.y); }, style: { color: "#64748b", fontSize: "9px", fontWeight: "500", textOutline: "none" } }, point: { events: { click() { onAccountClick(this.series.userOptions.accountId, this.options.anoMes); } } } } },
+    series: accounts.map(([id, name]) => ({ accountId: id, name, data: months.map((month) => ({ anoMes: month, y: Number(data.find((item) => item.anoMes === month && item.contaId === id)?.saldo ?? 0) })) })),
   };
 }
 
@@ -48,8 +48,14 @@ function AccountBalancesChart() {
   const [error, setError] = useState(false);
   const range = useMemo(() => getDashboardPeriodRange(period, startDate, endDate), [period, startDate, endDate]);
   const invalidRange = period === "custom" && !range;
-  const handleAccountClick = (accountId) => {
-    const searchParams = new URLSearchParams({ contaFinanceiraId: accountId, dataInicio: range.dataInicio, dataFim: range.dataFim });
+  const handleAccountClick = (accountId, anoMes) => {
+    const [year, month] = anoMes.split("-");
+    const lastDay = new Date(Number(year), Number(month), 0).getDate();
+    const searchParams = new URLSearchParams({
+      contaFinanceiraId: accountId,
+      dataInicio: `${anoMes}-01`,
+      dataFim: `${anoMes}-${String(lastDay).padStart(2, "0")}`,
+    });
     navigate(`/movimentacoes/transacoes?${searchParams.toString()}`);
   };
   options.onAccountClick = handleAccountClick;

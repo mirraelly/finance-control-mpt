@@ -120,12 +120,13 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
         JOIN l.contaFinanceira c
         WHERE l.tenant.id = :tenantId
           AND c.ativo = true
-          AND l.data <= :dataFim
+          AND l.data BETWEEN :dataInicio AND :dataFim
         GROUP BY c.id, c.nome, l.data
         ORDER BY l.data, c.nome
         """)
-    List<DashboardSaldoContaDiarioDto> findMovimentacoesDiariasPorContaAte(
+    List<DashboardSaldoContaDiarioDto> findMovimentacoesDiariasPorContaNoPeriodo(
             @Param("tenantId") UUID tenantId,
+            @Param("dataInicio") LocalDate dataInicio,
             @Param("dataFim") LocalDate dataFim
     );
 
