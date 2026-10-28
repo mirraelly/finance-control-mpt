@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
+import { useNavigate } from "react-router-dom";
 import Select from "../../common/Select";
 import dashboardService from "../../../services/dashboardService";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
@@ -28,7 +29,7 @@ function formatarRotuloMes(anoMes) {
   return `${dashboardMonthLabels[Number(mes) - 1]}/${ano.slice(2)}`;
 }
 
-function createChartOptions(data) {
+function createChartOptions(data, onColumnClick) {
   return {
     ...dashboardChartBaseOptions,
     chart: {
@@ -62,6 +63,13 @@ function createChartOptions(data) {
       ...dashboardChartBaseOptions.plotOptions,
       column: {
         ...dashboardChartBaseOptions.plotOptions.column,
+        point: {
+          events: {
+            click() {
+              onColumnClick(this.options.tipo, this.options.anoMes);
+            },
+          },
+        },
         dataLabels: {
           enabled: true,
           crop: true,
@@ -79,13 +87,30 @@ function createChartOptions(data) {
       },
     },
     series: [
-      { name: "Receitas", data: data.map((item) => Number(item.receitas)) },
-      { name: "Despesas", data: data.map((item) => Number(item.despesas)) },
+      {
+        name: "Receitas",
+        data: data.map((item) => ({
+          y: Number(item.receitas),
+          anoMes: item.anoMes,
+          tipo: "receitas",
+          cursor: "pointer",
+        })),
+      },
+      {
+        name: "Despesas",
+        data: data.map((item) => ({
+          y: Number(item.despesas),
+          anoMes: item.anoMes,
+          tipo: "despesas",
+          cursor: "pointer",
+        })),
+      },
     ],
   };
 }
 
 function RevenueExpenseChart() {
+  const navigate = useNavigate();
   const threeMonthRange = useMemo(() => getDashboardPeriodRange("3"), []);
   const [period, setPeriod] = useState("3");
   const [startDate, setStartDate] = useState(threeMonthRange.dataInicio);
@@ -99,6 +124,20 @@ function RevenueExpenseChart() {
     [endDate, period, startDate],
   );
   const customRangeInvalid = period === "custom" && !range;
+  const handleColumnClick = useCallback((tipo, anoMes) => {
+    const [year, month] = anoMes.split("-");
+    const lastDay = new Date(Number(year), Number(month), 0).getDate();
+    const searchParams = new URLSearchParams({
+      tipo,
+      dataInicio: `${anoMes}-01`,
+      dataFim: `${anoMes}-${String(lastDay).padStart(2, "0")}`,
+    });
+    navigate(`/movimentacoes/transacoes?${searchParams.toString()}`);
+  }, [navigate]);
+  const chartOptions = useMemo(
+    () => createChartOptions(data, handleColumnClick),
+    [data, handleColumnClick],
+  );
 
   useEffect(() => {
     if (!range) return undefined;
@@ -190,7 +229,7 @@ function RevenueExpenseChart() {
         ) : (
           <HighchartsReact
             highcharts={Highcharts}
-            options={createChartOptions(data)}
+            options={chartOptions}
           />
         )}
       </div>

@@ -70,7 +70,10 @@ function AccountBalancesChart() {
     return () => { active = false; };
   }, [range]);
 
-  return <DashboardChartPanel title="Saldo por contas financeiras" action={<Select id="account-balances-period" aria-label="Período" options={periods} value={period} onChange={(event) => setPeriod(event.target.value)} width="164px" height="30px" className="dashboard-period-select" />}>
+  return <DashboardChartPanel
+    title="Saldo por contas financeiras"
+    action={<Select id="account-balances-period" aria-label="Período" options={periods} value={period} onChange={(event) => setPeriod(event.target.value)} width="164px" height="30px" className="dashboard-period-select" />}
+  >
     {period === "custom" && <div className="dashboard-period-date-range"><label><span>Data inicial</span><input type="date" value={startDate} max={endDate} onChange={(event) => setStartDate(event.target.value)} /></label><label><span>Data final</span><input type="date" value={endDate} min={startDate} onChange={(event) => setEndDate(event.target.value)} /></label></div>}
     <div className="dashboard-panel__chart revenue-expense-chart__plot" aria-busy={loading}>
       {invalidRange ? <p className="revenue-expense-chart__status">Informe um período válido para consultar o gráfico.</p> : loading ? <p className="revenue-expense-chart__status">Carregando dados...</p> : error ? <p className="revenue-expense-chart__status" role="alert">Não foi possível carregar os saldos das contas.</p> : data.length === 0 ? <p className="revenue-expense-chart__status">Nenhuma conta financeira ativa encontrada.</p> : <HighchartsReact highcharts={Highcharts} options={options(data)} />}
