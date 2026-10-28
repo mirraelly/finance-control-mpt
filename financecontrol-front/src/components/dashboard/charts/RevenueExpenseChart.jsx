@@ -78,7 +78,7 @@ function createChartOptions(data, onColumnClick) {
             return this.y > 0 ? formatDashboardCurrency(this.y) : null;
           },
           style: {
-            color: "#64748b",
+            color: "var(--chart-data-label)",
             fontSize: "9px",
             fontWeight: "500",
             textOutline: "none",

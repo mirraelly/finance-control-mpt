@@ -40,7 +40,7 @@ function createChartOptions(data, onMonthClick) {
             return formatDashboardCurrency(this.y);
           },
           style: {
-            color: "#64748b",
+            color: "var(--chart-data-label)",
             fontSize: "9px",
             fontWeight: "500",
             textOutline: "none",

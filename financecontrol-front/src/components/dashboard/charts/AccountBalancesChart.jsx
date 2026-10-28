@@ -32,7 +32,7 @@ function options(data, onAccountClick = options.onAccountClick) {
     xAxis: { ...dashboardChartBaseOptions.xAxis, categories: months.map(monthLabel) },
     yAxis: { ...dashboardChartBaseOptions.yAxis, labels: { ...dashboardChartBaseOptions.yAxis.labels, formatter() { return formatDashboardCurrency(this.value); } } },
     tooltip: { ...dashboardChartBaseOptions.tooltip, pointFormatter() { return `<span>${this.series.name}: </span><b>${formatDashboardCurrency(this.y)}</b><br/>`; } },
-    plotOptions: { ...dashboardChartBaseOptions.plotOptions, line: { cursor: "pointer", dataLabels: { enabled: true, formatter() { return formatDashboardCurrency(this.y); }, style: { color: "#64748b", fontSize: "9px", fontWeight: "500", textOutline: "none" } }, point: { events: { click() { onAccountClick(this.series.userOptions.accountId, this.options.anoMes); } } } } },
+    plotOptions: { ...dashboardChartBaseOptions.plotOptions, line: { cursor: "pointer", dataLabels: { enabled: true, formatter() { return formatDashboardCurrency(this.y); }, style: { color: "var(--chart-data-label)", fontSize: "9px", fontWeight: "500", textOutline: "none" } }, point: { events: { click() { onAccountClick(this.series.userOptions.accountId, this.options.anoMes); } } } } },
     series: accounts.map(([id, name]) => ({ accountId: id, name, data: months.map((month) => ({ anoMes: month, y: Number(data.find((item) => item.anoMes === month && item.contaId === id)?.saldo ?? 0) })) })),
   };
 }
