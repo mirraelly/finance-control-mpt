@@ -3,6 +3,8 @@ package com.mpt.financecontrol.dashboard.service;
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardPatrimonioDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardPatrimonioMensalDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaMensalDto;
 import com.mpt.financecontrol.contafinanceira.repository.ContaFinanceiraRepository;
@@ -22,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 @Service
 public class DashboardService {
@@ -128,6 +132,58 @@ public class DashboardService {
                     saldosPorMes.get(mes).getOrDefault(conta.getId(), BigDecimal.ZERO))));
         }
         return resultado;
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardPatrimonioDto buscarPatrimonio(int ano) {
+        Tenant tenant = usuarioService.getTenantLogado();
+        LocalDate primeiraData = lancamentoRepository
+                .findPrimeiraDataDasContasAtivas(tenant.getId());
+        int anoAtual = LocalDate.now().getYear();
+
+        if (primeiraData == null) {
+            return new DashboardPatrimonioDto(List.of(), List.of());
+        }
+        if (ano < primeiraData.getYear() || ano > anoAtual) {
+            throw new BadRequestException("O ano deve estar entre o primeiro lancamento e o ano atual");
+        }
+
+        LocalDate dataFim = ano == anoAtual
+                ? LocalDate.now()
+                : LocalDate.of(ano, 12, 31);
+        Map<YearMonth, BigDecimal[]> totaisPorMes = new LinkedHashMap<>();
+        YearMonth mes = YearMonth.from(primeiraData);
+        YearMonth ultimoMes = YearMonth.from(dataFim);
+        while (!mes.isAfter(ultimoMes)) {
+            totaisPorMes.put(mes, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            mes = mes.plusMonths(1);
+        }
+
+        lancamentoRepository.findTotaisDiariosDasContasAtivasPorTipoNoPeriodo(
+                        tenant.getId(), primeiraData, dataFim)
+                .forEach(totalDiario -> {
+                    BigDecimal[] totais = totaisPorMes.get(YearMonth.from(totalDiario.data()));
+                    int indice = totalDiario.tipo() == TipoLancamento.ENTRADA ? 0 : 1;
+                    totais[indice] = totais[indice].add(valorOuZero(totalDiario.total()));
+                });
+
+        BigDecimal saldoDasContas = BigDecimal.ZERO;
+        List<DashboardPatrimonioMensalDto> meses = new ArrayList<>();
+        for (Map.Entry<YearMonth, BigDecimal[]> entry : totaisPorMes.entrySet()) {
+            BigDecimal receitas = entry.getValue()[0];
+            BigDecimal despesas = entry.getValue()[1];
+            saldoDasContas = saldoDasContas.add(receitas).subtract(despesas);
+
+            if (entry.getKey().getYear() == ano) {
+                meses.add(new DashboardPatrimonioMensalDto(
+                        entry.getKey(), saldoDasContas, receitas.subtract(despesas)));
+            }
+        }
+
+        List<Integer> anosDisponiveis = IntStream.rangeClosed(primeiraData.getYear(), anoAtual)
+                .boxed()
+                .toList();
+        return new DashboardPatrimonioDto(anosDisponiveis, meses);
     }
 
     private void validarPeriodo(LocalDate dataInicio, LocalDate dataFim) {

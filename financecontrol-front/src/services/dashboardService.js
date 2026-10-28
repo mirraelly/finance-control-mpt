@@ -32,6 +32,14 @@ const dashboardService = {
     return response.data;
   },
 
+  buscarPatrimonio: async (ano) => {
+    const response = await axios.get(`${API_URL}/dashboard/patrimonio`, {
+      ...getAuthConfig(),
+      params: { ano },
+    });
+    return response.data;
+  },
+
   buscarDespesasPorCategoria: async ({ dataInicio, dataFim }) => {
     const response = await axios.get(`${API_URL}/dashboard/despesas-por-categoria`, {
       ...getAuthConfig(),

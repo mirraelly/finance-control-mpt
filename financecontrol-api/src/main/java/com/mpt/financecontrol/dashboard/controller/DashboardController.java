@@ -3,6 +3,7 @@ package com.mpt.financecontrol.dashboard.controller;
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaMensalDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardPatrimonioDto;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
 import com.mpt.financecontrol.exceptions.BadRequestException;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
@@ -77,6 +78,16 @@ public class DashboardController {
             @RequestParam(name = "dataFim") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
     ) {
         return service.buscarSaldosPorConta(dataInicio, dataFim);
+    }
+
+    @Operation(summary = "Consultar crescimento patrimonial mensal")
+    @GetMapping("/patrimonio")
+    @PreAuthorize("isAuthenticated()")
+    public DashboardPatrimonioDto patrimonio(
+            @Parameter(description = "Ano a ser exibido", example = "2026", required = true)
+            @RequestParam(name = "ano") int ano
+    ) {
+        return service.buscarPatrimonio(ano);
     }
 
     @Operation(summary = "Consultar despesas agrupadas por categoria")

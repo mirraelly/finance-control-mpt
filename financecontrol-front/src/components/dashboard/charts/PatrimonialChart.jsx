@@ -1,114 +1,179 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
+import { useNavigate } from "react-router-dom";
 import Select from "../../common/Select";
+import dashboardService from "../../../services/dashboardService";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
-import {
-  dashboardChartBaseOptions,
-  formatDashboardCurrency,
-} from "../utils/dashboardChartOptions";
+import { dashboardChartBaseOptions, formatDashboardCurrency } from "../utils/dashboardChartOptions";
 import { dashboardMonthLabels } from "../utils/dashboardPeriods";
 
-const currentYear = new Date().getFullYear();
-const currentYearValues = [
-  35100, 37800, 39600, 41300, 42300, 43500, 44000, 44200, 44430, 44700, 45000,
-  45300,
-];
-const yearOptions = Array.from({ length: 5 }, (_, index) => {
-  const year = String(currentYear - index);
-  return { value: year, label: year };
-});
-
-function getYearData(year) {
-  const monthCount =
-    Number(year) === currentYear ? new Date().getMonth() + 1 : 12;
-
-  if (Number(year) === 2026) {
-    return currentYearValues.slice(0, monthCount).map((value, index) => ({
-      month: dashboardMonthLabels[index],
-      value,
-    }));
-  }
-
-  const yearsBeforeBase = 2026 - Number(year);
-  const initialValue = Math.max(12000, 35100 - yearsBeforeBase * 9000);
-  const finalValue =
-    initialValue + Math.max(6000, 9000 - yearsBeforeBase * 500);
-
-  return Array.from({ length: monthCount }, (_, index) => ({
-    month: dashboardMonthLabels[index],
-    value: Math.round(
-      initialValue + ((finalValue - initialValue) * index) / Math.max(monthCount - 1, 1),
-    ),
-  }));
-}
-
-function createChartOptions(data) {
+function createChartOptions(data, onMonthClick) {
   return {
     ...dashboardChartBaseOptions,
-    chart: {
-      ...dashboardChartBaseOptions.chart,
-      type: "areaspline",
-      height: 132,
-      spacing: [8, 4, 18, 4],
-    },
+    legend: { enabled: false },
+    chart: { ...dashboardChartBaseOptions.chart, type: "areaspline", height: 132, spacing: [8, 4, 18, 4] },
     colors: ["#08a779"],
-    xAxis: {
-      ...dashboardChartBaseOptions.xAxis,
-      categories: data.map((item) => item.month),
-    },
+    xAxis: { ...dashboardChartBaseOptions.xAxis, categories: data.map((item) => item.month) },
     yAxis: {
       ...dashboardChartBaseOptions.yAxis,
-      labels: {
-        ...dashboardChartBaseOptions.yAxis.labels,
-        formatter() {
-          return formatDashboardCurrency(this.value);
-        },
-      },
+      labels: { ...dashboardChartBaseOptions.yAxis.labels, formatter() { return formatDashboardCurrency(this.value); } },
     },
     tooltip: {
       ...dashboardChartBaseOptions.tooltip,
       pointFormatter() {
-        return `<b>${formatDashboardCurrency(this.y)}</b>`;
+        const previousPatrimony = this.options.previousMonthYear
+          ? `<br/>Até ${this.options.previousMonthYear}: <b>${formatPreciseCurrency(this.options.previousValue)}</b>`
+          : "";
+        return `Total: <b>${formatPreciseCurrency(this.y)}</b>${previousPatrimony}<br/>Em ${this.options.monthYear}: <b>${formatSignedCurrency(this.options.monthlyValue)}</b>`;
       },
     },
     plotOptions: {
       ...dashboardChartBaseOptions.plotOptions,
-      areaspline: { fillOpacity: 0.1, marker: { radius: 2, symbol: "circle" } },
-    },
-    series: [
-      {
-        name: "Patrimônio",
-        data: data.map((item) => item.value),
+      areaspline: {
+        fillOpacity: 0.1,
+        marker: { radius: 2, symbol: "circle" },
+        dataLabels: {
+          enabled: true,
+          formatter() {
+            return formatDashboardCurrency(this.y);
+          },
+          style: {
+            color: "#64748b",
+            fontSize: "9px",
+            fontWeight: "500",
+            textOutline: "none",
+          },
+          y: -8,
+        },
+        point: {
+          events: {
+            click() {
+              onMonthClick(this.options.anoMes);
+            },
+          },
+        },
       },
-    ],
+    },
+    series: [{
+      name: "Patrimônio",
+      data: data.map((item) => ({
+        y: item.value,
+        anoMes: item.anoMes,
+        monthYear: item.monthYear,
+        monthlyValue: item.monthlyValue,
+        previousMonthYear: item.previousMonthYear,
+        previousValue: item.previousValue,
+        cursor: "pointer",
+      })),
+    }],
   };
 }
 
 function formatPreciseCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  }).format(value);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }).format(value);
+}
+
+function formatSignedCurrency(value) {
+  return `${value >= 0 ? "+ " : "- "}${formatPreciseCurrency(Math.abs(value))}`;
+}
+
+function normalizeData(meses) {
+  if (!Array.isArray(meses)) throw new Error("A resposta de patrimônio é inválida.");
+
+  return meses.map((item) => {
+    const [, month] = item.anoMes.split("-");
+    const value = Number(item.patrimonio);
+    const monthlyValue = Number(item.variacaoNoMes);
+    if (!Number.isFinite(value) || !Number.isFinite(monthlyValue)) {
+      throw new Error("A resposta de patrimônio contém um valor inválido.");
+    }
+    const monthIndex = Number(month) - 1;
+    return {
+      anoMes: item.anoMes,
+      month: dashboardMonthLabels[monthIndex],
+      monthYear: `${dashboardMonthLabels[monthIndex]}/${item.anoMes.slice(0, 4)}`,
+      value,
+      monthlyValue,
+    };
+  });
 }
 
 function PatrimonialChart() {
-  const [year, setYear] = useState(String(currentYear));
-  const data = getYearData(year);
+  const navigate = useNavigate();
+  const currentYear = String(new Date().getFullYear());
+  const [year, setYear] = useState(currentYear);
+  const [yearOptions, setYearOptions] = useState([]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadPatrimony() {
+      try {
+        setLoading(true);
+        setError(false);
+        const response = await dashboardService.buscarPatrimonio(year);
+        if (!isActive) return;
+
+        const availableYears = Array.isArray(response.anosDisponiveis) ? response.anosDisponiveis : [];
+        setYearOptions(availableYears.sort((first, second) => second - first).map((availableYear) => ({
+          value: String(availableYear), label: String(availableYear),
+        })));
+        setData(normalizeData(response.meses));
+      } catch (loadError) {
+        console.error("Erro ao carregar crescimento patrimonial:", loadError);
+        if (isActive) {
+          setData([]);
+          setError(true);
+        }
+      } finally {
+        if (isActive) setLoading(false);
+      }
+    }
+
+    loadPatrimony();
+    return () => { isActive = false; };
+  }, [year]);
+
   const initialValue = data[0]?.value ?? 0;
   const finalValue = data.at(-1)?.value ?? 0;
-  const variation = initialValue
-    ? ((finalValue - initialValue) / initialValue) * 100
+  const annualAccumulated = data.reduce(
+    (total, item) => total + item.monthlyValue,
+    0,
+  );
+  const previousMonthValue = data.at(-2)?.value;
+  const monthlyVariationPercentage = previousMonthValue
+    ? ((finalValue - previousMonthValue) / Math.abs(previousMonthValue)) * 100
     : 0;
-  const variationLabel = `${variation > 0 ? "+" : ""}${variation
-    .toFixed(1)
-    .replace(".", ",")}% no ano`;
+  const handleMonthClick = useCallback((anoMes) => {
+    const [year, month] = anoMes.split("-");
+    const lastDay = new Date(Number(year), Number(month), 0).getDate();
+    const searchParams = new URLSearchParams({
+      dataInicio: `${anoMes}-01`,
+      dataFim: `${anoMes}-${String(lastDay).padStart(2, "0")}`,
+    });
+    navigate(`/movimentacoes/transacoes?${searchParams.toString()}`);
+  }, [navigate]);
+  const chartData = useMemo(
+    () => data.map((item, index) => ({
+      ...item,
+      previousMonthYear: data[index - 1]?.monthYear,
+      previousValue: data[index - 1]?.value,
+    })),
+    [data],
+  );
+  const chartOptions = useMemo(
+    () => createChartOptions(chartData, handleMonthClick),
+    [chartData, handleMonthClick],
+  );
 
   return (
     <DashboardChartPanel
       title="Crescimento patrimonial"
-      description={variationLabel}
+      description={data.length ? `Acumulado no ano: ${formatSignedCurrency(annualAccumulated)}` : "Sem dados no período"}
       action={
         <Select
           id="patrimonial-year"
@@ -119,31 +184,28 @@ function PatrimonialChart() {
           width="82px"
           height="30px"
           className="dashboard-period-select"
+          disabled={yearOptions.length === 0}
         />
       }
     >
       <div className="dashboard-patrimonial">
-        <div className="dashboard-patrimonial__chart">
-          <HighchartsReact
-            highcharts={Highcharts}
-            options={createChartOptions(data)}
-          />
+        <div className="dashboard-patrimonial__chart" aria-busy={loading}>
+          {loading ? <p className="dashboard-category-status">Carregando dados...</p>
+            : error ? <p className="dashboard-category-status" role="alert">Não foi possível carregar o crescimento patrimonial.</p>
+              : data.length === 0 ? <p className="dashboard-category-status">Nenhuma transação encontrada para este ano.</p>
+                : <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
         </div>
         <dl className="dashboard-patrimonial__details">
-          <div>
-            <dt>Patrimônio atual</dt>
-            <dd>{formatPreciseCurrency(finalValue)}</dd>
-          </div>
-          <div>
-            <dt>Patrimônio inicial</dt>
-            <dd>{formatPreciseCurrency(initialValue)}</dd>
-          </div>
+          <div><dt>Patrimônio atual</dt><dd>{formatPreciseCurrency(finalValue)}</dd></div>
+          <div><dt>Patrimônio inicial</dt><dd>{formatPreciseCurrency(initialValue)}</dd></div>
           <div>
             <dt>Variação</dt>
-            <dd className="dashboard-patrimonial__variation">
-              {variation >= 0 ? "↑" : "↓"}{" "}
-              {Math.abs(variation).toFixed(1).replace(".", ",")}%
-            </dd>
+            <div className="container-cresc-patri-variacao">
+              <dd className="dashboard-patrimonial__variation">
+                {monthlyVariationPercentage >= 0 ? "↑" : "↓"} {Math.abs(monthlyVariationPercentage).toFixed(1).replace(".", ",")}%
+              </dd>
+              <span className="dashboard-patrimonial__variation-caption">(Evolução em relação ao mês anterior)</span>
+            </div>
           </div>
         </dl>
       </div>

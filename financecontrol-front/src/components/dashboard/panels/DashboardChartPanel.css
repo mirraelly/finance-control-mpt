@@ -488,6 +488,14 @@
   white-space: nowrap;
 }
 
+.dashboard-patrimonial__variation-caption {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.2;
+}
+
 .dashboard-patrimonial__details .dashboard-patrimonial__variation {
   color: #08a779;
 }

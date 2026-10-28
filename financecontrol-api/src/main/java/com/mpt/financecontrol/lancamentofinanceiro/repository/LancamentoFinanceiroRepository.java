@@ -79,6 +79,14 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     BigDecimal findSaldoTotalDasContasAtivas(@Param("tenantId") UUID tenantId);
 
     @Query("""
+        SELECT MIN(l.data)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+        """)
+    LocalDate findPrimeiraDataDasContasAtivas(@Param("tenantId") UUID tenantId);
+
+    @Query("""
         SELECT COALESCE(SUM(l.valor), 0)
         FROM LancamentoFinanceiro l
         WHERE l.tenant.id = :tenantId
@@ -106,6 +114,25 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
         ORDER BY l.data
         """)
     List<DashboardLancamentoDiarioDto> findTotaisDiariosPorTipoNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto(
+            l.data,
+            l.tipo,
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY l.data, l.tipo
+        ORDER BY l.data
+        """)
+    List<DashboardLancamentoDiarioDto> findTotaisDiariosDasContasAtivasPorTipoNoPeriodo(
             @Param("tenantId") UUID tenantId,
             @Param("dataInicio") LocalDate dataInicio,
             @Param("dataFim") LocalDate dataFim

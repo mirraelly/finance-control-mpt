@@ -16,6 +16,12 @@
   font-size: var(--font-size-12);
 }
 
+.container-cresc-patri-variacao {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 @media (max-width: 520px) {
   .revenue-expense-chart__period-filter {
     flex-wrap: wrap;
