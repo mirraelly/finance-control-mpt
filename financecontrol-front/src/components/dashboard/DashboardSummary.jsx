@@ -5,6 +5,7 @@ import {
   HugeiconsIcon,
   Wallet01Icon,
 } from "../../assets/icons";
+import { useNavigate } from "react-router-dom";
 import "./DashboardSummary.css";
 
 const formatarMoeda = (valor) =>
@@ -22,30 +23,55 @@ function criarItensResumo(resumo) {
       amount: formatarMoeda(resumo?.saldoTotal),
       icon: Wallet01Icon,
       tone: "mint",
+      filter: "all",
     },
     {
       label: "Receitas do mês",
       amount: formatarMoeda(resumo?.receitasMes),
       icon: ArrowUpBigIcon,
       tone: "blue",
+      filter: "receitas",
     },
     {
       label: "Despesas do mês",
       amount: formatarMoeda(resumo?.despesasMes),
       icon: ArrowDownBigIcon,
       tone: "rose",
+      filter: "despesas",
     },
     {
       label: "Saldo do mês",
       amount: formatarMoeda(resumo?.saldoMes),
       icon: Chart01Icon,
       tone: "green",
+      filter: "month",
     },
   ];
 }
 
 function DashboardSummary({ resumo, erro }) {
+  const navigate = useNavigate();
   const summaryItems = criarItensResumo(resumo);
+  const today = new Date();
+  const anoMes = resumo?.mes || `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+
+  const handleSummaryClick = (filter) => {
+    if (filter === "all") {
+      navigate("/movimentacoes/transacoes");
+      return;
+    }
+
+    const [year, month] = anoMes.split("-");
+    const lastDay = new Date(Number(year), Number(month), 0).getDate();
+    const searchParams = new URLSearchParams({
+      dataInicio: `${anoMes}-01`,
+      dataFim: `${anoMes}-${String(lastDay).padStart(2, "0")}`,
+    });
+    if (filter === "receitas" || filter === "despesas") {
+      searchParams.set("tipo", filter);
+    }
+    navigate(`/movimentacoes/transacoes?${searchParams.toString()}`);
+  };
 
   return (
     <div
@@ -54,9 +80,12 @@ function DashboardSummary({ resumo, erro }) {
       aria-busy={!resumo && !erro}
     >
       {summaryItems.map((item) => (
-        <article
+        <button
           key={item.label}
+          type="button"
           className={`dashboard-stat dashboard-stat--${item.tone}`}
+          onClick={() => handleSummaryClick(item.filter)}
+          aria-label={`Ver transações: ${item.label}`}
         >
           <span className="dashboard-stat__icon" aria-hidden="true">
             <HugeiconsIcon icon={item.icon} size={24} strokeWidth={2.2} />
@@ -70,7 +99,7 @@ function DashboardSummary({ resumo, erro }) {
               </p>
             ) : null}
           </div>
-        </article>
+        </button>
       ))}
     </div>
   );
