@@ -105,6 +105,7 @@ function createChartOptions(categories, title, totalLabel, onCategoryClick) {
     },
     plotOptions: {
       pie: {
+        cursor: "pointer",
         innerSize: hasLongTotal ? "80%" : "72%",
         size: hasLongTotal ? "94%" : "100%",
         borderWidth: 0,

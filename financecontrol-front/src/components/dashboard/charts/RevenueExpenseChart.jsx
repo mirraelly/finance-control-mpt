@@ -63,6 +63,7 @@ function createChartOptions(data, onColumnClick) {
       ...dashboardChartBaseOptions.plotOptions,
       column: {
         ...dashboardChartBaseOptions.plotOptions.column,
+        cursor: "pointer",
         point: {
           events: {
             click() {

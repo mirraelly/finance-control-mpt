@@ -32,6 +32,7 @@ function createChartOptions(data, onMonthClick) {
     plotOptions: {
       ...dashboardChartBaseOptions.plotOptions,
       areaspline: {
+        cursor: "pointer",
         fillOpacity: 0.1,
         marker: { radius: 2, symbol: "circle" },
         dataLabels: {
