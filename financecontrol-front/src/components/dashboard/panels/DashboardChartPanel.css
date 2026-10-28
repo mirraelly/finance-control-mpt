@@ -476,19 +476,20 @@
 }
 
 .dashboard-patrimonial__details dt {
-  color: var(--text-secondary);
-  font-size: var(--font-size-12);
+   color: var(--text-secondary); 
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
 }
 
 .dashboard-patrimonial__details dd {
   margin: 3px 0 0;
-  color: var(--text-primary);
-  font-size: var(--font-size-12);
+  color: var(--color-mint-500);
+  font-size: var(--font-size-14);
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
 }
 
-.dashboard-patrimonial__variation-caption {
+.dashboard-patrimonial__detail-caption {
   display: block;
   margin-top: 2px;
   color: var(--text-secondary);
@@ -496,8 +497,10 @@
   line-height: 1.2;
 }
 
-.dashboard-patrimonial__details .dashboard-patrimonial__variation {
-  color: #08a779;
+.dashboard-patrimonial__variation-caption {
+  color: var(--color-slate-500);
+  font-size: 10px;
+  font-weight: var(--font-weight-normal);
 }
 
 @media (max-width: 800px) {

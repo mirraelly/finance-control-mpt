@@ -18,8 +18,9 @@
 
 .container-cresc-patri-variacao {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
 }
 
 @media (max-width: 520px) {

@@ -21,6 +21,7 @@ function createChartOptions(data, onMonthClick) {
     },
     tooltip: {
       ...dashboardChartBaseOptions.tooltip,
+      headerFormat: "",
       pointFormatter() {
         const previousPatrimony = this.options.previousMonthYear
           ? `<br/>Até ${this.options.previousMonthYear}: <b>${formatPreciseCurrency(this.options.previousValue)}</b>`
@@ -173,7 +174,15 @@ function PatrimonialChart() {
   return (
     <DashboardChartPanel
       title="Crescimento patrimonial"
-      description={data.length ? `Acumulado no ano: ${formatSignedCurrency(annualAccumulated)}` : "Sem dados no período"}
+      description={
+        data.length ? (
+          <>
+            Acumulado no ano: <strong>{formatSignedCurrency(annualAccumulated)}</strong>
+          </>
+        ) : (
+          "Sem dados no período"
+        )
+      }      
       action={
         <Select
           id="patrimonial-year"
@@ -196,15 +205,25 @@ function PatrimonialChart() {
                 : <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
         </div>
         <dl className="dashboard-patrimonial__details">
-          <div><dt>Patrimônio atual</dt><dd>{formatPreciseCurrency(finalValue)}</dd></div>
-          <div><dt>Patrimônio inicial</dt><dd>{formatPreciseCurrency(initialValue)}</dd></div>
+          <div>
+            <dt>Patrimônio total</dt>
+          <div>
+            <dd>{formatPreciseCurrency(finalValue)}</dd>
+            <span className="dashboard-patrimonial__variation-caption">Da primeira receita lançada até o ano selecionado</span>
+          </div>
+          </div>
+          <div>
+            <dt>Patrimônio inicial</dt>
+            <dd>{formatPreciseCurrency(initialValue)}</dd>
+            <span className="dashboard-patrimonial__variation-caption">Valor inicial histórico</span>
+          </div>
           <div>
             <dt>Variação</dt>
-            <div className="container-cresc-patri-variacao">
+            <div>
               <dd className="dashboard-patrimonial__variation">
                 {monthlyVariationPercentage >= 0 ? "↑" : "↓"} {Math.abs(monthlyVariationPercentage).toFixed(1).replace(".", ",")}%
               </dd>
-              <span className="dashboard-patrimonial__variation-caption">(Evolução em relação ao mês anterior)</span>
+              <span className="dashboard-patrimonial__variation-caption">Evolução em relação ao mês anterior</span>
             </div>
           </div>
         </dl>
