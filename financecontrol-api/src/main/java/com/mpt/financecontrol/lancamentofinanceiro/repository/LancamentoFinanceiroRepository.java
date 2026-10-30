@@ -1,6 +1,9 @@
 package com.mpt.financecontrol.lancamentofinanceiro.repository;
 
 import com.mpt.financecontrol.contafinanceira.dtos.ContaFinanceiraSaldoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto;
 import com.mpt.financecontrol.lancamentofinanceiro.entity.LancamentoFinanceiro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,4 +66,152 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     +      "GROUP BY c.id, c.nome, c.tipo "
     +      "ORDER BY c.nome")
     List<ContaFinanceiraSaldoDto> findSaldos(@Param("tenantId") UUID tenantId);
+
+    @Query("""
+        SELECT COALESCE(SUM(CASE
+            WHEN l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.ENTRADA THEN l.valor
+            ELSE -l.valor
+        END), 0)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+        """)
+    BigDecimal findSaldoTotalDasContasAtivas(@Param("tenantId") UUID tenantId);
+
+    @Query("""
+        SELECT COALESCE(SUM(CASE
+            WHEN l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.ENTRADA THEN l.valor
+            ELSE -l.valor
+        END), 0)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.data <= :dataLimite
+        """)
+    BigDecimal findSaldoTotalDasContasAtivasAteData(
+            @Param("tenantId") UUID tenantId,
+            @Param("dataLimite") LocalDate dataLimite
+    );
+
+    @Query("""
+        SELECT MIN(l.data)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+        """)
+    LocalDate findPrimeiraDataDasContasAtivas(@Param("tenantId") UUID tenantId);
+
+    @Query("""
+        SELECT COALESCE(SUM(l.valor), 0)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.tipo = :tipo
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        """)
+    BigDecimal findTotalPorTipoNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto(
+            l.data,
+            l.tipo,
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY l.data, l.tipo
+        ORDER BY l.data
+        """)
+    List<DashboardLancamentoDiarioDto> findTotaisDiariosPorTipoNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardLancamentoDiarioDto(
+            l.data,
+            l.tipo,
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY l.data, l.tipo
+        ORDER BY l.data
+        """)
+    List<DashboardLancamentoDiarioDto> findTotaisDiariosDasContasAtivasPorTipoNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto(
+            c.id, c.nome, l.data,
+            SUM(CASE WHEN l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.ENTRADA THEN l.valor ELSE -l.valor END)
+        )
+        FROM LancamentoFinanceiro l
+        JOIN l.contaFinanceira c
+        WHERE l.tenant.id = :tenantId
+          AND c.ativo = true
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY c.id, c.nome, l.data
+        ORDER BY l.data, c.nome
+        """)
+    List<DashboardSaldoContaDiarioDto> findMovimentacoesDiariasPorContaNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto(
+            c.id,
+            COALESCE(c.nome, 'Sem categoria'),
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        LEFT JOIN l.categoria c
+        WHERE l.tenant.id = :tenantId
+          AND l.tipo = :tipo
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY c.id, c.nome
+        ORDER BY SUM(l.valor) DESC
+        """)
+    List<DashboardCategoriaValorDto> findTotaisPorCategoriaNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto(
+            c.id,
+            COALESCE(c.nome, 'Sem categoria'),
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        LEFT JOIN l.categoria c
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.tipo = :tipo
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY c.id, c.nome
+        ORDER BY SUM(l.valor) DESC
+        """)
+    List<DashboardCategoriaValorDto> findTotaisPorCategoriaDasContasAtivasNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
 }

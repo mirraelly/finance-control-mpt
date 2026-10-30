@@ -13,69 +13,62 @@ export const dashboardMonthLabels = [
     "Dez",
 ];
 
-export const dashboardMonthlyData = [
-    { key: "2025-01", revenue: 4200, expenses: 2800 },
-    { key: "2025-02", revenue: 4400, expenses: 2900 },
-    { key: "2025-03", revenue: 4100, expenses: 3000 },
-    { key: "2025-04", revenue: 4600, expenses: 3100 },
-    { key: "2025-05", revenue: 4700, expenses: 3200 },
-    { key: "2025-06", revenue: 4500, expenses: 3050 },
-    { key: "2025-07", revenue: 4800, expenses: 3300 },
-    { key: "2025-08", revenue: 4900, expenses: 3250 },
-    { key: "2025-09", revenue: 4600, expenses: 3150 },
-    { key: "2025-10", revenue: 4500, expenses: 3000 },
-    { key: "2025-11", revenue: 4300, expenses: 3300 },
-    { key: "2025-12", revenue: 4700, expenses: 3400 },
-    { key: "2026-01", revenue: 5100, expenses: 3200 },
-    { key: "2026-02", revenue: 4900, expenses: 3700 },
-    { key: "2026-03", revenue: 5000, expenses: 3600 },
-    { key: "2026-04", revenue: 4800, expenses: 3200 },
-    { key: "2026-05", revenue: 5200, expenses: 3500 },
-    { key: "2026-06", revenue: 4600, expenses: 3100 },
-    { key: "2026-07", revenue: 6100, expenses: 3900 },
-    { key: "2026-08", revenue: 5400, expenses: 3600 },
-    { key: "2026-09", revenue: 5800, expenses: 3420 },
-];
-
 export function getCurrentMonthKey(date = new Date()) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     return `${date.getFullYear()}-${month}`;
 }
 
-function getMonthIndex(monthKey) {
-    const [year, month] = monthKey.split("-").map(Number);
-    return year * 12 + month - 1;
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 
-export function filterDashboardMonths(
-    rows,
+const MAX_CUSTOM_PERIOD_MONTHS = 24;
+
+export function getCustomPeriodError(startDate = "", endDate = "") {
+    if (!startDate || !endDate || startDate > endDate) {
+        return "A data inicial deve ser anterior à data final.";
+    }
+
+    const [startYear, startMonth] = startDate.split("-").map(Number);
+    const [endYear, endMonth] = endDate.split("-").map(Number);
+    const months = (endYear - startYear) * 12 + endMonth - startMonth + 1;
+
+    return months > MAX_CUSTOM_PERIOD_MONTHS
+        ? `O período máximo é de ${MAX_CUSTOM_PERIOD_MONTHS} meses.`
+        : "";
+}
+
+export function getDashboardPeriodRange(
     period,
     startDate = "",
     endDate = "",
     date = new Date(),
 ) {
-    const currentIndex = getMonthIndex(getCurrentMonthKey(date));
-    let startIndex = currentIndex;
-    let endIndex = currentIndex;
-
-    if (period === "previousMonth") {
-        startIndex -= 1;
-        endIndex -= 1;
-    } else if (["3", "6", "12"].includes(period)) {
-        startIndex -= Number(period) - 1;
-    } else if (period === "year") {
-        startIndex = Math.floor(currentIndex / 12) * 12;
-    } else if (period === "previousYear") {
-        startIndex = Math.floor(currentIndex / 12) * 12 - 12;
-        endIndex = startIndex + 11;
-    } else if (period === "custom") {
-        if (!startDate || !endDate || startDate > endDate) return [];
-        startIndex = getMonthIndex(startDate.slice(0, 7));
-        endIndex = getMonthIndex(endDate.slice(0, 7));
+    if (period === "custom") {
+        if (getCustomPeriodError(startDate, endDate)) return null;
+        return { dataInicio: startDate, dataFim: endDate };
     }
 
-    return rows.filter((row) => {
-        const monthIndex = getMonthIndex(row.key);
-        return monthIndex >= startIndex && monthIndex <= endIndex;
-    });
+    const currentYear = date.getFullYear();
+    const currentMonth = date.getMonth();
+    let start = new Date(currentYear, currentMonth, 1);
+    let end = new Date(currentYear, currentMonth + 1, 0);
+
+    if (period === "previousMonth") {
+        start = new Date(currentYear, currentMonth - 1, 1);
+        end = new Date(currentYear, currentMonth, 0);
+    } else if (["3", "6", "12"].includes(period)) {
+        start = new Date(currentYear, currentMonth - Number(period) + 1, 1);
+    } else if (period === "year") {
+        start = new Date(currentYear, 0, 1);
+        end = new Date(currentYear, 11, 31);
+    } else if (period === "previousYear") {
+        start = new Date(currentYear - 1, 0, 1);
+        end = new Date(currentYear - 1, 11, 31);
+    }
+
+    return { dataInicio: formatDate(start), dataFim: formatDate(end) };
 }

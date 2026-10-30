@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import {
   HugeiconsIcon,
@@ -78,12 +79,23 @@ function getCategoryVariant(transaction) {
 
 function Transacoes() {
   const showToast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tipo");
+  const initialCategoryId = searchParams.get("categoriaId") || "";
+  const accountId = searchParams.get("contaFinanceiraId") || "";
+  const startDate = searchParams.get("dataInicio") || "";
+  const endDate = searchParams.get("dataFim") || "";
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("todas");
-  const [categoryId, setCategoryId] = useState("");
+  const [activeTab, setActiveTab] = useState(
+    initialTab === "receitas" || initialTab === "despesas"
+      ? initialTab
+      : "todas",
+  );
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
+  const [accounts, setAccounts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -130,6 +142,23 @@ function Transacoes() {
   useEffect(() => {
     let isCurrent = true;
 
+    lancamentoFinanceiroService
+      .listarContasAtivas()
+      .then((items) => {
+        if (isCurrent) setAccounts(items);
+      })
+      .catch((loadError) => {
+        console.error("Erro ao carregar contas das transações:", loadError);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+
     async function loadTransactions() {
       try {
         setIsLoading(true);
@@ -144,6 +173,9 @@ function Transacoes() {
                 ? "SAIDA"
                 : undefined,
           categoriaId: categoryId || undefined,
+          contaFinanceiraId: accountId || undefined,
+          dataInicio: startDate || undefined,
+          dataFim: endDate || undefined,
           descricao: debouncedSearch || undefined,
         });
         if (!isCurrent) return;
@@ -177,10 +209,25 @@ function Transacoes() {
     pageSize,
     activeTab,
     categoryId,
+    accountId,
+    startDate,
+    endDate,
     debouncedSearch,
     refreshKey,
     showToast,
   ]);
+
+  const accountName = accounts.find((account) => account.id === accountId)?.nome;
+  const hasUrlFilters = Boolean(accountId || startDate || endDate);
+
+  const clearUrlFilters = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("contaFinanceiraId");
+    nextParams.delete("dataInicio");
+    nextParams.delete("dataFim");
+    setSearchParams(nextParams);
+    setCurrentPage(0);
+  };
 
   const handleSaveTransaction = async (values) => {
     if (editingTransaction) {
@@ -317,6 +364,24 @@ function Transacoes() {
           </Button>
         </div>
       </Card>
+
+      {hasUrlFilters && (
+        <div className="transacoes-active-filters">
+          {accountId && (
+            <Badge variant="neutral">
+              Conta: {accountName || "selecionada"}
+            </Badge>
+          )}
+          {(startDate || endDate) && (
+            <Badge variant="neutral">
+              Período: {formatDate(startDate)} a {formatDate(endDate)}
+            </Badge>
+          )}
+          <Button variant="ghost" size="sm" onClick={clearUrlFilters}>
+            Limpar filtros
+          </Button>
+        </div>
+      )}
 
       {categoriesError && (
         <p className="transacoes-page__error" role="alert">
