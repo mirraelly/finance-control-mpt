@@ -5,6 +5,7 @@ import com.mpt.financecontrol.config.SecurityConfig;
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaAtualDto;
 import com.mpt.financecontrol.financeiro.TipoLancamento;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -87,6 +89,24 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$[0].anoMes").value("2026-05"))
                 .andExpect(jsonPath("$[0].receitas").value(5200))
                 .andExpect(jsonPath("$[0].despesas").value(3500));
+    }
+
+    @Test
+    @DisplayName("GET /dashboard/saldo-atual-por-conta retorna o saldo atual de cada conta")
+    void saldoAtualPorConta_retorna200() throws Exception {
+        UUID contaId = UUID.randomUUID();
+        when(service.buscarSaldoAtualPorConta())
+                .thenReturn(List.of(new DashboardSaldoContaAtualDto(
+                        contaId,
+                        "Carteira",
+                        new BigDecimal("1500.50")
+                )));
+
+        mockMvc.perform(get("/dashboard/saldo-atual-por-conta"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].contaId").value(contaId.toString()))
+                .andExpect(jsonPath("$[0].conta").value("Carteira"))
+                .andExpect(jsonPath("$[0].saldo").value(1500.50));
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.mpt.financecontrol.dashboard.dtos.DashboardReceitasDespesasMensalDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardPatrimonioDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardPatrimonioMensalDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaAtualDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaDiarioDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaMensalDto;
 import com.mpt.financecontrol.contafinanceira.repository.ContaFinanceiraRepository;
@@ -55,7 +56,7 @@ public class DashboardService {
         BigDecimal despesas = valorOuZero(lancamentoRepository.findTotalPorTipoNoPeriodo(
                 tenant.getId(), TipoLancamento.SAIDA, mes.atDay(1), mes.atEndOfMonth()));
         BigDecimal saldoTotal = valorOuZero(
-                lancamentoRepository.findSaldoTotalDasContasAtivas(tenant.getId()));
+                lancamentoRepository.findSaldoTotalDasContasAtivasAteData(tenant.getId(), LocalDate.now()));
 
         return new DashboardResumoDto(
                 mes,
@@ -76,7 +77,7 @@ public class DashboardService {
 
         Map<YearMonth, BigDecimal[]> totaisPorMes = criarMesesDoPeriodo(dataInicio, dataFim);
 
-        lancamentoRepository.findTotaisDiariosPorTipoNoPeriodo(tenant.getId(), dataInicio, dataFim)
+        lancamentoRepository.findTotaisDiariosDasContasAtivasPorTipoNoPeriodo(tenant.getId(), dataInicio, dataFim)
                 .forEach(totalDiario -> {
                     BigDecimal[] totais = totaisPorMes.get(YearMonth.from(totalDiario.data()));
                     int indice = totalDiario.tipo() == TipoLancamento.ENTRADA ? 0 : 1;
@@ -101,7 +102,7 @@ public class DashboardService {
         validarPeriodo(dataInicio, dataFim);
         Tenant tenant = usuarioService.getTenantLogado();
 
-        return lancamentoRepository.findTotaisPorCategoriaNoPeriodo(
+        return lancamentoRepository.findTotaisPorCategoriaDasContasAtivasNoPeriodo(
                 tenant.getId(),
                 tipo,
                 dataInicio,
@@ -132,6 +133,16 @@ public class DashboardService {
                     saldosPorMes.get(mes).getOrDefault(conta.getId(), BigDecimal.ZERO))));
         }
         return resultado;
+    }
+
+    @Transactional(readOnly = true)
+    public List<DashboardSaldoContaAtualDto> buscarSaldoAtualPorConta() {
+        Tenant tenant = usuarioService.getTenantLogado();
+
+        return lancamentoRepository.findSaldos(tenant.getId()).stream()
+                .map(conta -> new DashboardSaldoContaAtualDto(
+                        conta.id(), conta.nome(), valorOuZero(conta.saldo())))
+                .toList();
     }
 
     @Transactional(readOnly = true)

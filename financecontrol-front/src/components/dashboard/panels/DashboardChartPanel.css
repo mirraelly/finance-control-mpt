@@ -536,6 +536,12 @@
   }
 }
 
+@media (max-width: 420px) {
+  .dashboard-patrimonial__details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 520px) {
   .dashboard-period-date-range {
     justify-content: stretch;

@@ -79,6 +79,21 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
     BigDecimal findSaldoTotalDasContasAtivas(@Param("tenantId") UUID tenantId);
 
     @Query("""
+        SELECT COALESCE(SUM(CASE
+            WHEN l.tipo = com.mpt.financecontrol.financeiro.TipoLancamento.ENTRADA THEN l.valor
+            ELSE -l.valor
+        END), 0)
+        FROM LancamentoFinanceiro l
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.data <= :dataLimite
+        """)
+    BigDecimal findSaldoTotalDasContasAtivasAteData(
+            @Param("tenantId") UUID tenantId,
+            @Param("dataLimite") LocalDate dataLimite
+    );
+
+    @Query("""
         SELECT MIN(l.data)
         FROM LancamentoFinanceiro l
         WHERE l.tenant.id = :tenantId
@@ -172,6 +187,28 @@ public interface LancamentoFinanceiroRepository extends JpaRepository<Lancamento
         ORDER BY SUM(l.valor) DESC
         """)
     List<DashboardCategoriaValorDto> findTotaisPorCategoriaNoPeriodo(
+            @Param("tenantId") UUID tenantId,
+            @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
+    );
+
+    @Query("""
+        SELECT new com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto(
+            c.id,
+            COALESCE(c.nome, 'Sem categoria'),
+            SUM(l.valor)
+        )
+        FROM LancamentoFinanceiro l
+        LEFT JOIN l.categoria c
+        WHERE l.tenant.id = :tenantId
+          AND l.contaFinanceira.ativo = true
+          AND l.tipo = :tipo
+          AND l.data BETWEEN :dataInicio AND :dataFim
+        GROUP BY c.id, c.nome
+        ORDER BY SUM(l.valor) DESC
+        """)
+    List<DashboardCategoriaValorDto> findTotaisPorCategoriaDasContasAtivasNoPeriodo(
             @Param("tenantId") UUID tenantId,
             @Param("tipo") com.mpt.financecontrol.financeiro.TipoLancamento tipo,
             @Param("dataInicio") LocalDate dataInicio,

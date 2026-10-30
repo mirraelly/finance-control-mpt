@@ -7,6 +7,10 @@
   height: 196px;
 }
 
+.dashboard-account-balances .dashboard-panel__header {
+  min-height: 30px;
+}
+
 .revenue-expense-chart__status {
   display: grid;
   height: 100%;

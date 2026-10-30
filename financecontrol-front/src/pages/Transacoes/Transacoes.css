@@ -46,6 +46,13 @@
   width: 180px;
 }
 
+.transacoes-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 /* Tabs (Todas / Receitas / Despesas) */
 .transacoes-tabs {
   display: inline-flex;

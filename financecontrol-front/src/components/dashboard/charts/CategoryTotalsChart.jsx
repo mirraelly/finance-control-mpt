@@ -8,7 +8,10 @@ import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
 } from "../utils/dashboardChartOptions";
-import { getDashboardPeriodRange } from "../utils/dashboardPeriods";
+import {
+  getCustomPeriodError,
+  getDashboardPeriodRange,
+} from "../utils/dashboardPeriods";
 
 const PERIODS = [
   { value: "month", label: "Este mês" },
@@ -165,7 +168,8 @@ function CategoryTotalsChart({
     () => formatCategoryChartTotal(total),
     [total],
   );
-  const customRangeInvalid = period === "custom" && !range;
+  const customRangeError =
+    period === "custom" ? getCustomPeriodError(startDate, endDate) : "";
 
   useEffect(() => {
     if (!range) return undefined;
@@ -247,9 +251,9 @@ function CategoryTotalsChart({
           </label>
         </div>
       )}
-      {customRangeInvalid ? (
+      {customRangeError ? (
         <p className="dashboard-category-status" role="alert">
-          A data inicial deve ser anterior à data final.
+          {customRangeError}
         </p>
       ) : loading ? (
         <p className="dashboard-category-status" aria-live="polite">

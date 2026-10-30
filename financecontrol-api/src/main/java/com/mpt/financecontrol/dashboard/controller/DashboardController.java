@@ -2,6 +2,7 @@ package com.mpt.financecontrol.dashboard.controller;
 
 import com.mpt.financecontrol.dashboard.dtos.DashboardCategoriaValorDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardResumoDto;
+import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaAtualDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardSaldoContaMensalDto;
 import com.mpt.financecontrol.dashboard.dtos.DashboardPatrimonioDto;
 import com.mpt.financecontrol.dashboard.service.DashboardService;
@@ -78,6 +79,13 @@ public class DashboardController {
             @RequestParam(name = "dataFim") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
     ) {
         return service.buscarSaldosPorConta(dataInicio, dataFim);
+    }
+
+    @Operation(summary = "Consultar saldo atual por conta financeira")
+    @GetMapping("/saldo-atual-por-conta")
+    @PreAuthorize("isAuthenticated()")
+    public List<DashboardSaldoContaAtualDto> saldoAtualPorConta() {
+        return service.buscarSaldoAtualPorConta();
     }
 
     @Operation(summary = "Consultar crescimento patrimonial mensal")

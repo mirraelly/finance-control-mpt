@@ -11,6 +11,7 @@ import {
 } from "../utils/dashboardChartOptions";
 import {
   dashboardMonthLabels,
+  getCustomPeriodError,
   getDashboardPeriodRange,
 } from "../utils/dashboardPeriods";
 import "./RevenueExpenseChart.css";
@@ -124,7 +125,8 @@ function RevenueExpenseChart() {
     () => getDashboardPeriodRange(period, startDate, endDate),
     [endDate, period, startDate],
   );
-  const customRangeInvalid = period === "custom" && !range;
+  const customRangeError =
+    period === "custom" ? getCustomPeriodError(startDate, endDate) : "";
   const handleColumnClick = useCallback((tipo, anoMes) => {
     const [year, month] = anoMes.split("-");
     const lastDay = new Date(Number(year), Number(month), 0).getDate();
@@ -208,16 +210,16 @@ function RevenueExpenseChart() {
           </label>
         </div>
       )}
-      {customRangeInvalid && (
+      {customRangeError && (
         <p className="dashboard-period-range-error" role="alert">
-          A data inicial deve ser anterior à data final.
+          {customRangeError}
         </p>
       )}
       <div
         className="dashboard-panel__chart revenue-expense-chart__plot"
         aria-busy={loading}
       >
-        {customRangeInvalid ? (
+        {customRangeError ? (
           <p className="revenue-expense-chart__status">
             Informe um período válido para consultar o gráfico.
           </p>
