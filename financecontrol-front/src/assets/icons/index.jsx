@@ -69,6 +69,8 @@ import {
   BanknoteArrowUpIcon,
   PiggyBankIcon,
   UserAccountIcon,
+  SentIcon,
+  Download04Icon,
 } from "@hugeicons/core-free-icons";
 
 function HugeiconsIcon({ className = "", ...props }) {
@@ -144,5 +146,7 @@ export {
   BanknoteArrowUpIcon,
   PiggyBankIcon,
   UserAccountIcon,
-  CreditCardPosIcon
+  CreditCardPosIcon,
+  SentIcon,
+  Download04Icon
 };

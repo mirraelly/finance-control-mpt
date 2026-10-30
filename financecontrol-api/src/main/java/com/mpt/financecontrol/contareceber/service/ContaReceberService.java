@@ -353,6 +353,17 @@ public class ContaReceberService {
         return ContaReceberMapper.toResponseDto(repository.save(contaReceber));
     }
 
+    @Transactional(readOnly = true)
+    public ContaReceberParcelaBaixaDto findParcelaBaixa(UUID parcelaId) {
+        Tenant tenant = usuarioService.getTenantLogado();
+
+        ContaReceberParcela parcela = parcelaRepository.findById(parcelaId)
+                .filter(p -> p.getTenant().getId().equals(tenant.getId()))
+                .orElseThrow(() -> new NotFoundException("Parcela não encontrada"));
+
+        return ContaReceberParcelaMapper.toBaixaDto(parcela);
+    }
+
     @Transactional
     public ContaReceberResponseDto receberParcela(UUID parcelaId, RecebimentoCreateDto dto) {
         Tenant tenant = usuarioService.getTenantLogado();

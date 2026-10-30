@@ -75,3 +75,7 @@ app:
 
 viacep:
   url: https://viacep.com.br/ws
+
+gemini:
+  api-keys: ${GEMINI_API_KEYS:}
+  model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
