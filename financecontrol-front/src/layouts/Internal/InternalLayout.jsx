@@ -6,6 +6,7 @@ import {
   PanelRightOpenIcon,
 } from "../../assets/icons";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
+import AssistenteChat from "../../components/assistente/AssistenteChat/AssistenteChat";
 
 import "./InternalLayout.css";
 import Header from "../../components/layout/Header/Header";
@@ -101,6 +102,8 @@ function InternalLayout() {
           <Outlet />
         </main>
       </div>
+
+      <AssistenteChat />
     </div>
   );
 }

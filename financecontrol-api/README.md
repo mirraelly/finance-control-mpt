@@ -39,6 +39,8 @@ export MAIL_PASSWORD=sua-senha-de-app
 export MAIL_HOST=smtp.gmail.com
 export MAIL_PORT=587
 export APP_FRONT_URL=http://localhost:5173
+export GEMINI_API_KEYS=chave1,chave2,chave3
+export GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
 Observações:
@@ -49,6 +51,8 @@ Observações:
 - `MAIL_USER` e `MAIL_PASSWORD` são usadas para enviar o e-mail de recuperação de senha. No Gmail, `MAIL_PASSWORD` deve ser uma senha de app (https://myaccount.google.com/apppasswords), que exige a verificação em duas etapas ativa.
 - `MAIL_HOST` e `MAIL_PORT` são opcionais e já têm valor padrão de `smtp.gmail.com` e `587`.
 - `APP_FRONT_URL` é opcional, já tem valor padrão de `http://localhost:5173` e é usada para montar o link de recuperação de senha.
+- `GEMINI_API_KEYS` recebe uma ou mais chaves da API do Gemini separadas por vírgula ou ponto e vírgula, usadas em rodízio pelo assistente do sistema. Como o limite do plano gratuito é por projeto do Google, cada chave deve ser criada em um projeto diferente no Google AI Studio (https://aistudio.google.com/api-keys). Sem chave a aplicação funciona normalmente, mas o assistente fica indisponível.
+- `GEMINI_MODEL` é opcional e já tem valor padrão de `gemini-3.5-flash-lite`.
 
 ## Como rodar
 
