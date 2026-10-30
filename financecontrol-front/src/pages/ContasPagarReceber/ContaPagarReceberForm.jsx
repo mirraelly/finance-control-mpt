@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { HugeiconsIcon, Undo03Icon } from "../../assets/icons";
+import {
+  Delete02Icon,
+  HugeiconsIcon,
+  PlusIcon,
+  Undo03Icon,
+} from "../../assets/icons";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import EmptyState from "../../components/common/EmptyState";
@@ -87,12 +92,11 @@ function criarFormularioInicial() {
     dataEmissao: dataLocalHoje(),
     valorTotal: "",
     observacao: "",
-    dataVencimento: dataLocalHoje(),
+    dataPrimeiroVencimento: dataLocalHoje(),
     status: "ABERTO",
     formaPagamentoId: "",
     contaFinanceiraId: "",
     quantidadeParcelas: "1",
-    valorParcela: "",
     ativo: true,
   };
 }
@@ -106,6 +110,8 @@ function ContaPagarReceberForm({ tipo }) {
   const titulo = ehPagar ? "conta a pagar" : "conta a receber";
   const basePath = `/contas/contas-${tipo}`;
   const [formulario, setFormulario] = useState(criarFormularioInicial);
+  const [parcelas, setParcelas] = useState([]);
+  const ultimaChaveParcela = useRef(0);
   const [pessoas, setPessoas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [formasPagamento, setFormasPagamento] = useState([]);
@@ -158,88 +164,90 @@ function ContaPagarReceberForm({ tipo }) {
           }
         }
         if (conta) {
-          const formaPagamentoAtualId = conta.parcelas?.[0]?.formaPagamentoId;
+          const parcelasConta = [...(conta.parcelas || [])].sort(
+            (a, b) => a.numeroParcela - b.numeroParcela,
+          );
+          const formasAusentes = [
+            ...new Map(
+              parcelasConta
+                .filter(
+                  (parcela) =>
+                    parcela.formaPagamentoId &&
+                    !listaFormasPagamento.some(
+                      (forma) =>
+                        String(forma.id) === String(parcela.formaPagamentoId),
+                    ),
+                )
+                .map((parcela) => [String(parcela.formaPagamentoId), parcela]),
+            ).values(),
+          ];
           let formasDisponiveis = listaFormasPagamento;
           let contasDisponiveis = listaContasFinanceiras;
-          if (
-            formaPagamentoAtualId &&
-            !listaFormasPagamento.some(
-              (forma) => String(forma.id) === String(formaPagamentoAtualId),
-            )
-          ) {
-            if (!formasPagamentoIndisponiveis) {
-              try {
-                const formaAtual =
-                  await formaPagamentoService.buscarPorId(formaPagamentoAtualId);
-                formasDisponiveis = [...listaFormasPagamento, formaAtual];
-                if (
-                  formaAtual.contaFinanceiraId &&
-                  !listaContasFinanceiras.some(
-                    (item) =>
-                      String(item.id) === String(formaAtual.contaFinanceiraId),
-                  )
-                ) {
-                  contasDisponiveis = [
-                    ...listaContasFinanceiras,
-                    {
-                      id: formaAtual.contaFinanceiraId,
-                      nome: formaAtual.contaFinanceiraNome,
-                    },
-                  ];
-                }
-              } catch (formaError) {
-                console.error(
-                  "Erro ao carregar a forma de pagamento da conta:",
-                  formaError,
-                );
-                if (ativo) {
-                  setErroFormasPagamento(
-                    "Não foi possível carregar a forma de pagamento atual.",
-                  );
-                  showToast({
-                    type: "warning",
-                    title: "Forma de pagamento indisponível",
-                    message:
-                      "Não foi possível carregar a forma de pagamento atual.",
-                  });
-                }
-                formasDisponiveis = [
-                  ...listaFormasPagamento,
+          for (const parcelaFormaAusente of formasAusentes) {
+            const formaParcela = {
+              id: parcelaFormaAusente.formaPagamentoId,
+              nome: parcelaFormaAusente.formaPagamentoNome,
+              contaFinanceiraId: "",
+            };
+            if (formasPagamentoIndisponiveis) {
+              formasDisponiveis = [...formasDisponiveis, formaParcela];
+              continue;
+            }
+            try {
+              const formaAtual = await formaPagamentoService.buscarPorId(
+                parcelaFormaAusente.formaPagamentoId,
+              );
+              formasDisponiveis = [...formasDisponiveis, formaAtual];
+              if (
+                formaAtual.contaFinanceiraId &&
+                !contasDisponiveis.some(
+                  (item) =>
+                    String(item.id) === String(formaAtual.contaFinanceiraId),
+                )
+              ) {
+                contasDisponiveis = [
+                  ...contasDisponiveis,
                   {
-                    id: formaPagamentoAtualId,
-                    nome: conta.parcelas[0].formaPagamentoNome,
-                    contaFinanceiraId: "",
+                    id: formaAtual.contaFinanceiraId,
+                    nome: formaAtual.contaFinanceiraNome,
                   },
                 ];
               }
-            } else {
-              formasDisponiveis = [
-                {
-                  id: formaPagamentoAtualId,
-                  nome: conta.parcelas[0].formaPagamentoNome,
-                  contaFinanceiraId: "",
-                },
-              ];
+            } catch (formaError) {
+              console.error(
+                "Erro ao carregar a forma de pagamento da conta:",
+                formaError,
+              );
+              if (ativo) {
+                setErroFormasPagamento(
+                  "Não foi possível carregar a forma de pagamento atual.",
+                );
+                showToast({
+                  type: "warning",
+                  title: "Forma de pagamento indisponível",
+                  message:
+                    "Não foi possível carregar a forma de pagamento atual.",
+                });
+              }
+              formasDisponiveis = [...formasDisponiveis, formaParcela];
             }
           }
           if (!ativo) return;
           setFormasPagamento(formasDisponiveis);
           setContasFinanceiras(contasDisponiveis);
           setContaCarregada(conta);
-          const primeiraParcela = conta.parcelas?.[0];
-          const quantidadeParcelas = conta.parcelas?.length || 1;
-          const valorTotalCentavos = Math.round(Number(conta.valorTotal) * 100);
-          const valorParcela = Math.floor(
-            valorTotalCentavos / quantidadeParcelas,
-          );
+          const primeiraParcela = parcelasConta[0];
           setFormulario({
             pessoaId: conta.pessoaId,
             categoriaId: conta.categoriaId || "",
             descricao: conta.descricao || "",
             dataEmissao: conta.dataEmissao || "",
-            valorTotal: centavosParaMoeda(valorTotalCentavos),
+            valorTotal: centavosParaMoeda(
+              Math.round(Number(conta.valorTotal) * 100),
+            ),
             observacao: conta.observacao || "",
-            dataVencimento: primeiraParcela?.dataVencimento || dataLocalHoje(),
+            dataPrimeiroVencimento:
+              primeiraParcela?.dataVencimento || dataLocalHoje(),
             status: conta.status || "ABERTO",
             formaPagamentoId: primeiraParcela?.formaPagamentoId || "",
             contaFinanceiraId:
@@ -247,10 +255,23 @@ function ContaPagarReceberForm({ tipo }) {
                 (forma) =>
                   String(forma.id) === String(primeiraParcela?.formaPagamentoId),
               )?.contaFinanceiraId || "",
-            quantidadeParcelas: String(quantidadeParcelas),
-            valorParcela: centavosParaMoeda(valorParcela),
+            quantidadeParcelas: String(parcelasConta.length || 1),
             ativo: conta.ativo,
           });
+          setParcelas(
+            parcelasConta.map((parcela) => {
+              ultimaChaveParcela.current += 1;
+              return {
+                chave: ultimaChaveParcela.current,
+                dataVencimento: parcela.dataVencimento || "",
+                valor: centavosParaMoeda(
+                  Math.round(Number(parcela.valor) * 100),
+                ),
+                formaPagamentoId: parcela.formaPagamentoId || "",
+                observacao: parcela.observacao || "",
+              };
+            }),
+          );
         } else {
           setFormasPagamento(listaFormasPagamento);
         }
@@ -275,21 +296,125 @@ function ContaPagarReceberForm({ tipo }) {
     };
   }, [ehPagar, id, tipo, titulo, showToast]);
 
+  const valorTotalCentavos = moedaParaCentavos(formulario.valorTotal);
+  const totalParceladoCentavos = parcelas.reduce(
+    (total, parcela) => total + moedaParaCentavos(parcela.valor),
+    0,
+  );
+  const saldoRestanteCentavos = valorTotalCentavos - totalParceladoCentavos;
+  const parcelasBloqueadas = Boolean(
+    contaCarregada?.parcelas?.some(
+      (parcela) => parcela[chaveBaixas]?.length > 0,
+    ),
+  );
+  const parcelasSomenteLeitura =
+    parcelasBloqueadas ||
+    Boolean(erroFormasPagamento) ||
+    Boolean(id && formulario.status === "CANCELADO");
+
+  const notificarErro = (message) => {
+    setErro(message);
+    showToast({ type: "error", title: "Verifique os dados", message });
+  };
+
+  const criarParcela = (dados) => {
+    ultimaChaveParcela.current += 1;
+    return {
+      chave: ultimaChaveParcela.current,
+      observacao: "",
+      ...dados,
+    };
+  };
+
+  const gerarParcelas = () => {
+    setErro("");
+    const quantidade = Number(formulario.quantidadeParcelas);
+
+    if (valorTotalCentavos <= 0) {
+      notificarErro("Informe o valor total antes de gerar as parcelas.");
+      return;
+    }
+    if (!Number.isInteger(quantidade) || quantidade < 1) {
+      notificarErro("Informe uma quantidade de parcelas válida.");
+      return;
+    }
+    if (!formulario.dataPrimeiroVencimento) {
+      notificarErro("Informe o vencimento da primeira parcela.");
+      return;
+    }
+    if (formulario.dataPrimeiroVencimento < formulario.dataEmissao) {
+      notificarErro(
+        "O vencimento da primeira parcela não pode ser anterior à data de emissão.",
+      );
+      return;
+    }
+
+    const valorParcelaCentavos = Math.floor(valorTotalCentavos / quantidade);
+    const parcelasComAjuste =
+      valorTotalCentavos - valorParcelaCentavos * quantidade;
+
+    setParcelas(
+      Array.from({ length: quantidade }, (_, index) =>
+        criarParcela({
+          dataVencimento: adicionarMeses(
+            formulario.dataPrimeiroVencimento,
+            index,
+          ),
+          valor: centavosParaMoeda(
+            valorParcelaCentavos +
+              (index >= quantidade - parcelasComAjuste ? 1 : 0),
+          ),
+          formaPagamentoId: formulario.formaPagamentoId,
+        }),
+      ),
+    );
+    setParcelasAlteradas(true);
+  };
+
+  const adicionarParcela = () => {
+    const ultimaParcela = parcelas[parcelas.length - 1];
+    setParcelas((atuais) => [
+      ...atuais,
+      criarParcela({
+        dataVencimento: ultimaParcela?.dataVencimento
+          ? adicionarMeses(ultimaParcela.dataVencimento, 1)
+          : formulario.dataPrimeiroVencimento,
+        valor:
+          saldoRestanteCentavos > 0
+            ? centavosParaMoeda(saldoRestanteCentavos)
+            : "",
+        formaPagamentoId: formulario.formaPagamentoId,
+      }),
+    ]);
+    setParcelasAlteradas(true);
+  };
+
+  const atualizarParcela = (chave, event) => {
+    const { name } = event.target;
+    const value =
+      name === "valor"
+        ? mascaraMoeda(event.target.value)
+        : event.target.value;
+    setParcelas((atuais) =>
+      atuais.map((parcela) =>
+        parcela.chave === chave ? { ...parcela, [name]: value } : parcela,
+      ),
+    );
+    setParcelasAlteradas(true);
+  };
+
+  const removerParcela = (chave) => {
+    setParcelas((atuais) => atuais.filter((parcela) => parcela.chave !== chave));
+    setParcelasAlteradas(true);
+  };
+
   const atualizarCampo = (event) => {
     const { name } = event.target;
-    const value = ["valorTotal", "valorParcela"].includes(name)
-      ? mascaraMoeda(event.target.value)
-      : event.target.value;
-    if (
-      [
-        "valorTotal",
-        "formaPagamentoId",
-        "contaFinanceiraId",
-        "dataVencimento",
-        "quantidadeParcelas",
-        "valorParcela",
-      ].includes(name)
-    ) {
+    const value =
+      name === "valorTotal"
+        ? mascaraMoeda(event.target.value)
+        : event.target.value;
+    if (name === "valorTotal") {
       setParcelasAlteradas(true);
     }
     setFormulario((atual) => {
@@ -319,42 +444,6 @@ function ContaPagarReceberForm({ tipo }) {
         };
       }
 
-      if (name === "valorTotal") {
-        const centavos = moedaParaCentavos(value);
-        const quantidade = Math.max(1, Number(atual.quantidadeParcelas) || 1);
-        return {
-          ...atual,
-          valorTotal: value,
-          valorParcela: centavos
-            ? centavosParaMoeda(Math.floor(centavos / quantidade))
-            : "",
-        };
-      }
-
-      if (name === "quantidadeParcelas") {
-        const quantidade = Math.max(1, Number(value) || 1);
-        const centavos = moedaParaCentavos(atual.valorTotal);
-        return {
-          ...atual,
-          quantidadeParcelas: value,
-          valorParcela: centavos
-            ? centavosParaMoeda(Math.floor(centavos / quantidade))
-            : "",
-        };
-      }
-
-      if (name === "valorParcela") {
-        const quantidade = Math.max(1, Number(atual.quantidadeParcelas) || 1);
-        const centavos = moedaParaCentavos(value);
-        return {
-          ...atual,
-          valorParcela: value,
-          valorTotal: centavos
-            ? centavosParaMoeda(centavos * quantidade)
-            : "",
-        };
-      }
-
       return { ...atual, [name]: value };
     });
   };
@@ -363,10 +452,6 @@ function ContaPagarReceberForm({ tipo }) {
     event.preventDefault();
     if (!validateRequiredFields(event, showToast)) return;
     setErro("");
-    const notificarErro = (message) => {
-      setErro(message);
-      showToast({ type: "error", title: "Verifique os dados", message });
-    };
 
     if (!formulario.pessoaId) {
       notificarErro(`Selecione ${ehPagar ? "um fornecedor" : "um cliente"}.`);
@@ -375,62 +460,55 @@ function ContaPagarReceberForm({ tipo }) {
 
     setSalvando(true);
     try {
-      if (!id || parcelasAlteradas) {
-        const quantidadeParcelas = Number(formulario.quantidadeParcelas);
-        const valorTotalCentavos = moedaParaCentavos(formulario.valorTotal);
-        const valorParcelaCentavos = moedaParaCentavos(formulario.valorParcela);
-
-        if (!Number.isInteger(quantidadeParcelas) || quantidadeParcelas < 1) {
-          notificarErro("Informe uma quantidade de parcelas válida.");
+      if (!id || (parcelasAlteradas && !parcelasSomenteLeitura)) {
+        if (valorTotalCentavos <= 0) {
+          notificarErro("Informe o valor total.");
           return;
         }
-        if (valorTotalCentavos <= 0 || valorParcelaCentavos <= 0) {
-          notificarErro("Informe o valor total e o valor da parcela.");
+        if (parcelas.length === 0) {
+          notificarErro("Informe ao menos uma parcela.");
           return;
         }
-        if (
-          valorParcelaCentavos * quantidadeParcelas > valorTotalCentavos ||
-          valorTotalCentavos - valorParcelaCentavos * quantidadeParcelas >=
-            quantidadeParcelas
-        ) {
+        for (const [index, parcela] of parcelas.entries()) {
+          const numeroParcela = index + 1;
+          if (!parcela.dataVencimento) {
+            notificarErro(`Informe o vencimento da parcela ${numeroParcela}.`);
+            return;
+          }
+          if (parcela.dataVencimento < formulario.dataEmissao) {
+            notificarErro(
+              `O vencimento da parcela ${numeroParcela} não pode ser anterior à data de emissão.`,
+            );
+            return;
+          }
+          if (moedaParaCentavos(parcela.valor) <= 0) {
+            notificarErro(`Informe o valor da parcela ${numeroParcela}.`);
+            return;
+          }
+          if (!parcela.formaPagamentoId) {
+            notificarErro(
+              `Selecione a forma de pagamento da parcela ${numeroParcela}.`,
+            );
+            return;
+          }
+        }
+        if (saldoRestanteCentavos !== 0) {
           notificarErro(
-            "O valor total deve corresponder às parcelas; o ajuste de arredondamento não pode exceder R$ 0,01 por parcela.",
+            "A soma das parcelas deve ser igual ao valor total da conta.",
           );
-          return;
-        }
-        if (!formulario.dataVencimento) {
-          notificarErro("Informe o vencimento da primeira parcela.");
-          return;
-        }
-        if (formulario.dataVencimento < formulario.dataEmissao) {
-          notificarErro(
-            "O vencimento da primeira parcela não pode ser anterior à data de emissão.",
-          );
-          return;
-        }
-        if (!formulario.contaFinanceiraId || !formulario.formaPagamentoId) {
-          notificarErro("Selecione a conta financeira e a forma de pagamento.");
           return;
         }
       }
 
-      const criarParcelas = () => {
-        const quantidadeParcelas = Number(formulario.quantidadeParcelas);
-        const valorTotalCentavos = moedaParaCentavos(formulario.valorTotal);
-        const valorParcelaCentavos = moedaParaCentavos(formulario.valorParcela);
-        const parcelasComAjuste =
-          valorTotalCentavos - valorParcelaCentavos * quantidadeParcelas;
-
-        return Array.from({ length: quantidadeParcelas }, (_, index) => ({
-          dataVencimento: adicionarMeses(formulario.dataVencimento, index),
-          valor:
-            (valorParcelaCentavos +
-              (index >= quantidadeParcelas - parcelasComAjuste ? 1 : 0)) /
-            100,
-          formaPagamentoId: formulario.formaPagamentoId,
-          observacao: null,
-        }));
-      };
+      const criarParcelas = () =>
+        [...parcelas]
+          .sort((a, b) => a.dataVencimento.localeCompare(b.dataVencimento))
+          .map((parcela) => ({
+            dataVencimento: parcela.dataVencimento,
+            valor: moedaParaCentavos(parcela.valor) / 100,
+            formaPagamentoId: parcela.formaPagamentoId,
+            observacao: parcela.observacao.trim() || null,
+          }));
 
       if (id) {
         const dadosAtualizacao = {
@@ -451,16 +529,8 @@ function ContaPagarReceberForm({ tipo }) {
         ) {
           dadosAtualizacao.status = formulario.status;
         }
-        const parcelasBloqueadas = contaCarregada.parcelas?.some(
-          (parcela) => parcela[chaveBaixas]?.length > 0,
-        );
-        if (
-          !parcelasBloqueadas &&
-          parcelasAlteradas &&
-          formulario.status !== "CANCELADO"
-        ) {
-          dadosAtualizacao.valorTotal =
-            moedaParaCentavos(formulario.valorTotal) / 100;
+        if (parcelasAlteradas && !parcelasSomenteLeitura) {
+          dadosAtualizacao.valorTotal = valorTotalCentavos / 100;
           dadosAtualizacao.parcelas = criarParcelas();
         }
 
@@ -471,7 +541,7 @@ function ContaPagarReceberForm({ tipo }) {
           categoriaId: formulario.categoriaId || null,
           descricao: formulario.descricao.trim() || null,
           dataEmissao: formulario.dataEmissao,
-          valorTotal: moedaParaCentavos(formulario.valorTotal) / 100,
+          valorTotal: valorTotalCentavos / 100,
           observacao: formulario.observacao.trim() || null,
           ativo: true,
           parcelas: criarParcelas(),
@@ -566,15 +636,21 @@ function ContaPagarReceberForm({ tipo }) {
       label: conta.nome,
     })),
   ];
-  const parcelasBloqueadas = Boolean(
-    contaCarregada?.parcelas?.some(
-      (parcela) => parcela[chaveBaixas]?.length > 0,
-    ),
-  );
-  const parcelasSomenteLeitura =
-    parcelasBloqueadas ||
-    Boolean(erroFormasPagamento) ||
-    (id && formulario.status === "CANCELADO");
+  const formasPagamentoParcelaOptions = [
+    { value: "", label: "Selecione" },
+    ...formasPagamento.map((forma) => ({
+      value: forma.id,
+      label: forma.contaFinanceiraNome
+        ? `${forma.nome} (${forma.contaFinanceiraNome})`
+        : forma.nome,
+    })),
+  ];
+  const situacaoSaldo =
+    saldoRestanteCentavos < 0
+      ? "negativo"
+      : saldoRestanteCentavos === 0
+        ? "zerado"
+        : "positivo";
   const statusOptions = [
     { value: "ABERTO", label: "Em aberto" },
     {
@@ -622,7 +698,6 @@ function ContaPagarReceberForm({ tipo }) {
           <Select
             id={`${tipo}-pessoa`}
             name="pessoaId"
-            l
             label={
               <span>
                 {ehPagar ? "FORNECEDOR / CREDOR" : "CLIENTE / DEVEDOR"}
@@ -693,27 +768,16 @@ function ContaPagarReceberForm({ tipo }) {
             <Select
               id={`${tipo}-conta-financeira`}
               name="contaFinanceiraId"
-              label={
-                <span>
-                  CONTA FINANCEIRA{" "}
-                  <span className="form__campo-obrigatorio">*</span>
-                </span>
-              }
+              label="CONTA FINANCEIRA PADRÃO"
               options={contasFinanceirasOptions}
               value={formulario.contaFinanceiraId}
               onChange={atualizarCampo}
               disabled={parcelasSomenteLeitura}
-              required={!parcelasSomenteLeitura}
             />
             <Select
               id={`${tipo}-forma-pagamento`}
               name="formaPagamentoId"
-              label={
-                <span>
-                  FORMA DE PAGAMENTO{" "}
-                  <span className="form__campo-obrigatorio">*</span>
-                </span>
-              }
+              label="FORMA DE PAGAMENTO PADRÃO"
               options={formasPagamentoOptions}
               value={formulario.formaPagamentoId}
               onChange={atualizarCampo}
@@ -722,51 +786,159 @@ function ContaPagarReceberForm({ tipo }) {
                 Boolean(erroFormasPagamento) ||
                 !formulario.contaFinanceiraId
               }
-              required={!parcelasSomenteLeitura}
             />
             <Input
-              id={`${tipo}-data-vencimento`}
-              name="dataVencimento"
+              id={`${tipo}-data-primeiro-vencimento`}
+              name="dataPrimeiroVencimento"
               label="VENCIMENTO DA PRIMEIRA PARCELA"
               type="date"
-              value={formulario.dataVencimento}
+              value={formulario.dataPrimeiroVencimento}
               onChange={atualizarCampo}
               disabled={parcelasSomenteLeitura}
-              required={!parcelasSomenteLeitura}
             />
-            <Input
-              id={`${tipo}-quantidade-parcelas`}
-              name="quantidadeParcelas"
-              label="QTE. PARCELAS"
-              type="number"
-              min="1"
-              step="1"
-              value={formulario.quantidadeParcelas}
-              onChange={atualizarCampo}
-              disabled={parcelasSomenteLeitura}
-              required={!parcelasSomenteLeitura}
-            />
-            <Input
-              id={`${tipo}-valor-parcela`}
-              name="valorParcela"
-              label={
-                <span>
-                  VALOR DA PARCELA{" "}
-                  <span className="form__campo-obrigatorio">*</span>
-                </span>
-              }
-              inputMode="numeric"
-              prefix="R$"
-              placeholder="0,00"
-              value={formulario.valorParcela}
-              onChange={atualizarCampo}
-              disabled={parcelasSomenteLeitura}
-              required={!parcelasSomenteLeitura}
-            />
+            <div className="conta-parcelamento-form__gerar">
+              <Input
+                id={`${tipo}-quantidade-parcelas`}
+                name="quantidadeParcelas"
+                label="QTE. PARCELAS"
+                type="number"
+                min="1"
+                step="1"
+                value={formulario.quantidadeParcelas}
+                onChange={atualizarCampo}
+                disabled={parcelasSomenteLeitura}
+              />
+              <Button
+                variant="outline"
+                onClick={gerarParcelas}
+                disabled={parcelasSomenteLeitura}
+              >
+                Gerar parcelas
+              </Button>
+            </div>
+          </div>
+          <section className="conta-parcelas">
+            <div className="conta-parcelas__cabecalho">
+              <span className="conta-parcelas__titulo">
+                PARCELAS
+                <span className="form__campo-obrigatorio">*</span>
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={adicionarParcela}
+                disabled={parcelasSomenteLeitura}
+                icon={<HugeiconsIcon icon={PlusIcon} size={16} />}
+              >
+                Adicionar parcela
+              </Button>
+            </div>
+            {parcelas.length === 0 ? (
+              <p className="conta-receber-form__hint">
+                Nenhuma parcela informada. Gere as parcelas a partir do valor
+                total ou adicione manualmente.
+              </p>
+            ) : (
+              <div className="conta-parcelas__lista">
+                <div className="conta-parcelas__linha conta-parcelas__linha--titulo">
+                  <span>Nº</span>
+                  <span>
+                    VENCIMENTO
+                    <span className="form__campo-obrigatorio">*</span>
+                  </span>
+                  <span>
+                    VALOR
+                    <span className="form__campo-obrigatorio">*</span>
+                  </span>
+                  <span>
+                    FORMA DE PAGAMENTO
+                    <span className="form__campo-obrigatorio">*</span>
+                  </span>
+                  <span />
+                </div>
+                {parcelas.map((parcela, index) => (
+                  <div className="conta-parcelas__linha" key={parcela.chave}>
+                    <span className="conta-parcelas__numero">
+                      {index + 1}ª
+                    </span>
+                    <Input
+                      id={`${tipo}-parcela-vencimento-${parcela.chave}`}
+                      name="dataVencimento"
+                      type="date"
+                      className="conta-parcelas__vencimento"
+                      aria-label={`Vencimento da parcela ${index + 1}`}
+                      value={parcela.dataVencimento}
+                      onChange={(event) =>
+                        atualizarParcela(parcela.chave, event)
+                      }
+                      disabled={parcelasSomenteLeitura}
+                    />
+                    <Input
+                      id={`${tipo}-parcela-valor-${parcela.chave}`}
+                      name="valor"
+                      className="conta-parcelas__valor"
+                      aria-label={`Valor da parcela ${index + 1}`}
+                      inputMode="numeric"
+                      prefix="R$"
+                      placeholder="0,00"
+                      value={parcela.valor}
+                      onChange={(event) =>
+                        atualizarParcela(parcela.chave, event)
+                      }
+                      disabled={parcelasSomenteLeitura}
+                    />
+                    <Select
+                      id={`${tipo}-parcela-forma-${parcela.chave}`}
+                      name="formaPagamentoId"
+                      className="conta-parcelas__forma"
+                      aria-label={`Forma de pagamento da parcela ${index + 1}`}
+                      options={formasPagamentoParcelaOptions}
+                      value={parcela.formaPagamentoId}
+                      onChange={(event) =>
+                        atualizarParcela(parcela.chave, event)
+                      }
+                      disabled={parcelasSomenteLeitura}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="conta-parcelas__remover"
+                      title="Remover parcela"
+                      aria-label={`Remover parcela ${index + 1}`}
+                      onClick={() => removerParcela(parcela.chave)}
+                      disabled={parcelasSomenteLeitura}
+                      icon={<HugeiconsIcon icon={Delete02Icon} size={18} />}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="conta-parcelas__resumo">
+              <div>
+                <span>Valor total</span>
+                <strong>R$ {centavosParaMoeda(valorTotalCentavos)}</strong>
+              </div>
+              <div>
+                <span>Total parcelado</span>
+                <strong>R$ {centavosParaMoeda(totalParceladoCentavos)}</strong>
+              </div>
+              <div>
+                <span>Saldo restante</span>
+                <strong
+                  className={`conta-parcelas__saldo conta-parcelas__saldo--${situacaoSaldo}`}
+                >
+                  R$ {centavosParaMoeda(saldoRestanteCentavos)}
+                </strong>
+              </div>
+              <div>
+                <span>Parcelas</span>
+                <strong>{parcelas.length}</strong>
+              </div>
+            </div>
             <p className="conta-receber-form__hint">
-              As parcelas vencem mensalmente a partir da data informada. Se
-              necessário, algumas parcelas podem ajustar até R$ 0,01 para fechar
-              o valor total.
+              Gere as parcelas a partir do valor total e ajuste vencimentos,
+              valores e formas de pagamento, ou adicione cada parcela
+              manualmente. A soma das parcelas deve ser igual ao valor total.
             </p>
             {parcelasBloqueadas && (
               <p className="conta-receber-form__hint">
@@ -774,7 +946,7 @@ function ContaPagarReceberForm({ tipo }) {
                 já possui {chaveBaixas}.
               </p>
             )}
-          </div>
+          </section>
           <label className="cadastros-field" htmlFor={`${tipo}-observacao`}>
             <span className="cadastros-field__label">OBSERVAÇÃO</span>
             <textarea

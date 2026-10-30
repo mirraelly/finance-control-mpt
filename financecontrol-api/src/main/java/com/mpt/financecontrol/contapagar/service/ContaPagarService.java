@@ -353,6 +353,17 @@ public class ContaPagarService {
         return ContaPagarMapper.toResponseDto(repository.save(contaPagar));
     }
 
+    @Transactional(readOnly = true)
+    public ContaPagarParcelaBaixaDto findParcelaBaixa(UUID parcelaId) {
+        Tenant tenant = usuarioService.getTenantLogado();
+
+        ContaPagarParcela parcela = parcelaRepository.findById(parcelaId)
+                .filter(p -> p.getTenant().getId().equals(tenant.getId()))
+                .orElseThrow(() -> new NotFoundException("Parcela não encontrada"));
+
+        return ContaPagarParcelaMapper.toBaixaDto(parcela);
+    }
+
     @Transactional
     public ContaPagarResponseDto pagarParcela(UUID parcelaId, PagamentoCreateDto dto) {
         Tenant tenant = usuarioService.getTenantLogado();
