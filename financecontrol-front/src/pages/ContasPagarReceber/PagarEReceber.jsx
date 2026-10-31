@@ -10,7 +10,7 @@ import {
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
-import DatePicker from "../../components/common/DatePicker/DatePicker";
+import DatePicker from "../../components/common/DatePicker/Datepicker";
 import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
