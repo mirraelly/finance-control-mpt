@@ -32,7 +32,7 @@ const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
 function AppRoutes() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />

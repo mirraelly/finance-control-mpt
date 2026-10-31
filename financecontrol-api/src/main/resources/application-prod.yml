@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: financecontrol
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+
+  jackson:
+    time-zone: UTC
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  forward-headers-strategy: framework
+  tomcat:
+    threads:
+      max: 50
+      min-spare: 5
+  compression:
+    enabled: true
+  connection-timeout: 10s
+
+logging:
+  level:
+    root: INFO
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+
+app:
+  public-url: ${APP_PUBLIC_URL:http://localhost:8080}
+  front-url: ${APP_FRONT_URL}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://jw.eroservice.com.br}
+  superadmin:
+    email: ${SUPERADMIN_EMAIL}
+    password: ${SUPERADMIN_PASSWORD}
+    nome: ${SUPERADMIN_NAME}
+
+viacep:
+  url: https://viacep.com.br/ws
+
+gemini:
+  api-keys: ${GEMINI_API_KEYS:}
+  model: ${GEMINI_MODEL:gemini-3.5-flash-lite}

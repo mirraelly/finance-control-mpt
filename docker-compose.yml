@@ -1,0 +1,40 @@
+name: finance-control
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: financecontrol
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: UTC
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d financecontrol"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./financecontrol-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/financecontrol
+    depends_on:
+      db:
+        condition: service_healthy
+
+  front:
+    build: ./financecontrol-front
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-8081}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

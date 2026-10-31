@@ -21,7 +21,7 @@ function NotFound() {
 
       <section className="notfound__image">
         <img
-          src="/public/images/not-found-pig.png"
+          src={`${import.meta.env.BASE_URL}images/not-found-pig.png`}
           alt="Imagem ilustrativa de página não encontrada"
         />
       </section>
