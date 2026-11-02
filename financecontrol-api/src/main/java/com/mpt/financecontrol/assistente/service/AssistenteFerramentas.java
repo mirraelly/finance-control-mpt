@@ -121,7 +121,7 @@ public class AssistenteFerramentas {
                                 "dataFim", texto("Data final no formato AAAA-MM-DD")
                         ), "relatorio")),
                 funcao("propor_lancamento",
-                        "Prepara um lançamento financeiro (entrada ou saída) para o usuário confirmar. Não grava nada.",
+                        "Prepara um lançamento financeiro (entrada ou saída) para o usuário confirmar. Não grava nada. A conta financeira pode ser uma já cadastrada ou uma preparada com propor_conta_financeira nesta mesma resposta; nesse caso chame propor_conta_financeira antes.",
                         objeto(Map.of(
                                 "tipo", enumeracao("ENTRADA para receitas ou SAIDA para despesas", "ENTRADA", "SAIDA"),
                                 "valor", numero("Valor em reais, por exemplo 50.00"),
@@ -414,8 +414,12 @@ public class AssistenteFerramentas {
         if (data.isAfter(hoje()))
             throw new IllegalArgumentException("A data do lançamento não pode ser futura");
 
-        ContaFinanceiraResponseDto conta = resolverOuUnica(texto(args, "contaFinanceira"),
-                contaFinanceiraService.select(), ContaFinanceiraResponseDto::nome, "Conta financeira");
+        String contaInformada = texto(args, "contaFinanceira");
+        int contaProposta = indiceContaProposta(contaInformada, acoes);
+        ContaFinanceiraResponseDto conta = contaProposta < 0
+                ? resolverOuUnica(contaInformada, contaFinanceiraService.select(), ContaFinanceiraResponseDto::nome, "Conta financeira")
+                : null;
+        String nomeConta = conta != null ? conta.nome() : nomeProposto(acoes.get(contaProposta));
         String categoriaInformada = texto(args, "categoria");
         CategoriaResponseDto categoria = categoriaInformada != null
                 ? resolver(categoriaInformada, categoriaService.select(), CategoriaResponseDto::nome, "Categoria")
@@ -423,7 +427,7 @@ public class AssistenteFerramentas {
 
         Map<String, Object> corpo = new LinkedHashMap<>();
         corpo.put("tipo", tipo.name());
-        corpo.put("contaFinanceiraId", conta.id());
+        corpo.put("contaFinanceiraId", conta != null ? conta.id() : null);
         corpo.put("categoriaId", categoria != null ? categoria.id() : null);
         corpo.put("valor", valor);
         corpo.put("data", data.toString());
@@ -434,11 +438,13 @@ public class AssistenteFerramentas {
                 new AssistenteResumoItemDto("Valor", moeda(valor)),
                 new AssistenteResumoItemDto("Data", data(data)),
                 new AssistenteResumoItemDto("Descrição", descricao),
-                new AssistenteResumoItemDto("Conta financeira", conta.nome()),
+                new AssistenteResumoItemDto("Conta financeira", conta != null ? nomeConta : nomeConta + " (aguardando confirmação)"),
                 new AssistenteResumoItemDto("Categoria", categoria != null ? categoria.nome() : "Sem categoria"));
 
-        acoes.add(new AssistenteAcaoDto("CRIAR_LANCAMENTO", "Novo lançamento", resumo, Map.of("corpo", corpo)));
-        return Map.of("status", "Lançamento preparado e aguardando confirmação do usuário no chat. Nada foi gravado ainda.");
+        acoes.add(new AssistenteAcaoDto("CRIAR_LANCAMENTO", "Novo lançamento", resumo, dadosComDependencia(corpo, contaProposta)));
+        return Map.of("status", conta != null
+                ? "Lançamento preparado e aguardando confirmação do usuário no chat. Nada foi gravado ainda."
+                : "Lançamento preparado e aguardando confirmação do usuário no chat. Nada foi gravado ainda. Ele será gravado depois que a conta financeira " + nomeConta + " for confirmada.");
     }
 
     private Map<String, Object> proporBaixaParcela(Map<String, Object> args, List<AssistenteAcaoDto> acoes) {
@@ -678,44 +684,55 @@ public class AssistenteFerramentas {
     }
 
     private Map<String, Object> proporFormaPagamento(Map<String, Object> args, List<AssistenteAcaoDto> acoes) {
-        String nome = nomeCadastro(args, 150);
-        garantirNomeLivre(nome, formaPagamentoService.select(), FormaPagamentoResponseDto::nome, "uma forma de pagamento");
-        garantirNomeLivre(nome, propostas(acoes, "CRIAR_FORMA_PAGAMENTO"), AssistenteFerramentas::nomeProposto, "uma forma de pagamento");
+        String nomeInformado = nomeCadastro(args, 150);
         String contaInformada = texto(args, "contaFinanceira");
         int contaProposta = indiceContaProposta(contaInformada, acoes);
-
-        if (contaProposta >= 0) {
-            String nomeConta = nomeProposto(acoes.get(contaProposta));
-
-            Map<String, Object> corpo = new LinkedHashMap<>();
-            corpo.put("nome", nome);
-            corpo.put("contaFinanceiraId", null);
-            corpo.put("ativo", true);
-
-            List<AssistenteResumoItemDto> resumo = List.of(
-                    new AssistenteResumoItemDto("Nome", nome),
-                    new AssistenteResumoItemDto("Conta financeira", nomeConta + " (aguardando confirmação)"));
-
-            acoes.add(new AssistenteAcaoDto("CRIAR_FORMA_PAGAMENTO", "Nova forma de pagamento", resumo,
-                    Map.of("corpo", corpo, "dependeDe", contaProposta)));
-            return Map.of("status", "Forma de pagamento preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda. "
-                    + "Ela será gravada depois que a conta financeira " + nomeConta + " for confirmada.");
-        }
-
-        ContaFinanceiraResponseDto conta = resolverOuUnica(contaInformada,
-                contaFinanceiraService.select(), ContaFinanceiraResponseDto::nome, "Conta financeira");
+        ContaFinanceiraResponseDto conta = contaProposta < 0
+                ? resolverOuUnica(contaInformada, contaFinanceiraService.select(), ContaFinanceiraResponseDto::nome, "Conta financeira")
+                : null;
+        String nomeConta = conta != null ? conta.nome() : nomeProposto(acoes.get(contaProposta));
+        String nome = nomeFormaPagamento(nomeInformado, nomeConta, acoes);
 
         Map<String, Object> corpo = new LinkedHashMap<>();
         corpo.put("nome", nome);
-        corpo.put("contaFinanceiraId", conta.id());
+        corpo.put("contaFinanceiraId", conta != null ? conta.id() : null);
         corpo.put("ativo", true);
 
         List<AssistenteResumoItemDto> resumo = List.of(
                 new AssistenteResumoItemDto("Nome", nome),
-                new AssistenteResumoItemDto("Conta financeira", conta.nome()));
+                new AssistenteResumoItemDto("Conta financeira", conta != null ? nomeConta : nomeConta + " (aguardando confirmação)"));
 
-        acoes.add(new AssistenteAcaoDto("CRIAR_FORMA_PAGAMENTO", "Nova forma de pagamento", resumo, Map.of("corpo", corpo)));
-        return Map.of("status", "Forma de pagamento preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda.");
+        acoes.add(new AssistenteAcaoDto("CRIAR_FORMA_PAGAMENTO", "Nova forma de pagamento", resumo, dadosComDependencia(corpo, contaProposta)));
+
+        String status = "Forma de pagamento preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda.";
+        if (!nome.equals(nomeInformado))
+            status += " Já existe uma forma de pagamento chamada " + nomeInformado + ", então o nome foi ajustado para " + nome + ". Informe o nome ajustado ao usuário.";
+        if (conta == null)
+            status += " Ela será gravada depois que a conta financeira " + nomeConta + " for confirmada.";
+        return Map.of("status", status);
+    }
+
+    private String nomeFormaPagamento(String nome, String nomeConta, List<AssistenteAcaoDto> acoes) {
+        List<String> existentes = new ArrayList<>(formaPagamentoService.select().stream().map(FormaPagamentoResponseDto::nome).toList());
+        propostas(acoes, "CRIAR_FORMA_PAGAMENTO").stream().map(AssistenteFerramentas::nomeProposto).forEach(existentes::add);
+
+        if (!nomeEmUso(nome, existentes))
+            return nome;
+
+        String alternativo = nome + " " + nomeConta;
+        if (alternativo.length() <= 150 && !nomeEmUso(alternativo, existentes))
+            return alternativo;
+
+        throw new IllegalArgumentException("Já existe uma forma de pagamento com o nome \"" + nome + "\". Peça outro nome ao usuário.");
+    }
+
+    private static boolean nomeEmUso(String nome, List<String> existentes) {
+        String alvo = normalizar(nome);
+        return existentes.stream().anyMatch(existente -> normalizar(existente).equals(alvo));
+    }
+
+    private static Map<String, Object> dadosComDependencia(Map<String, Object> corpo, int contaProposta) {
+        return contaProposta >= 0 ? Map.of("corpo", corpo, "dependeDe", contaProposta) : Map.of("corpo", corpo);
     }
 
     private Map<String, Object> proporCategoria(Map<String, Object> args, List<AssistenteAcaoDto> acoes) {

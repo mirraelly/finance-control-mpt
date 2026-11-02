@@ -7,6 +7,8 @@ import com.google.genai.types.FunctionResponse;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Part;
+import com.google.genai.types.ThinkingConfig;
+import com.google.genai.types.ThinkingLevel;
 import com.google.genai.types.Tool;
 import com.mpt.financecontrol.assistente.client.GeminiClient;
 import com.mpt.financecontrol.assistente.dtos.AssistenteAcaoDto;
@@ -61,6 +63,7 @@ public class AssistenteService {
                 .systemInstruction(Content.fromParts(Part.fromText(instrucoes())))
                 .tools(Tool.builder().functionDeclarations(ferramentas.declaracoes()).build())
                 .automaticFunctionCalling(AutomaticFunctionCallingConfig.builder().disable(true).build())
+                .thinkingConfig(ThinkingConfig.builder().thinkingLevel(ThinkingLevel.Known.LOW).build())
                 .temperature(0.2f)
                 .build();
 
@@ -148,7 +151,8 @@ public class AssistenteService {
                 11. Cada novo pedido de gravação é independente. Nunca reaproveite conta financeira, forma de pagamento, categoria, pessoa ou valores de pedidos anteriores da conversa. Se o usuário não informar a conta financeira ou a forma de pagamento no pedido atual, deixe o parâmetro vazio para que a ferramenta retorne as opções e pergunte ao usuário qual usar.
                 12. Quando o usuário pedir para cadastrar uma conta financeira, forma de pagamento ou categoria que não existe, use propor_conta_financeira, propor_forma_pagamento ou propor_categoria. Se o pedido anterior dependia desse cadastro, avise que, depois de confirmar, basta pedir novamente o lançamento.
                 13. Quando a mensagem tiver vários pedidos de gravação, atenda todos na mesma resposta, chamando uma ferramenta propor_* para cada item, e não apenas para o primeiro.
-                14. Se uma forma de pagamento for para uma conta financeira nova pedida na mesma mensagem, chame primeiro propor_conta_financeira e depois propor_forma_pagamento informando o nome dessa conta. Não peça para o usuário confirmar a conta antes: as formas de pagamento são gravadas depois que ele confirmar a conta no chat.
+                14. Se uma forma de pagamento ou um lançamento usar uma conta financeira nova pedida na mesma mensagem, chame primeiro propor_conta_financeira e depois propor_forma_pagamento ou propor_lancamento informando o nome dessa conta. Não peça para o usuário confirmar a conta antes: esses registros são gravados depois que ele confirmar a conta no chat.
+                15. Se a ferramenta ajustar o nome de uma forma de pagamento, informe ao usuário o nome que será cadastrado.
                 """.formatted(diaSemana, AssistenteFerramentas.data(hoje), hoje, RESPOSTA_FORA_DO_ESCOPO);
     }
 }
