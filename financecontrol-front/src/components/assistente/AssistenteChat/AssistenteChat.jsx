@@ -94,6 +94,7 @@ function AssistenteChat() {
 
     try {
       const resposta = await assistenteService.perguntar(mensagem, historico);
+      const prefixo = Date.now();
       setMensagens((atuais) => [
         ...atuais,
         {
@@ -101,7 +102,10 @@ function AssistenteChat() {
           texto: resposta.resposta,
           acoes: (resposta.acoes || []).map((acao, indice) => ({
             ...acao,
-            chave: `${Date.now()}-${indice}`,
+            chave: `${prefixo}-${indice}`,
+            chaveDependencia: Number.isInteger(acao.dados?.dependeDe)
+              ? `${prefixo}-${acao.dados.dependeDe}`
+              : null,
             situacao: "pendente",
           })),
         },
@@ -137,6 +141,70 @@ function AssistenteChat() {
     );
   };
 
+  const cancelarAcao = (acao) => {
+    setMensagens((atuais) =>
+      atuais.map((mensagem) =>
+        mensagem.acoes?.some((item) => item.chave === acao.chave)
+          ? {
+              ...mensagem,
+              acoes: mensagem.acoes.map((item) =>
+                item.chave === acao.chave || item.chaveDependencia === acao.chave
+                  ? { ...item, situacao: "cancelada" }
+                  : item,
+              ),
+            }
+          : mensagem,
+      ),
+    );
+  };
+
+  const idsCriados = () =>
+    Object.fromEntries(
+      mensagens
+        .flatMap((mensagem) => mensagem.acoes || [])
+        .filter((acao) => acao.idCriado)
+        .map((acao) => [acao.chave, acao.idCriado]),
+    );
+
+  const executar = async (acao, ids) => {
+    const acaoFinal = acao.chaveDependencia
+      ? {
+          ...acao,
+          dados: {
+            ...acao.dados,
+            corpo: { ...acao.dados.corpo, contaFinanceiraId: ids[acao.chaveDependencia] },
+          },
+        }
+      : acao;
+
+    const criado = await assistenteService.executarAcao(acaoFinal);
+    atualizarAcao(acao.chave, { situacao: "concluida", idCriado: criado?.id });
+    showToast({
+      type: "success",
+      title: acao.titulo,
+      message: "Registro salvo com sucesso.",
+    });
+    return criado?.id;
+  };
+
+  const confirmarTodas = async (mensagem) => {
+    const ids = idsCriados();
+    const pendentes = mensagem.acoes.filter(
+      (acao) => acao.situacao === "pendente" && acao.tipo !== "BAIXAR_RELATORIO",
+    );
+
+    for (const acao of pendentes) {
+      setAcaoEmExecucao(acao.chave);
+      try {
+        ids[acao.chave] = await executar(acao, ids);
+      } catch (error) {
+        showApiErrorToast(showToast, error, "Não foi possível concluir a ação.");
+        break;
+      }
+    }
+    setAcaoEmExecucao(null);
+  };
+
   const confirmarAcao = async (acao) => {
     setAcaoEmExecucao(acao.chave);
     try {
@@ -144,13 +212,7 @@ function AssistenteChat() {
         await assistenteService.baixarRelatorio(acao.dados);
         return;
       }
-      await assistenteService.executarAcao(acao);
-      atualizarAcao(acao.chave, { situacao: "concluida" });
-      showToast({
-        type: "success",
-        title: acao.titulo,
-        message: "Registro salvo com sucesso.",
-      });
+      await executar(acao, idsCriados());
     } catch (error) {
       showApiErrorToast(
         showToast,
@@ -223,59 +285,86 @@ function AssistenteChat() {
                 {mensagem.texto && (
                   <p className="assistente-chat__balao">{mensagem.texto}</p>
                 )}
-                {mensagem.acoes?.map((acao) => (
-                  <div className="assistente-chat__acao" key={acao.chave}>
-                    <strong>{acao.titulo}</strong>
-                    {acao.resumo?.length > 0 && (
-                      <dl>
-                        {acao.resumo.map((item) => (
-                          <div key={`${item.rotulo}-${item.valor}`}>
-                            <dt>{item.rotulo}</dt>
-                            <dd>{item.valor}</dd>
+                {mensagem.acoes?.map((acao) => {
+                  const aguardandoConta = mensagem.acoes.some(
+                    (item) => item.chave === acao.chaveDependencia && item.situacao === "pendente",
+                  );
+
+                  return (
+                    <div className="assistente-chat__acao" key={acao.chave}>
+                      <strong>{acao.titulo}</strong>
+                      {acao.resumo?.length > 0 && (
+                        <dl>
+                          {acao.resumo.map((item) => (
+                            <div key={`${item.rotulo}-${item.valor}`}>
+                              <dt>{item.rotulo}</dt>
+                              <dd>{item.valor}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
+                      {acao.tipo === "BAIXAR_RELATORIO" ? (
+                        <div className="assistente-chat__acao-botoes">
+                          <button
+                            type="button"
+                            className="assistente-chat__botao assistente-chat__botao--primario"
+                            onClick={() => confirmarAcao(acao)}
+                            disabled={acaoEmExecucao === acao.chave}
+                          >
+                            <HugeiconsIcon icon={Download04Icon} size={16} />
+                            {acaoEmExecucao === acao.chave ? "Gerando..." : "Baixar PDF"}
+                          </button>
+                        </div>
+                      ) : acao.situacao === "pendente" ? (
+                        <>
+                          {aguardandoConta && (
+                            <span className="assistente-chat__aviso">
+                              Confirme primeiro a conta financeira.
+                            </span>
+                          )}
+                          <div className="assistente-chat__acao-botoes">
+                            <button
+                              type="button"
+                              className="assistente-chat__botao"
+                              onClick={() => cancelarAcao(acao)}
+                              disabled={acaoEmExecucao === acao.chave}
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              className="assistente-chat__botao assistente-chat__botao--primario"
+                              onClick={() => confirmarAcao(acao)}
+                              disabled={acaoEmExecucao === acao.chave || aguardandoConta}
+                            >
+                              {acaoEmExecucao === acao.chave ? "Salvando..." : "Confirmar"}
+                            </button>
                           </div>
-                        ))}
-                      </dl>
-                    )}
-                    {acao.tipo === "BAIXAR_RELATORIO" ? (
-                      <div className="assistente-chat__acao-botoes">
-                        <button
-                          type="button"
-                          className="assistente-chat__botao assistente-chat__botao--primario"
-                          onClick={() => confirmarAcao(acao)}
-                          disabled={acaoEmExecucao === acao.chave}
+                        </>
+                      ) : (
+                        <span
+                          className={`assistente-chat__situacao assistente-chat__situacao--${acao.situacao}`}
                         >
-                          <HugeiconsIcon icon={Download04Icon} size={16} />
-                          {acaoEmExecucao === acao.chave ? "Gerando..." : "Baixar PDF"}
-                        </button>
-                      </div>
-                    ) : acao.situacao === "pendente" ? (
-                      <div className="assistente-chat__acao-botoes">
-                        <button
-                          type="button"
-                          className="assistente-chat__botao"
-                          onClick={() => atualizarAcao(acao.chave, { situacao: "cancelada" })}
-                          disabled={acaoEmExecucao === acao.chave}
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="button"
-                          className="assistente-chat__botao assistente-chat__botao--primario"
-                          onClick={() => confirmarAcao(acao)}
-                          disabled={acaoEmExecucao === acao.chave}
-                        >
-                          {acaoEmExecucao === acao.chave ? "Salvando..." : "Confirmar"}
-                        </button>
-                      </div>
-                    ) : (
-                      <span
-                        className={`assistente-chat__situacao assistente-chat__situacao--${acao.situacao}`}
-                      >
-                        {acao.situacao === "concluida" ? "Concluído" : "Cancelado"}
-                      </span>
-                    )}
+                          {acao.situacao === "concluida" ? "Concluído" : "Cancelado"}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                {mensagem.acoes?.filter(
+                  (acao) => acao.situacao === "pendente" && acao.tipo !== "BAIXAR_RELATORIO",
+                ).length > 1 && (
+                  <div className="assistente-chat__acao-botoes">
+                    <button
+                      type="button"
+                      className="assistente-chat__botao assistente-chat__botao--primario"
+                      onClick={() => confirmarTodas(mensagem)}
+                      disabled={acaoEmExecucao !== null}
+                    >
+                      Confirmar todas
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
             ))}
 

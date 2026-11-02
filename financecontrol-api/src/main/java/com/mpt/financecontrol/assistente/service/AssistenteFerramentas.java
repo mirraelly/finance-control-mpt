@@ -176,10 +176,10 @@ public class AssistenteFerramentas {
                                 "tipo", enumeracao("Tipo da conta. Omita para usar CORRENTE.", "CORRENTE", "POUPANCA", "CAIXA", "CARTEIRA")
                         ), "nome")),
                 funcao("propor_forma_pagamento",
-                        "Prepara o cadastro de uma nova forma de pagamento vinculada a uma conta financeira existente para o usuário confirmar. Não grava nada.",
+                        "Prepara o cadastro de uma nova forma de pagamento para o usuário confirmar. Não grava nada. A conta financeira pode ser uma já cadastrada ou uma preparada com propor_conta_financeira nesta mesma resposta; nesse caso chame propor_conta_financeira antes.",
                         objeto(Map.of(
                                 "nome", texto("Nome da forma de pagamento, por exemplo PIX Nubank"),
-                                "contaFinanceira", texto("Nome da conta financeira vinculada")
+                                "contaFinanceira", texto("Nome da conta financeira vinculada, já cadastrada ou preparada nesta resposta")
                         ), "nome")),
                 funcao("propor_categoria",
                         "Prepara o cadastro de uma nova categoria para o usuário confirmar. Não grava nada.",
@@ -662,6 +662,7 @@ public class AssistenteFerramentas {
         String tipoInformado = texto(args, "tipo");
         TipoContaFinanceira tipo = tipoInformado != null ? TipoContaFinanceira.valueOf(tipoInformado) : TipoContaFinanceira.CORRENTE;
         garantirNomeLivre(nome, contaFinanceiraService.select(), ContaFinanceiraResponseDto::nome, "uma conta financeira");
+        garantirNomeLivre(nome, propostas(acoes, "CRIAR_CONTA_FINANCEIRA"), AssistenteFerramentas::nomeProposto, "uma conta financeira");
 
         Map<String, Object> corpo = new LinkedHashMap<>();
         corpo.put("nome", nome);
@@ -679,7 +680,29 @@ public class AssistenteFerramentas {
     private Map<String, Object> proporFormaPagamento(Map<String, Object> args, List<AssistenteAcaoDto> acoes) {
         String nome = nomeCadastro(args, 150);
         garantirNomeLivre(nome, formaPagamentoService.select(), FormaPagamentoResponseDto::nome, "uma forma de pagamento");
-        ContaFinanceiraResponseDto conta = resolverOuUnica(texto(args, "contaFinanceira"),
+        garantirNomeLivre(nome, propostas(acoes, "CRIAR_FORMA_PAGAMENTO"), AssistenteFerramentas::nomeProposto, "uma forma de pagamento");
+        String contaInformada = texto(args, "contaFinanceira");
+        int contaProposta = indiceContaProposta(contaInformada, acoes);
+
+        if (contaProposta >= 0) {
+            String nomeConta = nomeProposto(acoes.get(contaProposta));
+
+            Map<String, Object> corpo = new LinkedHashMap<>();
+            corpo.put("nome", nome);
+            corpo.put("contaFinanceiraId", null);
+            corpo.put("ativo", true);
+
+            List<AssistenteResumoItemDto> resumo = List.of(
+                    new AssistenteResumoItemDto("Nome", nome),
+                    new AssistenteResumoItemDto("Conta financeira", nomeConta + " (aguardando confirmação)"));
+
+            acoes.add(new AssistenteAcaoDto("CRIAR_FORMA_PAGAMENTO", "Nova forma de pagamento", resumo,
+                    Map.of("corpo", corpo, "dependeDe", contaProposta)));
+            return Map.of("status", "Forma de pagamento preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda. "
+                    + "Ela será gravada depois que a conta financeira " + nomeConta + " for confirmada.");
+        }
+
+        ContaFinanceiraResponseDto conta = resolverOuUnica(contaInformada,
                 contaFinanceiraService.select(), ContaFinanceiraResponseDto::nome, "Conta financeira");
 
         Map<String, Object> corpo = new LinkedHashMap<>();
@@ -699,6 +722,7 @@ public class AssistenteFerramentas {
         String nome = nomeCadastro(args, 100);
         String descricao = texto(args, "descricao");
         garantirNomeLivre(nome, categoriaService.select(), CategoriaResponseDto::nome, "uma categoria");
+        garantirNomeLivre(nome, propostas(acoes, "CRIAR_CATEGORIA"), AssistenteFerramentas::nomeProposto, "uma categoria");
 
         Map<String, Object> corpo = new LinkedHashMap<>();
         corpo.put("nome", nome);
@@ -718,6 +742,29 @@ public class AssistenteFerramentas {
         if (nome.length() > tamanhoMaximo)
             throw new IllegalArgumentException("Nome deve ter no máximo " + tamanhoMaximo + " caracteres");
         return nome;
+    }
+
+    private int indiceContaProposta(String informada, List<AssistenteAcaoDto> acoes) {
+        if (informada == null)
+            return -1;
+        String alvo = normalizar(informada);
+        for (int indice = acoes.size() - 1; indice >= 0; indice--) {
+            AssistenteAcaoDto acao = acoes.get(indice);
+            if (!"CRIAR_CONTA_FINANCEIRA".equals(acao.tipo()))
+                continue;
+            String atual = normalizar(nomeProposto(acao));
+            if (atual.equals(alvo) || atual.contains(alvo) || alvo.contains(atual))
+                return indice;
+        }
+        return -1;
+    }
+
+    private static List<AssistenteAcaoDto> propostas(List<AssistenteAcaoDto> acoes, String tipo) {
+        return acoes.stream().filter(acao -> tipo.equals(acao.tipo())).toList();
+    }
+
+    private static String nomeProposto(AssistenteAcaoDto acao) {
+        return acao.dados().get("corpo") instanceof Map<?, ?> corpo ? String.valueOf(corpo.get("nome")) : "";
     }
 
     private <T> void garantirNomeLivre(String nome, List<T> existentes, Function<T, String> nomeExistente, String rotulo) {

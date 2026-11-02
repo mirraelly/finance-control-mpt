@@ -220,6 +220,11 @@
   cursor: not-allowed;
 }
 
+.assistente-chat__aviso {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
 .assistente-chat__situacao {
   align-self: flex-end;
   font-size: var(--font-size-12);
