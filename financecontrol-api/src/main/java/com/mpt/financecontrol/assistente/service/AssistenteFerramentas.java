@@ -680,7 +680,8 @@ public class AssistenteFerramentas {
                 new AssistenteResumoItemDto("Tipo", descricaoTipoConta(tipo)));
 
         acoes.add(new AssistenteAcaoDto("CRIAR_CONTA_FINANCEIRA", "Nova conta financeira", resumo, Map.of("corpo", corpo)));
-        return Map.of("status", "Conta financeira preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda. Ela só poderá ser usada em lançamentos depois de confirmada.");
+        return Map.of("status", "Conta financeira preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda. "
+                + "Formas de pagamento e lançamentos para esta conta podem ser preparados agora, nesta mesma resposta, informando o nome " + nome + ".");
     }
 
     private Map<String, Object> proporFormaPagamento(Map<String, Object> args, List<AssistenteAcaoDto> acoes) {
@@ -767,15 +768,23 @@ public class AssistenteFerramentas {
         if (informada == null)
             return -1;
         String alvo = normalizar(informada);
-        for (int indice = acoes.size() - 1; indice >= 0; indice--) {
+        List<Integer> parciais = new ArrayList<>();
+        for (int indice = 0; indice < acoes.size(); indice++) {
             AssistenteAcaoDto acao = acoes.get(indice);
             if (!"CRIAR_CONTA_FINANCEIRA".equals(acao.tipo()))
                 continue;
             String atual = normalizar(nomeProposto(acao));
-            if (atual.equals(alvo) || atual.contains(alvo) || alvo.contains(atual))
+            if (atual.equals(alvo))
                 return indice;
+            if (atual.contains(alvo) || alvo.contains(atual))
+                parciais.add(indice);
         }
-        return -1;
+
+        if (parciais.size() > 1)
+            throw new IllegalArgumentException("Mais de uma conta financeira preparada corresponde a \"" + informada + "\": "
+                    + String.join(", ", parciais.stream().map(indice -> nomeProposto(acoes.get(indice))).toList())
+                    + ". Informe o nome completo da conta.");
+        return parciais.isEmpty() ? -1 : parciais.getFirst();
     }
 
     private static List<AssistenteAcaoDto> propostas(List<AssistenteAcaoDto> acoes, String tipo) {
