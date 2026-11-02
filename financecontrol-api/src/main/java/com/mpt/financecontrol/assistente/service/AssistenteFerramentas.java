@@ -441,7 +441,7 @@ public class AssistenteFerramentas {
                 new AssistenteResumoItemDto("Conta financeira", conta != null ? nomeConta : nomeConta + " (aguardando confirmação)"),
                 new AssistenteResumoItemDto("Categoria", categoria != null ? categoria.nome() : "Sem categoria"));
 
-        acoes.add(new AssistenteAcaoDto("CRIAR_LANCAMENTO", "Novo lançamento", resumo, dadosComDependencia(corpo, contaProposta)));
+        acoes.add(new AssistenteAcaoDto("CRIAR_LANCAMENTO", "Novo lançamento", resumo, dadosComDependencia(corpo, contaProposta, nomeConta)));
         return Map.of("status", conta != null
                 ? "Lançamento preparado e aguardando confirmação do usuário no chat. Nada foi gravado ainda."
                 : "Lançamento preparado e aguardando confirmação do usuário no chat. Nada foi gravado ainda. Ele será gravado depois que a conta financeira " + nomeConta + " for confirmada.");
@@ -702,7 +702,7 @@ public class AssistenteFerramentas {
                 new AssistenteResumoItemDto("Nome", nome),
                 new AssistenteResumoItemDto("Conta financeira", conta != null ? nomeConta : nomeConta + " (aguardando confirmação)"));
 
-        acoes.add(new AssistenteAcaoDto("CRIAR_FORMA_PAGAMENTO", "Nova forma de pagamento", resumo, dadosComDependencia(corpo, contaProposta)));
+        acoes.add(new AssistenteAcaoDto("CRIAR_FORMA_PAGAMENTO", "Nova forma de pagamento", resumo, dadosComDependencia(corpo, contaProposta, nomeConta)));
 
         String status = "Forma de pagamento preparada e aguardando confirmação do usuário no chat. Nada foi gravado ainda.";
         if (!nome.equals(nomeInformado))
@@ -731,8 +731,10 @@ public class AssistenteFerramentas {
         return existentes.stream().anyMatch(existente -> normalizar(existente).equals(alvo));
     }
 
-    private static Map<String, Object> dadosComDependencia(Map<String, Object> corpo, int contaProposta) {
-        return contaProposta >= 0 ? Map.of("corpo", corpo, "dependeDe", contaProposta) : Map.of("corpo", corpo);
+    private static Map<String, Object> dadosComDependencia(Map<String, Object> corpo, int contaProposta, String nomeConta) {
+        return contaProposta >= 0
+                ? Map.of("corpo", corpo, "dependeDe", contaProposta, "contaFinanceiraNome", nomeConta)
+                : Map.of("corpo", corpo);
     }
 
     private Map<String, Object> proporCategoria(Map<String, Object> args, List<AssistenteAcaoDto> acoes) {

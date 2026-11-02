@@ -7,6 +7,7 @@ import {
   SentIcon,
 } from "../../../assets/icons";
 import assistenteService from "../../../services/assistenteService";
+import contaFinanceiraService from "../../../services/contaFinanceiraService";
 import useToast from "../../common/Toast/useToast";
 import { showApiErrorToast } from "../../../utils/toastErrors";
 import "./AssistenteChat.css";
@@ -38,6 +39,27 @@ function carregarConversa() {
   } catch {
     return [mensagemInicial];
   }
+}
+
+function normalizarNome(nome) {
+  return (nome || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function contaDependida(mensagem, acao) {
+  const contas = (mensagem.acoes || []).filter(
+    (item) => item.tipo === "CRIAR_CONTA_FINANCEIRA",
+  );
+  const nome = normalizarNome(acao.dados?.contaFinanceiraNome);
+
+  return (
+    contas.find((item) => item.chave === acao.chaveDependencia) ||
+    (nome && contas.find((item) => normalizarNome(item.dados?.corpo?.nome) === nome)) ||
+    null
+  );
 }
 
 function AssistenteChat() {
@@ -148,7 +170,9 @@ function AssistenteChat() {
           ? {
               ...mensagem,
               acoes: mensagem.acoes.map((item) =>
-                item.chave === acao.chave || item.chaveDependencia === acao.chave
+                item.chave === acao.chave ||
+                (item.situacao === "pendente" &&
+                  contaDependida(mensagem, item)?.chave === acao.chave)
                   ? { ...item, situacao: "cancelada" }
                   : item,
               ),
@@ -166,25 +190,49 @@ function AssistenteChat() {
         .map((acao) => [acao.chave, acao.idCriado]),
     );
 
-  const executar = async (acao, ids) => {
-    const acaoFinal = acao.chaveDependencia
-      ? {
-          ...acao,
-          dados: {
-            ...acao.dados,
-            corpo: { ...acao.dados.corpo, contaFinanceiraId: ids[acao.chaveDependencia] },
-          },
-        }
-      : acao;
+  const resolverContaFinanceira = async (mensagem, acao, ids) => {
+    const conta = contaDependida(mensagem, acao);
+    if (conta && ids[conta.chave]) return ids[conta.chave];
+
+    const nome = normalizarNome(acao.dados?.contaFinanceiraNome || conta?.dados?.corpo?.nome);
+    if (!nome) return null;
+
+    const contas = await contaFinanceiraService.listarAtivas();
+    return contas.find((item) => normalizarNome(item.nome) === nome)?.id || null;
+  };
+
+  const executar = async (mensagem, acao, ids) => {
+    let acaoFinal = acao;
+
+    if (acao.chaveDependencia || acao.dados?.contaFinanceiraNome) {
+      const contaFinanceiraId = await resolverContaFinanceira(mensagem, acao, ids);
+      if (!contaFinanceiraId) {
+        const nomeConta =
+          acao.dados?.contaFinanceiraNome || contaDependida(mensagem, acao)?.dados?.corpo?.nome;
+        showToast({
+          type: "warning",
+          title: acao.titulo,
+          message: nomeConta
+            ? `Confirme primeiro a conta financeira ${nomeConta}.`
+            : "Confirme primeiro a conta financeira.",
+        });
+        return false;
+      }
+      acaoFinal = {
+        ...acao,
+        dados: { ...acao.dados, corpo: { ...acao.dados.corpo, contaFinanceiraId } },
+      };
+    }
 
     const criado = await assistenteService.executarAcao(acaoFinal);
+    ids[acao.chave] = criado?.id;
     atualizarAcao(acao.chave, { situacao: "concluida", idCriado: criado?.id });
     showToast({
       type: "success",
       title: acao.titulo,
       message: "Registro salvo com sucesso.",
     });
-    return criado?.id;
+    return true;
   };
 
   const confirmarTodas = async (mensagem) => {
@@ -196,7 +244,7 @@ function AssistenteChat() {
     for (const acao of pendentes) {
       setAcaoEmExecucao(acao.chave);
       try {
-        ids[acao.chave] = await executar(acao, ids);
+        if (!(await executar(mensagem, acao, ids))) break;
       } catch (error) {
         showApiErrorToast(showToast, error, "Não foi possível concluir a ação.");
         break;
@@ -205,14 +253,14 @@ function AssistenteChat() {
     setAcaoEmExecucao(null);
   };
 
-  const confirmarAcao = async (acao) => {
+  const confirmarAcao = async (mensagem, acao) => {
     setAcaoEmExecucao(acao.chave);
     try {
       if (acao.tipo === "BAIXAR_RELATORIO") {
         await assistenteService.baixarRelatorio(acao.dados);
         return;
       }
-      await executar(acao, idsCriados());
+      await executar(mensagem, acao, idsCriados());
     } catch (error) {
       showApiErrorToast(
         showToast,
@@ -286,9 +334,8 @@ function AssistenteChat() {
                   <p className="assistente-chat__balao">{mensagem.texto}</p>
                 )}
                 {mensagem.acoes?.map((acao) => {
-                  const aguardandoConta = mensagem.acoes.some(
-                    (item) => item.chave === acao.chaveDependencia && item.situacao === "pendente",
-                  );
+                  const aguardandoConta =
+                    contaDependida(mensagem, acao)?.situacao === "pendente";
 
                   return (
                     <div className="assistente-chat__acao" key={acao.chave}>
@@ -308,7 +355,7 @@ function AssistenteChat() {
                           <button
                             type="button"
                             className="assistente-chat__botao assistente-chat__botao--primario"
-                            onClick={() => confirmarAcao(acao)}
+                            onClick={() => confirmarAcao(mensagem, acao)}
                             disabled={acaoEmExecucao === acao.chave}
                           >
                             <HugeiconsIcon icon={Download04Icon} size={16} />
@@ -334,7 +381,7 @@ function AssistenteChat() {
                             <button
                               type="button"
                               className="assistente-chat__botao assistente-chat__botao--primario"
-                              onClick={() => confirmarAcao(acao)}
+                              onClick={() => confirmarAcao(mensagem, acao)}
                               disabled={acaoEmExecucao === acao.chave || aguardandoConta}
                             >
                               {acaoEmExecucao === acao.chave ? "Salvando..." : "Confirmar"}
