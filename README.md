@@ -1,5 +1,8 @@
 <h1 align="center">
-  <img src="./financecontrol-front/src/assets/images/logo-finance-control.png" alt="FinanceControl MPT Logo" width="40" align="center" />
+  <img src="./financecontrol-front/src/assets/images/logo-finance-control.png"
+       alt="Finance Control MPT"
+       width="48"
+       align="absmiddle" />
   Finance Control MPT
 </h1>
 
