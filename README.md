@@ -28,7 +28,7 @@
 </p>
 
 <p align="center">
-  <img src="./financecontrol-front/src/assets/screenshots/dashboard.png" alt="Dashboard do FinanceControl MPT" width="85%" />
+  <img src="./financecontrol-front/src/assets/screenshots/dashboard.png" alt="Dashboard do FinanceControl MPT" width="75%" />
 </p>
 
 ---
