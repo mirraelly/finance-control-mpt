@@ -282,6 +282,12 @@
   font-size: var(--font-size-11);
 }
 
+.sidebar__footer > span > a:hover {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: var(--color-emerald-500);
+    outline: none;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: var(--sidebar-width);

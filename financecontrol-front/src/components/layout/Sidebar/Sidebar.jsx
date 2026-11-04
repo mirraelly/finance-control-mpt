@@ -324,7 +324,9 @@ function Sidebar({
           <span className="sidebar__version">v1.0.0</span>
 
           {!isCompact && (
-            <span className="sidebar__copyright">©2026 NossoGrupo</span>
+            <span className="sidebar__copyright">©2026 
+              <a href="https://github.com/mirraelly/finance-control-mpt" target="_blank">FinanceControl</a>
+            </span>
           )}
         </div>
       </div>
