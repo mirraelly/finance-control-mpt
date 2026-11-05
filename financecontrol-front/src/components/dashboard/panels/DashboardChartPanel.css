@@ -311,6 +311,15 @@
   container-type: inline-size;
 }
 
+.dashboard-category-panel--empty {
+  min-height: 220px;
+}
+
+.dashboard-panel:has(.select-field--open) {
+  z-index: 1;
+  overflow: visible;
+}
+
 .dashboard-category-donut {
   position: relative;
   min-width: 0;

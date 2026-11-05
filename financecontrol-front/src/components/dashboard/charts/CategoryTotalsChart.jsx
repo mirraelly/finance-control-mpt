@@ -172,6 +172,8 @@ function CategoryTotalsChart({
   );
   const customRangeError =
     period === "custom" ? getCustomPeriodError(startDate, endDate) : "";
+  const isEmpty =
+    !customRangeError && !loading && !error && categories.length === 0;
 
   useEffect(() => {
     if (!range) return undefined;
@@ -217,7 +219,7 @@ function CategoryTotalsChart({
   return (
     <DashboardChartPanel
       title={title}
-      className="dashboard-category-panel"
+      className={`dashboard-category-panel${isEmpty ? " dashboard-category-panel--empty" : ""}`}
       action={
         <Select
           id={`${id}-period`}
