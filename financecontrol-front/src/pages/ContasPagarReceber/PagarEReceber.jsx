@@ -15,6 +15,7 @@ import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 import Modal from "../../components/common/Modal/Modal";
+import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
 import useToast from "../../components/common/Toast/useToast";
 import contaFinanceiraService from "../../services/contaFinanceiraService";
@@ -31,6 +32,7 @@ import "../Cadastros/Cadastros.css";
 import "./PagarContas.css";
 
 const PAGE_SIZE = 100;
+const TABLE_PAGE_SIZE = 15;
 
 const CAMPOS_MOEDA = ["valor", "juros", "multa", "desconto"];
 
@@ -175,6 +177,8 @@ function PagarEReceber() {
   const [filtroStatus, setFiltroStatus] = useState("");
   const [vencimentoDe, setVencimentoDe] = useState("");
   const [vencimentoAte, setVencimentoAte] = useState("");
+  const [pagina, setPagina] = useState(0);
+  const [tamanhoPagina, setTamanhoPagina] = useState(TABLE_PAGE_SIZE);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [recarregar, setRecarregar] = useState(0);
@@ -340,6 +344,23 @@ function PagarEReceber() {
       );
     });
   }, [busca, filtroPessoa, filtroTipo, registros, vencimentoAte, vencimentoDe]);
+
+  const totalRegistros = registrosFiltrados.length;
+  const totalPaginas = Math.ceil(totalRegistros / tamanhoPagina);
+  const registrosDaPagina = registrosFiltrados.slice(
+    pagina * tamanhoPagina,
+    (pagina + 1) * tamanhoPagina,
+  );
+
+  useEffect(() => {
+    setPagina(0);
+  }, [busca, filtroPessoa, filtroTipo, filtroStatus, vencimentoDe, vencimentoAte]);
+
+  useEffect(() => {
+    if (pagina >= totalPaginas && pagina > 0) {
+      setPagina(Math.max(totalPaginas - 1, 0));
+    }
+  }, [pagina, totalPaginas]);
 
   const ehPagar = registroSelecionado?.tipo === "pagar";
 
@@ -528,7 +549,18 @@ function PagarEReceber() {
   };
 
   if (carregando && registros.length === 0 && !registroSelecionado) {
-    return <Loading message="Carregando contas..." />;
+    return (
+      <div className="cadastros-page pagar-contas-page pagar-contas-page--loading">
+        <Card
+          className="cadastros-list-card"
+          padding="none"
+          radius="lg"
+          shadow={false}
+        >
+          <Loading message="Carregando contas..." />
+        </Card>
+      </div>
+    );
   }
 
   if (erro) {
@@ -912,10 +944,11 @@ function PagarEReceber() {
                 fullWidth
               />
             ) : (
-              <div
-                className={`cadastros-table-wrapper${carregando ? " cadastros-table-wrapper--loading" : ""}`}
-                aria-busy={carregando}
-              >
+              <>
+                <div
+                  className={`cadastros-table-wrapper${carregando ? " cadastros-table-wrapper--loading" : ""}`}
+                  aria-busy={carregando}
+                >
                 <table className="cadastros-table">
                   <thead>
                     <tr>
@@ -933,7 +966,7 @@ function PagarEReceber() {
                     </tr>
                   </thead>
                   <tbody>
-                    {registrosFiltrados.map((registro) => {
+                    {registrosDaPagina.map((registro) => {
                       const nomeAcao =
                         registro.tipo === "pagar" ? "pagamento" : "recebimento";
                       const titulo =
@@ -992,7 +1025,19 @@ function PagarEReceber() {
                     })}
                   </tbody>
                 </table>
-              </div>
+                </div>
+                <Pagination
+                  page={pagina}
+                  pageSize={tamanhoPagina}
+                  totalElements={totalRegistros}
+                  totalPages={totalPaginas}
+                  onChange={setPagina}
+                  onPageSizeChange={(tamanho) => {
+                    setTamanhoPagina(tamanho);
+                    setPagina(0);
+                  }}
+                />
+              </>
             )}
           </Card>
         </>
