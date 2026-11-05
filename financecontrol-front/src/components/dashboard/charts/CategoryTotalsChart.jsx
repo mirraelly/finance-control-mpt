@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
 import { useNavigate } from "react-router-dom";
+import { ChartRingIcon } from "../../../assets/icons";
 import Select from "../../common/Select";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
+import DashboardChartEmptyState from "../panels/DashboardChartEmptyState";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
@@ -264,9 +266,7 @@ function CategoryTotalsChart({
           Não foi possível carregar {chartLabel.toLowerCase()}.
         </p>
       ) : categories.length === 0 ? (
-        <p className="dashboard-category-status">
-          Nenhum resultado encontrado no período.
-        </p>
+        <DashboardChartEmptyState icon={ChartRingIcon} />
       ) : (
         <div className="dashboard-category-layout">
           <div className="dashboard-category-donut">

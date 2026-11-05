@@ -24,10 +24,13 @@ const dashboardService = {
     return response.data;
   },
 
-  buscarSaldoAtualPorConta: async () => {
+  buscarSaldosPorConta: async ({ dataInicio, dataFim }) => {
     const response = await axios.get(
-      `${API_URL}/dashboard/saldo-atual-por-conta`,
-      getAuthConfig(),
+      `${API_URL}/dashboard/saldos-por-conta`,
+      {
+        ...getAuthConfig(),
+        params: { dataInicio, dataFim },
+      },
     );
     return response.data;
   },

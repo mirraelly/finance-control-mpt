@@ -1,5 +1,8 @@
 <h1 align="center">
-  <img src="./financecontrol-front/src/assets/images/logo-finance-control.png" alt="FinanceControl MPT Logo" width="40" align="center" />
+  <img src="./financecontrol-front/src/assets/images/logo-finance-control.png"
+       alt="Finance Control MPT"
+       width="48"
+       align="absmiddle" />
   Finance Control MPT
 </h1>
 
@@ -25,7 +28,7 @@
 </p>
 
 <p align="center">
-  <img src="../finance-control-mpt//financecontrol-front/src/assets/screenshots/dashboard.png" alt="Dashboard do FinanceControl MPT" width="85%" />
+  <img src="./financecontrol-front/src/assets/screenshots/dashboard.png" alt="Dashboard do FinanceControl MPT" width="85%" />
 </p>
 
 ---
@@ -320,8 +323,8 @@ Desenvolvido por uma equipe de 10 estudantes do programa **+praTI**, unindo conh
         </a>
       </td>
       <td align="center">
-        <a href="https://github.com/DiogoFlrs">
-          <img src="https://avatars.githubusercontent.com/u/178122349?&v=4"
+        <a href="https://github.com/DiogoFlores51">
+          <img src="https://avatars.githubusercontent.com/u/301478151?v=4"
                width="80" alt="Diogo" style="border-radius: 50%;" />
           <br />
           <strong>@DiogoFlrs</strong>
@@ -336,19 +339,19 @@ Desenvolvido por uma equipe de 10 estudantes do programa **+praTI**, unindo conh
         </a>
       </td>
       <td align="center">
-        <a href="https://github.com/DiogoFlores51">
-          <img src="https://avatars.githubusercontent.com/u/301478151?v=4"
-               width="80" alt="Diogo Flores" style="border-radius: 50%;" />
+        <a href="https://github.com/anabeatriznmatos">
+          <img src="https://avatars.githubusercontent.com/u/85688292?v=4"
+               width="80" alt="Ana Beatriz" style="border-radius: 50%;" />
           <br />
-          <strong>@DiogoFlores51</strong>
+          <strong>@Anabeatriznmatos </strong>
         </a>
       </td>
       <td align="center">
-        <a href="https://github.com/DiogoFlrsss">
-          <img src="https://avatars.githubusercontent.com/u/326027769?v=4"
-               width="80" alt="Diogo" style="border-radius: 50%;" />
+        <a href="https://github.com/elisvaldobraga23">
+          <img src="https://avatars.githubusercontent.com/u/177477750?v=4"
+               width="80" alt="Elisvaldo" style="border-radius: 50%;" />
           <br />
-          <strong>@DiogoFlrsss</strong>
+          <strong>@Elisvaldobraga23</strong>
         </a>
       </td>
     </tr>
