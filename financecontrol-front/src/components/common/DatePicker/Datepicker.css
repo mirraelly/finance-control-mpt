@@ -125,9 +125,13 @@
   overflow: hidden;
 }
 
-.date-picker--dropdown-top .date-picker__dropdown {
-  right: 0;
-  bottom: 46;
+.date-picker__dropdown--portal {
+  position: fixed;
+  z-index: 1100;
+  display: block;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .date-picker__header {
