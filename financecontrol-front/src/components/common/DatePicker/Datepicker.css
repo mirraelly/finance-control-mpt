@@ -8,6 +8,7 @@
   grid-template-columns: 1fr;
   width: 100%;
   min-width: 0;
+  gap: 7px;
 }
 
 .date-picker--dark {
