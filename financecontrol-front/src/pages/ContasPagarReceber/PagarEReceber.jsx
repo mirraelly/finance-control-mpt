@@ -347,6 +347,7 @@ function PagarEReceber() {
 
   const totalRegistros = registrosFiltrados.length;
   const totalPaginas = Math.ceil(totalRegistros / tamanhoPagina);
+  const registroSelecionadoId = registroSelecionado?.id;
   const registrosDaPagina = registrosFiltrados.slice(
     pagina * tamanhoPagina,
     (pagina + 1) * tamanhoPagina,
@@ -361,6 +362,12 @@ function PagarEReceber() {
       setPagina(Math.max(totalPaginas - 1, 0));
     }
   }, [pagina, totalPaginas]);
+
+  useEffect(() => {
+    if (registroSelecionadoId) {
+      window.scrollTo(0, 0);
+    }
+  }, [registroSelecionadoId]);
 
   const ehPagar = registroSelecionado?.tipo === "pagar";
 
