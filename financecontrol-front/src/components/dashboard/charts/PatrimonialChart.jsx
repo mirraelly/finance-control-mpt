@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
 import { useNavigate } from "react-router-dom";
+import { Chart03Icon } from "../../../assets/icons";
 import Select from "../../common/Select";
 import dashboardService from "../../../services/dashboardService";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
+import DashboardChartEmptyState from "../panels/DashboardChartEmptyState";
 import { dashboardChartBaseOptions, formatDashboardCurrency } from "../utils/dashboardChartOptions";
 import { dashboardMonthLabels } from "../utils/dashboardPeriods";
 
@@ -146,6 +148,7 @@ function PatrimonialChart() {
     (total, item) => total + item.monthlyValue,
     0,
   );
+  const hasMovements = data.some((item) => item.monthlyValue !== 0);
   const previousMonthValue = data.at(-2)?.value;
   const monthlyVariationPercentage = previousMonthValue
     ? ((finalValue - previousMonthValue) / Math.abs(previousMonthValue)) * 100
@@ -176,7 +179,7 @@ function PatrimonialChart() {
     <DashboardChartPanel
       title="Crescimento patrimonial"
       description={
-        data.length ? (
+        hasMovements ? (
           <>
             Acumulado no ano: <strong>{formatSignedCurrency(annualAccumulated)}</strong>
           </>
@@ -202,7 +205,7 @@ function PatrimonialChart() {
         <div className="dashboard-patrimonial__chart" aria-busy={loading}>
           {loading ? <p className="dashboard-category-status">Carregando dados...</p>
             : error ? <p className="dashboard-category-status" role="alert">Não foi possível carregar o crescimento patrimonial.</p>
-              : data.length === 0 ? <p className="dashboard-category-status">Nenhuma transação encontrada para este ano.</p>
+              : !hasMovements ? <DashboardChartEmptyState icon={Chart03Icon} />
                 : <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
         </div>
         <dl className="dashboard-patrimonial__details">

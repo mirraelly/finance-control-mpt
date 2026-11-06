@@ -1,4 +1,12 @@
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import {
   HugeiconsIcon,
   Calendar03Icon,
@@ -47,6 +55,8 @@ const DatePicker = forwardRef(function DatePicker(
   ref,
 ) {
   const wrapperRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [dropdownStyle, setDropdownStyle] = useState(null);
 
   const today = useMemo(() => new Date(), []);
 
@@ -80,7 +90,11 @@ const DatePicker = forwardRef(function DatePicker(
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target) &&
+        !dropdownRef.current?.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -99,6 +113,51 @@ const DatePicker = forwardRef(function DatePicker(
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setDropdownStyle(null);
+      return undefined;
+    }
+
+    const positionDropdown = () => {
+      const trigger = wrapperRef.current?.querySelector(".date-picker__trigger");
+      if (!trigger) return;
+
+      const bounds = trigger.getBoundingClientRect();
+      const margin = 8;
+      const width = Math.min(224, window.innerWidth - margin * 2);
+      const height = Math.min(280, window.innerHeight - margin * 2);
+      const spaceAbove = bounds.top - margin;
+      const spaceBelow = window.innerHeight - bounds.bottom - margin;
+      const preferTop = dropdownPosition === "top";
+      const placeAbove = preferTop
+        ? spaceAbove >= height || spaceAbove >= spaceBelow
+        : spaceBelow < height && spaceAbove > spaceBelow;
+      const top = placeAbove
+        ? Math.max(margin, bounds.top - height)
+        : Math.min(bounds.bottom, window.innerHeight - height - margin);
+
+      let left = bounds.left;
+      if (dropdownPosition === "left") {
+        left = bounds.right - width;
+      } else if (dropdownPosition === "right") {
+        left = bounds.left;
+      }
+
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      setDropdownStyle({ left, top, width, maxHeight: height });
+    };
+
+    positionDropdown();
+    window.addEventListener("resize", positionDropdown);
+    document.addEventListener("scroll", positionDropdown, true);
+
+    return () => {
+      window.removeEventListener("resize", positionDropdown);
+      document.removeEventListener("scroll", positionDropdown, true);
+    };
+  }, [dropdownPosition, isOpen]);
 
   const classNames = [
     "date-picker",
@@ -287,105 +346,115 @@ const DatePicker = forwardRef(function DatePicker(
         />
       </button>
 
-      {isOpen && (
-        <div
-          className="date-picker__dropdown"
-          role="dialog"
-          aria-label="Selecionar data"
-        >
-          <div className="date-picker__header">
-            <span className="date-picker__month">
-              {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </span>
+      {isOpen &&
+        dropdownStyle &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className={[
+              "date-picker",
+              "date-picker__dropdown",
+              "date-picker__dropdown--portal",
+              `date-picker--${theme}`,
+            ].join(" ")}
+            style={dropdownStyle}
+            role="dialog"
+            aria-label="Selecionar data"
+          >
+            <div className="date-picker__header">
+              <span className="date-picker__month">
+                {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </span>
 
-            <div className="date-picker__navigation">
+              <div className="date-picker__navigation">
+                <button
+                  type="button"
+                  className="date-picker__navigation-button date-picker__navigation-button--previous"
+                  onClick={handlePreviousMonth}
+                  aria-label="Mês anterior"
+                >
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    size={16}
+                    stroke="2"
+                    aria-hidden="true"
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  className="date-picker__navigation-button date-picker__navigation-button--next"
+                  onClick={handleNextMonth}
+                  aria-label="Próximo mês"
+                >
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    size={16}
+                    stroke="2"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="date-picker__weekdays">
+              {WEEK_DAYS.map((day) => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+
+            <div className="date-picker__calendar">
+              {calendarDays.map(({ date, isCurrentMonth }, index) => {
+                const selected = isSameDate(date, selectedDate);
+
+                const todayDate = isSameDate(date, today);
+
+                const disabledDate = isDisabledDate(date);
+
+                return (
+                  <button
+                    key={`${date.getTime()}-${index}`}
+                    type="button"
+                    className={[
+                      "date-picker__day",
+                      !isCurrentMonth && "date-picker__day--outside",
+                      selected && "is-selected",
+                      todayDate && "is-today",
+                      disabledDate && "is-disabled",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => handleSelectDate(date)}
+                    disabled={disabledDate}
+                  >
+                    {date.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="date-picker__footer">
               <button
                 type="button"
-                className="date-picker__navigation-button date-picker__navigation-button--previous"
-                onClick={handlePreviousMonth}
-                aria-label="Mês anterior"
+                className="date-picker__footer-button"
+                onClick={handleClear}
+                disabled={!selectedDate}
               >
-                <HugeiconsIcon
-                  icon={ArrowDown01Icon}
-                  size={16}
-                  stroke="2"
-                  aria-hidden="true"
-                />
+                Limpar
               </button>
 
               <button
                 type="button"
-                className="date-picker__navigation-button date-picker__navigation-button--next"
-                onClick={handleNextMonth}
-                aria-label="Próximo mês"
+                className="date-picker__footer-button"
+                onClick={handleToday}
+                disabled={isDisabledDate(today)}
               >
-                <HugeiconsIcon
-                  icon={ArrowDown01Icon}
-                  size={16}
-                  stroke="2"
-                  aria-hidden="true"
-                />
+                Hoje
               </button>
             </div>
-          </div>
-
-          <div className="date-picker__weekdays">
-            {WEEK_DAYS.map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
-
-          <div className="date-picker__calendar">
-            {calendarDays.map(({ date, isCurrentMonth }, index) => {
-              const selected = isSameDate(date, selectedDate);
-
-              const todayDate = isSameDate(date, today);
-
-              const disabledDate = isDisabledDate(date);
-
-              return (
-                <button
-                  key={`${date.getTime()}-${index}`}
-                  type="button"
-                  className={[
-                    "date-picker__day",
-                    !isCurrentMonth && "date-picker__day--outside",
-                    selected && "is-selected",
-                    todayDate && "is-today",
-                    disabledDate && "is-disabled",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => handleSelectDate(date)}
-                  disabled={disabledDate}
-                >
-                  {date.getDate()}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="date-picker__footer">
-            <button
-              type="button"
-              className="date-picker__footer-button"
-              onClick={handleClear}
-              disabled={!selectedDate}
-            >
-              Limpar
-            </button>
-
-            <button
-              type="button"
-              className="date-picker__footer-button"
-              onClick={handleToday}
-              disabled={isDisabledDate(today)}
-            >
-              Hoje
-            </button>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
 
       <input
         type="hidden"

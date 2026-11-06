@@ -2,6 +2,12 @@
   gap: var(--space-4);
 }
 
+.pagar-contas-page--loading .loading-container {
+  display: grid;
+  width: 100%;
+  min-height: 200px;
+}
+
 .pagar-contas-form-card {
   padding: var(--space-5);
 }

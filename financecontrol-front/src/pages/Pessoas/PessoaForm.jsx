@@ -4,7 +4,6 @@ import {
   HugeiconsIcon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
-  Calendar03Icon,
   Call02Icon,
   ContactBookIcon,
   Delete02Icon,
@@ -25,6 +24,7 @@ import {
 } from "../../utils/formatters";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import DatePicker from "../../components/common/DatePicker/Datepicker";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import ToggleSwitch from "../../components/common/ToggleSwitch";
@@ -554,14 +554,12 @@ function PessoaForm() {
                 maxLength={20}
                 fullWidth
               />
-              <Input
+              <DatePicker
                 id="pessoa-data-nascimento"
+                name="dataNascimento"
                 label="DATA DE NASCIMENTO"
-                type="date"
                 value={dataNascimento}
                 onChange={(event) => setDataNascimento(event.target.value)}
-                icon={<HugeiconsIcon icon={Calendar03Icon} size={18} />}
-                iconPosition="right"
                 fullWidth
               />
               <Input
@@ -582,14 +580,12 @@ function PessoaForm() {
                 onChange={(event) => setCnhCategoria(event.target.value)}
                 fullWidth
               />
-              <Input
+              <DatePicker
                 id="pessoa-cnh-validade"
+                name="cnhValidade"
                 label="VALIDADE DA CNH"
-                type="date"
                 value={cnhValidade}
                 onChange={(event) => setCnhValidade(event.target.value)}
-                icon={<HugeiconsIcon icon={Calendar03Icon} size={18} />}
-                iconPosition="right"
                 fullWidth
               />
             </div>
