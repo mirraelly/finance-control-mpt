@@ -16,5 +16,9 @@ public record AssistentePerguntaDto(
 
         @Schema(description = "Mensagens anteriores da conversa")
         @Size(max = 20, message = "Histórico deve ter no máximo 20 mensagens")
-        List<@Valid AssistenteMensagemDto> historico
+        List<@Valid AssistenteMensagemDto> historico,
+
+        @Schema(description = "Comprovante anexado à mensagem")
+        @Valid
+        AssistenteAnexoDto anexo
 ) {}

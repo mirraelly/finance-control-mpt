@@ -15,6 +15,7 @@ import {
   Moon02Icon,
   Search01Icon,
   Notification01Icon,
+  AiChat02Icon,
   Chart01Icon,
   ChartAnalysisIcon,
   Chart03Icon,
@@ -74,6 +75,7 @@ import {
   UserAccountIcon,
   SentIcon,
   Download04Icon,
+  Attachment01Icon,
 } from "@hugeicons/core-free-icons";
 
 function HugeiconsIcon({ className = "", ...props }) {
@@ -96,6 +98,7 @@ export {
   Moon02Icon,
   Search01Icon,
   Notification01Icon,
+  AiChat02Icon,
   Chart01Icon,
   ChartAnalysisIcon,
   Chart03Icon,
@@ -154,5 +157,6 @@ export {
   UserAccountIcon,
   CreditCardPosIcon,
   SentIcon,
-  Download04Icon
+  Download04Icon,
+  Attachment01Icon
 };

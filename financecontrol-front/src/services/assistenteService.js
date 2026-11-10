@@ -14,10 +14,10 @@ const relatorios = {
 };
 
 const assistenteService = {
-    perguntar: async (mensagem, historico) => {
+    perguntar: async (mensagem, historico, anexo) => {
         const response = await axios.post(
             `${API_URL}/assistente/perguntar`,
-            { mensagem, historico },
+            { mensagem, historico, anexo },
             getAuthConfig(),
         );
         return response.data;

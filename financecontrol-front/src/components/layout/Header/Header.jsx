@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  AiChat02Icon,
   HugeiconsIcon,
   PlusIcon,
   Search01Icon,
@@ -22,7 +23,13 @@ import globalSearchService from "../../../services/globalSearchService";
 import useToast from "../../common/Toast/useToast";
 import { showApiErrorToast } from "../../../utils/toastErrors";
 
-function Header({ title = "Início", onOpenMobileMenu }) {
+function Header({
+  title = "Início",
+  onOpenMobileMenu,
+  assistenteOculto = false,
+  assistenteAberto = false,
+  onAlternarAssistente,
+}) {
   const currentDate = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "numeric",
@@ -232,6 +239,18 @@ function Header({ title = "Início", onOpenMobileMenu }) {
       </div>
 
       <div className="header-right-group">
+        {assistenteOculto && (
+          <Button
+            className="header-icon-button header-assistente-toggle"
+            variant="outline"
+            size="md"
+            onClick={onAlternarAssistente}
+            aria-label={assistenteAberto ? "Fechar assistente" : "Abrir assistente"}
+            aria-pressed={assistenteAberto}
+            title="Assistente Finance Control"
+            icon={<HugeiconsIcon icon={AiChat02Icon} size={18} stroke="2" />}
+          />
+        )}
         <div className="controls-box">
           <Button
             className="header-icon-button header-search-toggle"

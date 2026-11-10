@@ -216,6 +216,25 @@
   --button-border: var(--primary);
 }
 
+.header-assistente-toggle.button {
+  order: -1;
+  flex-shrink: 0;
+  width: var(--space-8);
+  height: var(--space-8);
+  min-height: var(--space-8);
+  padding: 0;
+  border-radius: 50%;
+  --button-background: var(--bg-secondary);
+  --button-color: var(--text-secondary);
+  --button-border: var(--header-border);
+}
+
+.header-assistente-toggle.button:hover,
+.header-assistente-toggle.button[aria-pressed="true"] {
+  --button-color: var(--primary);
+  --button-border: var(--primary);
+}
+
 .header-add-button.button {
   flex-shrink: 0;
 }
@@ -381,13 +400,15 @@
     --header-responsive-border: #e9edf0;
   }
 
-  [data-theme="light"] .header-search-toggle.button {
+  [data-theme="light"] .header-search-toggle.button,
+  [data-theme="light"] .header-assistente-toggle.button {
     --button-background: #f1f3f5;
     --button-border: #e5e7eb;
     --button-color: #3a3d44;
   }
 
-  [data-theme="light"] .header-search-toggle.button:hover {
+  [data-theme="light"] .header-search-toggle.button:hover,
+  [data-theme="light"] .header-assistente-toggle.button:hover {
     --button-background: #e9edf0;
     --button-border: #d1d5db;
     --button-color: #3a3d44;
@@ -398,13 +419,15 @@
     --header-responsive-border: #26354b;
   }
 
-  [data-theme="dark"] .header-search-toggle.button {
+  [data-theme="dark"] .header-search-toggle.button,
+  [data-theme="dark"] .header-assistente-toggle.button {
     --button-background: #1e293b;
     --button-border: #334155;
     --button-color: var(--text-primary);
   }
 
-  [data-theme="dark"] .header-search-toggle.button:hover {
+  [data-theme="dark"] .header-search-toggle.button:hover,
+  [data-theme="dark"] .header-assistente-toggle.button:hover {
     --button-background: #263449;
     --button-border: #475569;
     --button-color: var(--text-primary);
@@ -449,6 +472,18 @@
   .controls-box {
     margin-left: auto;
     gap: var(--space-2);
+  }
+
+  .header-assistente-toggle.button {
+    order: 0;
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .header-assistente-toggle.button + .controls-box {
+    margin-left: 0;
   }
 
   .header-desktop-control {

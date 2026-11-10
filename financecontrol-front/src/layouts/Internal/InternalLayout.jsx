@@ -11,9 +11,23 @@ import AssistenteChat from "../../components/assistente/AssistenteChat/Assistent
 import "./InternalLayout.css";
 import Header from "../../components/layout/Header/Header";
 
+const ASSISTENTE_OCULTO_KEY = "financecontrol_assistente_oculto";
+
+function carregarAssistenteOculto() {
+  try {
+    return localStorage.getItem(ASSISTENTE_OCULTO_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 function InternalLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [assistenteAberto, setAssistenteAberto] = useState(false);
+  const [assistenteOculto, setAssistenteOculto] = useState(
+    carregarAssistenteOculto,
+  );
   const location = useLocation();
   const pageTitles = {
     "/dashboard": "Dashboard",
@@ -57,6 +71,19 @@ function InternalLayout() {
     setMobileMenuOpen(false);
   };
 
+  const handleAlterarAssistenteOculto = (oculto) => {
+    setAssistenteOculto(oculto);
+    try {
+      localStorage.setItem(ASSISTENTE_OCULTO_KEY, String(oculto));
+    } catch {
+      return;
+    }
+  };
+
+  const handleAlternarAssistente = () => {
+    setAssistenteAberto((atual) => !atual);
+  };
+
   return (
     <div
       className={`app-layout ${
@@ -91,7 +118,13 @@ function InternalLayout() {
       )}
 
       <div className="app-layout__content">
-        <Header title={title} onOpenMobileMenu={handleOpenMobileMenu} />
+        <Header
+          title={title}
+          onOpenMobileMenu={handleOpenMobileMenu}
+          assistenteOculto={assistenteOculto}
+          assistenteAberto={assistenteAberto}
+          onAlternarAssistente={handleAlternarAssistente}
+        />
 
         <div className="app-layout__mobile-page-heading">
           <h1>{title}</h1>
@@ -103,7 +136,12 @@ function InternalLayout() {
         </main>
       </div>
 
-      <AssistenteChat />
+      <AssistenteChat
+        aberto={assistenteAberto}
+        oculto={assistenteOculto}
+        onAbertoChange={setAssistenteAberto}
+        onOcultoChange={handleAlterarAssistenteOculto}
+      />
     </div>
   );
 }
