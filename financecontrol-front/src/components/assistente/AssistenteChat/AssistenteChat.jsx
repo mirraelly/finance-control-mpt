@@ -5,6 +5,7 @@ import {
   HugeiconsIcon,
   MultiplicationSignIcon,
   SentIcon,
+  ViewIcon,
 } from "../../../assets/icons";
 import assistenteService from "../../../services/assistenteService";
 import contaFinanceiraService from "../../../services/contaFinanceiraService";
@@ -62,9 +63,8 @@ function contaDependida(mensagem, acao) {
   );
 }
 
-function AssistenteChat() {
+function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
   const showToast = useToast();
-  const [aberto, setAberto] = useState(false);
   const [mensagens, setMensagens] = useState(carregarConversa);
   const [texto, setTexto] = useState("");
   const [aguardando, setAguardando] = useState(false);
@@ -93,11 +93,11 @@ function AssistenteChat() {
     campoRef.current?.focus();
 
     const fecharComEsc = (event) => {
-      if (event.key === "Escape") setAberto(false);
+      if (event.key === "Escape") onAbertoChange(false);
     };
     document.addEventListener("keydown", fecharComEsc);
     return () => document.removeEventListener("keydown", fecharComEsc);
-  }, [aberto]);
+  }, [aberto, onAbertoChange]);
 
   const enviar = async (mensagemInformada) => {
     const mensagem = (mensagemInformada ?? texto).trim();
@@ -286,11 +286,16 @@ function AssistenteChat() {
     }
   };
 
+  const ocultarBotao = () => {
+    onAbertoChange(false);
+    onOcultoChange(true);
+  };
+
   return (
     <>
       {aberto && (
         <section
-          className="assistente-chat"
+          className={`assistente-chat ${oculto ? "assistente-chat--sem-botao" : ""}`}
           role="dialog"
           aria-label="Assistente Finance Control"
         >
@@ -302,6 +307,17 @@ function AssistenteChat() {
               <strong>Assistente Finance Control</strong>
               <span>Consultas e ações do sistema</span>
             </div>
+            {oculto && (
+              <button
+                type="button"
+                className="assistente-chat__icone"
+                onClick={() => onOcultoChange(false)}
+                title="Mostrar botão flutuante"
+                aria-label="Mostrar botão flutuante"
+              >
+                <HugeiconsIcon icon={ViewIcon} size={18} />
+              </button>
+            )}
             <button
               type="button"
               className="assistente-chat__icone"
@@ -314,7 +330,7 @@ function AssistenteChat() {
             <button
               type="button"
               className="assistente-chat__icone"
-              onClick={() => setAberto(false)}
+              onClick={() => onAbertoChange(false)}
               title="Fechar assistente"
               aria-label="Fechar assistente"
             >
@@ -469,17 +485,34 @@ function AssistenteChat() {
         </section>
       )}
 
-      <button
-        type="button"
-        className={`assistente-chat__flutuante ${
-          aberto ? "assistente-chat__flutuante--aberto" : ""
-        }`}
-        onClick={() => setAberto((atual) => !atual)}
-        aria-label={aberto ? "Fechar assistente" : "Abrir assistente"}
-        title="Assistente Finance Control"
-      >
-        FC
-      </button>
+      {!oculto && (
+        <div
+          className={`assistente-chat__botao-area ${
+            aberto ? "assistente-chat__botao-area--aberto" : ""
+          }`}
+        >
+          <button
+            type="button"
+            className={`assistente-chat__flutuante ${
+              aberto ? "assistente-chat__flutuante--aberto" : ""
+            }`}
+            onClick={() => onAbertoChange(!aberto)}
+            aria-label={aberto ? "Fechar assistente" : "Abrir assistente"}
+            title="Assistente Finance Control"
+          >
+            FC
+          </button>
+          <button
+            type="button"
+            className="assistente-chat__ocultar"
+            onClick={ocultarBotao}
+            title="Ocultar botão do assistente"
+            aria-label="Ocultar botão do assistente"
+          >
+            <HugeiconsIcon icon={MultiplicationSignIcon} size={12} stroke="2.5" />
+          </button>
+        </div>
+      )}
     </>
   );
 }
