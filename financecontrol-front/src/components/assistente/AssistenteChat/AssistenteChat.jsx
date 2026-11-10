@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  Attachment01Icon,
   Delete02Icon,
   Download04Icon,
   HugeiconsIcon,
@@ -15,6 +16,10 @@ import "./AssistenteChat.css";
 
 const LIMITE_HISTORICO = 20;
 const LIMITE_MENSAGENS_SALVAS = 40;
+const LIMITE_TEXTO_HISTORICO = 4000;
+const TIPOS_ANEXO = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+const TAMANHO_MAXIMO_ANEXO = 5 * 1024 * 1024;
+const MENSAGEM_ANEXO = "Leia o comprovante anexado e prepare o registro.";
 
 const sugestoes = [
   "Quais contas vencem hoje?",
@@ -26,8 +31,29 @@ const sugestoes = [
 const mensagemInicial = {
   papel: "assistente",
   texto:
-    "Olá! Sou o assistente do Finance Control. Posso consultar vencimentos, lançamentos e saldos, gerar relatórios em PDF e preparar lançamentos, baixas, contas e transferências para você confirmar.",
+    "Olá! Sou o assistente do Finance Control. Posso consultar vencimentos, lançamentos e saldos, gerar relatórios em PDF, ler comprovantes anexados e preparar lançamentos, baixas, contas e transferências para você confirmar.",
 };
+
+const situacoesAcao = {
+  pendente: "aguardando confirmação",
+  concluida: "confirmado",
+  cancelada: "cancelado",
+};
+
+function textoHistorico({ texto, anexoNome, acoes }) {
+  if (anexoNome) return `${texto} (comprovante anexado: ${anexoNome})`;
+
+  const registros = (acoes || [])
+    .filter((acao) => acao.tipo !== "BAIXAR_RELATORIO")
+    .map(
+      (acao) =>
+        `${acao.titulo} (${situacoesAcao[acao.situacao]}): ${(acao.resumo || [])
+          .map((item) => `${item.rotulo}: ${item.valor}`)
+          .join("; ")}`,
+    );
+
+  return [texto, ...registros].join("\n").slice(0, LIMITE_TEXTO_HISTORICO);
+}
 
 function chaveConversa() {
   return `financecontrol_assistente_${localStorage.getItem("userId") || "usuario"}`;
@@ -69,8 +95,11 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
   const [texto, setTexto] = useState("");
   const [aguardando, setAguardando] = useState(false);
   const [acaoEmExecucao, setAcaoEmExecucao] = useState(null);
+  const [anexo, setAnexo] = useState(null);
   const listaRef = useRef(null);
   const campoRef = useRef(null);
+  const anexoRef = useRef(null);
+  const anexoPedidoRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -99,23 +128,69 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
     return () => document.removeEventListener("keydown", fecharComEsc);
   }, [aberto, onAbertoChange]);
 
+  const selecionarAnexo = (event) => {
+    const arquivo = event.target.files?.[0];
+    event.target.value = "";
+    if (!arquivo) return;
+
+    if (!TIPOS_ANEXO.includes(arquivo.type) || arquivo.size > TAMANHO_MAXIMO_ANEXO) {
+      showToast({
+        type: "warning",
+        title: "Anexar comprovante",
+        message: "Anexe uma imagem JPG, PNG, WEBP ou um PDF de até 5 MB.",
+      });
+      return;
+    }
+
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      setAnexo({
+        nome: arquivo.name,
+        tipo: arquivo.type,
+        conteudo: String(leitor.result).split(",")[1],
+      });
+      campoRef.current?.focus();
+    };
+    leitor.onerror = () =>
+      showToast({
+        type: "error",
+        title: "Anexar comprovante",
+        message: "Não foi possível ler o arquivo.",
+      });
+    leitor.readAsDataURL(arquivo);
+  };
+
   const enviar = async (mensagemInformada) => {
-    const mensagem = (mensagemInformada ?? texto).trim();
+    const anexoNovo = mensagemInformada === undefined ? anexo : null;
+    const mensagem =
+      (mensagemInformada ?? texto).trim() || (anexoNovo ? MENSAGEM_ANEXO : "");
     if (!mensagem || aguardando) return;
 
+    if (anexoNovo) anexoPedidoRef.current = anexoNovo;
+    const anexoEnviado = anexoPedidoRef.current;
+
     const ultimaAcao = mensagens.findLastIndex((item) => item.acoes?.length > 0);
+    const inicioHistorico =
+      ultimaAcao > 0 && mensagens[ultimaAcao - 1].papel === "usuario"
+        ? ultimaAcao - 1
+        : Math.max(ultimaAcao, 0);
     const historico = mensagens
-      .slice(ultimaAcao + 1)
+      .slice(inicioHistorico)
       .filter((item) => item.texto && item.texto !== mensagemInicial.texto)
       .slice(-LIMITE_HISTORICO)
-      .map(({ papel, texto: conteudo }) => ({ papel, texto: conteudo }));
+      .map((item) => ({ papel: item.papel, texto: textoHistorico(item) }));
 
     setTexto("");
-    setMensagens((atuais) => [...atuais, { papel: "usuario", texto: mensagem }]);
+    setAnexo(null);
+    setMensagens((atuais) => [
+      ...atuais,
+      { papel: "usuario", texto: mensagem, anexoNome: anexoNovo?.nome },
+    ]);
     setAguardando(true);
 
     try {
-      const resposta = await assistenteService.perguntar(mensagem, historico);
+      const resposta = await assistenteService.perguntar(mensagem, historico, anexoEnviado);
+      if (resposta.acoes?.length > 0) anexoPedidoRef.current = null;
       const prefixo = Date.now();
       setMensagens((atuais) => [
         ...atuais,
@@ -277,6 +352,8 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
   const limparConversa = () => {
     setMensagens([mensagemInicial]);
     setTexto("");
+    setAnexo(null);
+    anexoPedidoRef.current = null;
   };
 
   const aoPressionarTecla = (event) => {
@@ -347,7 +424,15 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
                 }`}
               >
                 {mensagem.texto && (
-                  <p className="assistente-chat__balao">{mensagem.texto}</p>
+                  <p className="assistente-chat__balao">
+                    {mensagem.anexoNome && (
+                      <span className="assistente-chat__balao-anexo">
+                        <HugeiconsIcon icon={Attachment01Icon} size={14} />
+                        {mensagem.anexoNome}
+                      </span>
+                    )}
+                    {mensagem.texto}
+                  </p>
                 )}
                 {mensagem.acoes?.map((acao) => {
                   const aguardandoConta =
@@ -454,6 +539,23 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
             )}
           </div>
 
+          {anexo && (
+            <div className="assistente-chat__anexo">
+              <HugeiconsIcon icon={Attachment01Icon} size={16} />
+              <span title={anexo.nome}>{anexo.nome}</span>
+              <button
+                type="button"
+                className="assistente-chat__anexo-remover"
+                onClick={() => setAnexo(null)}
+                disabled={aguardando}
+                title="Remover anexo"
+                aria-label="Remover anexo"
+              >
+                <HugeiconsIcon icon={MultiplicationSignIcon} size={14} />
+              </button>
+            </div>
+          )}
+
           <form
             className="assistente-chat__formulario"
             onSubmit={(event) => {
@@ -461,6 +563,23 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
               enviar();
             }}
           >
+            <input
+              ref={anexoRef}
+              type="file"
+              accept={TIPOS_ANEXO.join(",")}
+              onChange={selecionarAnexo}
+              hidden
+            />
+            <button
+              type="button"
+              className="assistente-chat__icone assistente-chat__anexar"
+              onClick={() => anexoRef.current?.click()}
+              disabled={aguardando}
+              title="Anexar comprovante"
+              aria-label="Anexar comprovante"
+            >
+              <HugeiconsIcon icon={Attachment01Icon} size={18} />
+            </button>
             <textarea
               ref={campoRef}
               value={texto}
@@ -475,7 +594,7 @@ function AssistenteChat({ aberto, oculto, onAbertoChange, onOcultoChange }) {
             <button
               type="submit"
               className="assistente-chat__enviar"
-              disabled={aguardando || !texto.trim()}
+              disabled={aguardando || (!texto.trim() && !anexo)}
               aria-label="Enviar mensagem"
               title="Enviar"
             >

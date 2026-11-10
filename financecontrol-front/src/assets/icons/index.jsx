@@ -72,6 +72,7 @@ import {
   UserAccountIcon,
   SentIcon,
   Download04Icon,
+  Attachment01Icon,
 } from "@hugeicons/core-free-icons";
 
 function HugeiconsIcon({ className = "", ...props }) {
@@ -150,5 +151,6 @@ export {
   UserAccountIcon,
   CreditCardPosIcon,
   SentIcon,
-  Download04Icon
+  Download04Icon,
+  Attachment01Icon
 };

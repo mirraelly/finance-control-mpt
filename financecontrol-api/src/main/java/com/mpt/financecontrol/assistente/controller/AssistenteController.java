@@ -26,7 +26,7 @@ public class AssistenteController {
         this.service = service;
     }
 
-    @Operation(summary = "Perguntar ao assistente", description = "Envia uma mensagem ao assistente e retorna a resposta com as ações sugeridas")
+    @Operation(summary = "Perguntar ao assistente", description = "Envia uma mensagem ao assistente, com um comprovante anexado opcional, e retorna a resposta com as ações sugeridas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resposta gerada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Mensagem inválida ou assistente indisponível")
