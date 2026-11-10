@@ -38,6 +38,8 @@
 }
 
 .cadastros-list-card .loading-container {
+  display: grid;
+  width: 100%;
   padding: var(--space-6);
 }
 

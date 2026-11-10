@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Select from "../../common/Select";
 import dashboardService from "../../../services/dashboardService";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
+import DashboardChartEmptyState from "../panels/DashboardChartEmptyState";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
@@ -229,6 +230,10 @@ function RevenueExpenseChart() {
           <p className="revenue-expense-chart__status" role="alert">
             Não foi possível carregar os dados do gráfico.
           </p>
+        ) : !data.some(
+            (item) => Number(item.receitas) !== 0 || Number(item.despesas) !== 0,
+          ) ? (
+          <DashboardChartEmptyState />
         ) : (
           <HighchartsReact
             highcharts={Highcharts}

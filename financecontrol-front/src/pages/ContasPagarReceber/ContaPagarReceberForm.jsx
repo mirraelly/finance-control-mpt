@@ -8,6 +8,7 @@ import {
 } from "../../assets/icons";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
+import DatePicker from "../../components/common/DatePicker/Datepicker";
 import EmptyState from "../../components/common/EmptyState";
 import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
@@ -725,11 +726,10 @@ function ContaPagarReceberForm({ tipo }) {
             onChange={atualizarCampo}
             maxLength={255}
           />
-          <Input
+          <DatePicker
             id={`${tipo}-data-emissao`}
             name="dataEmissao"
             label="DATA DE EMISSÃO"
-            type="date"
             value={formulario.dataEmissao}
             onChange={atualizarCampo}
             required
@@ -787,11 +787,10 @@ function ContaPagarReceberForm({ tipo }) {
                 !formulario.contaFinanceiraId
               }
             />
-            <Input
+            <DatePicker
               id={`${tipo}-data-primeiro-vencimento`}
               name="dataPrimeiroVencimento"
               label="VENCIMENTO DA PRIMEIRA PARCELA"
-              type="date"
               value={formulario.dataPrimeiroVencimento}
               onChange={atualizarCampo}
               disabled={parcelasSomenteLeitura}
@@ -861,10 +860,9 @@ function ContaPagarReceberForm({ tipo }) {
                     <span className="conta-parcelas__numero">
                       {index + 1}ª
                     </span>
-                    <Input
+                    <DatePicker
                       id={`${tipo}-parcela-vencimento-${parcela.chave}`}
                       name="dataVencimento"
-                      type="date"
                       className="conta-parcelas__vencimento"
                       aria-label={`Vencimento da parcela ${index + 1}`}
                       value={parcela.dataVencimento}

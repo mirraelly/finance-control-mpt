@@ -4,6 +4,7 @@ import { HighchartsReact } from "highcharts-react-official";
 import { useNavigate } from "react-router-dom";
 import dashboardService from "../../../services/dashboardService";
 import DashboardChartPanel from "../panels/DashboardChartPanel";
+import DashboardChartEmptyState from "../panels/DashboardChartEmptyState";
 import {
   dashboardChartBaseOptions,
   formatDashboardCurrency,
@@ -74,6 +75,7 @@ function createChartOptions(data, onAccountClick) {
         data: data.map((item) => ({
           y: Number(item.saldo),
           contaId: item.contaId,
+          color: Number(item.saldo) < 0 ? "#ef6670" : "#08a779",
           cursor: "pointer",
         })),
       },
@@ -108,7 +110,8 @@ function AccountBalancesChart() {
       try {
         setLoading(true);
         setError(false);
-        const resposta = await dashboardService.buscarSaldoAtualPorConta();
+        const resposta = await 
+        dashboardService.buscarSaldoAtualPorConta();
         if (ativo) setData(resposta);
       } catch (erro) {
         console.error("Erro ao carregar saldos por conta:", erro);
@@ -142,10 +145,8 @@ function AccountBalancesChart() {
           <p className="revenue-expense-chart__status" role="alert">
             Não foi possível carregar os saldos das contas.
           </p>
-        ) : data.length === 0 ? (
-          <p className="revenue-expense-chart__status">
-            Nenhuma conta financeira ativa encontrada.
-          </p>
+        ) : !data.some((item) => item.saldo !== 0) ? (
+          <DashboardChartEmptyState />
         ) : (
           <HighchartsReact highcharts={Highcharts} options={chartOptions} />
         )}

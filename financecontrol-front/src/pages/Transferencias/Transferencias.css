@@ -94,6 +94,12 @@
   overflow: hidden;
 }
 
+.transferencias-table-card .loading-container {
+  display: grid;
+  width: 100%;
+  padding: var(--space-6);
+}
+
 .transferencias-table__wrapper {
   width: 100%;
   overflow-x: auto;

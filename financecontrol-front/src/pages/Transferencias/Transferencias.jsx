@@ -8,6 +8,7 @@ import {
 } from "../../assets/icons";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
+import DatePicker from "../../components/common/DatePicker/Datepicker";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import EmptyState from "../../components/common/EmptyState";
@@ -181,12 +182,14 @@ function FormTransferencia({ accounts, onSubmit, onCancel }) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="data">
-            DATA <span>*</span>
-          </label>
-          <Input
+          <DatePicker
             id="data"
-            type="date"
+            name="data"
+            label={
+              <>
+                DATA <span>*</span>
+              </>
+            }
             value={formData.data}
             onChange={(e) => setFormData((prev) => ({ ...prev, data: e.target.value }))}
             required

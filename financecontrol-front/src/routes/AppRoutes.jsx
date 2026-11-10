@@ -1,5 +1,13 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useEffect, useRef } from "react";
+import axios from "axios";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import InternalLayout from "../layouts/Internal/InternalLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import Home from "../pages/Home/Home";
@@ -30,9 +38,48 @@ import Transferencias from "../pages/Transferencias/Transferencias";
 
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 
+const AUTH_STORAGE_KEYS = [
+  "token",
+  "financecontrol_token",
+  "authToken",
+  "access_token",
+  "userId",
+  "role",
+];
+
+function SessionExpirationRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isRedirecting = useRef(false);
+
+  useEffect(() => {
+    if (location.pathname === "/") isRedirecting.current = false;
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const interceptorId = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401 && !isRedirecting.current) {
+          isRedirecting.current = true;
+          AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+          navigate("/", { replace: true });
+        }
+
+        return Promise.reject(error);
+      },
+    );
+
+    return () => axios.interceptors.response.eject(interceptorId);
+  }, [navigate]);
+
+  return null;
+}
+
 function AppRoutes() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <SessionExpirationRedirect />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
