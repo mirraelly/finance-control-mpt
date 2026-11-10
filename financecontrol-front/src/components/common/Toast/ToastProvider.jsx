@@ -15,17 +15,34 @@ function ToastProvider({ children }) {
   const showToast = useCallback((options) => {
     const normalized =
       typeof options === "string" ? { message: options } : options;
+    const type = normalized.type || "info";
+    const title = normalized.title || "";
+    const message = normalized.message || "";
+    const position = normalized.position || "top-right";
     const id = ++nextToastId;
-    setToasts((current) => [
-      ...current,
-      {
-        id,
-        type: "info",
-        position: "top-right",
-        duration: 10000,
-        ...normalized,
-      },
-    ]);
+
+    setToasts((current) => {
+      const duplicate = current.find(
+        (toast) =>
+          toast.type === type &&
+          (toast.title || "") === title &&
+          (toast.message || "") === message &&
+          toast.position === position,
+      );
+
+      if (duplicate) return current;
+
+      return [
+        ...current,
+        {
+          id,
+          position,
+          duration: 10000,
+          ...normalized,
+          type,
+        },
+      ];
+    });
     return id;
   }, []);
 

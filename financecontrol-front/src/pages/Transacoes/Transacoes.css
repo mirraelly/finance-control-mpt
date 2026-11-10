@@ -97,6 +97,12 @@
   overflow: hidden;
 }
 
+.transacoes-table-card .loading-container {
+  display: grid;
+  width: 100%;
+  padding: var(--space-6);
+}
+
 .transacoes-table__wrapper {
   width: 100%;
   overflow-x: hidden;

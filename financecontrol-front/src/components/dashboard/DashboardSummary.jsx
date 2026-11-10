@@ -95,7 +95,7 @@ function DashboardSummary({ resumo, erro }) {
             <p className="dashboard-stat__amount">{item.amount}</p>
             {erro ? (
               <p className="dashboard-stat__comparison dashboard-stat__comparison--negative">
-                Nao foi possivel atualizar
+                Não foi possível atualizar.
               </p>
             ) : null}
           </div>

@@ -8,6 +8,7 @@
   grid-template-columns: 1fr;
   width: 100%;
   min-width: 0;
+  gap: 7px;
 }
 
 .date-picker--dark {
@@ -123,6 +124,10 @@
   background: var(--date-picker-background);
   box-shadow: var(--shadow-card-lg);
   overflow: hidden;
+}
+
+.date-picker__dropdown--portal {
+  position: fixed;
 }
 
 .date-picker--dropdown-top .date-picker__dropdown {
