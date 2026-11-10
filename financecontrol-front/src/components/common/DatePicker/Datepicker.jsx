@@ -51,6 +51,7 @@ const DatePicker = forwardRef(function DatePicker(
     required = false,
     disabled = false,
     className = "",
+    "aria-label": ariaLabel,
   },
   ref,
 ) {
@@ -325,6 +326,7 @@ const DatePicker = forwardRef(function DatePicker(
         style={height ? { minHeight: height, height } : undefined}
         onClick={() => !disabled && setIsOpen((open) => !open)}
         disabled={disabled}
+        aria-label={ariaLabel}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-required={required}

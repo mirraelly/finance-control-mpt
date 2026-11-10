@@ -348,20 +348,26 @@ function PagarEReceber() {
   const totalRegistros = registrosFiltrados.length;
   const totalPaginas = Math.ceil(totalRegistros / tamanhoPagina);
   const registroSelecionadoId = registroSelecionado?.id;
-  const registrosDaPagina = registrosFiltrados.slice(
-    pagina * tamanhoPagina,
-    (pagina + 1) * tamanhoPagina,
-  );
 
-  useEffect(() => {
+  const chaveFiltros = [
+    busca,
+    filtroPessoa,
+    filtroTipo,
+    filtroStatus,
+    vencimentoDe,
+    vencimentoAte,
+  ].join("|");
+  const [chaveFiltrosAnterior, setChaveFiltrosAnterior] = useState(chaveFiltros);
+  if (chaveFiltrosAnterior !== chaveFiltros) {
+    setChaveFiltrosAnterior(chaveFiltros);
     setPagina(0);
-  }, [busca, filtroPessoa, filtroTipo, filtroStatus, vencimentoDe, vencimentoAte]);
+  }
 
-  useEffect(() => {
-    if (pagina >= totalPaginas && pagina > 0) {
-      setPagina(Math.max(totalPaginas - 1, 0));
-    }
-  }, [pagina, totalPaginas]);
+  const paginaAtual = Math.min(pagina, Math.max(totalPaginas - 1, 0));
+  const registrosDaPagina = registrosFiltrados.slice(
+    paginaAtual * tamanhoPagina,
+    (paginaAtual + 1) * tamanhoPagina,
+  );
 
   useEffect(() => {
     if (registroSelecionadoId) {
@@ -1034,7 +1040,7 @@ function PagarEReceber() {
                 </table>
                 </div>
                 <Pagination
-                  page={pagina}
+                  page={paginaAtual}
                   pageSize={tamanhoPagina}
                   totalElements={totalRegistros}
                   totalPages={totalPaginas}
